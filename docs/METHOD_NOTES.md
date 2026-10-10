@@ -162,7 +162,28 @@ then the matched investigation opening and dated recall campaigns, flagged `is_o
 `provenance.generated_at` is the committer time of `HEAD`, not the wall clock, so the same
 snapshot + config + seed + commit writes identical bytes. JSON floats are rounded to 6 decimals.
 
-## 9. Open items
-- Real-data runs wait for A's ingest handoff and the canonical raw files on B's machine.
-- Tier 2 matching, grid search (development only), export bundle and hero selection: B7–B9.
+## 9. Threshold grid (`tune.py`) — development only
+For every `tuning.grid` setting of `c_min` × `s_star` (plus the config's own setting) the
+detector is re-run in memory and two things are counted on development families only: eligible
+families with an early tier-1 alert, and episodes per month. Budget = `alert_budget_multiplier`
+× the median monthly episode count of the config's own setting. Choice rule, fixed before any
+run: most early families within the budget; ties → fewer episodes, then higher `s_star`, then
+higher `c_min`. Only families opened inside the development period are loaded. The table is
+written to `exports/tuning_development*.csv`; the chosen setting and the table are copied here
+when B7 runs on real data. Nothing has been tuned yet: `config.yaml` holds the bootstrap defaults.
+
+## 10. Demo bundle and hero (`export.py`)
+`exports/demo/` is built from `exports/results_<period>.json` (written by `evaluate.py`) and the
+database. It refuses results that are not `measured_evaluation` and results from a different
+config hash. `results.csv` and `cases.csv` repeat the JSON values (floats rounded to 6
+decimals, empty cell = null, so `pending` metrics carry no number). Replays: the hero plus up to
+30 early cases, held-out first. `hero.json` is written only when tag `freeze-v1` exists; the
+rule is the `hero_rule` text of `config.yaml` and `rule_commit` is the tagged commit.
+`MANIFEST.json` = `{files: {name: sha256}, run_ids, git_sha}`.
+
+## 11. Open items
+- Real-data runs wait for A's ingest handoff. B's machine has its own download of the source
+  files; whether they match A's canonical snapshot is unknown until `make verify-snapshot` exists.
+- Tier 2 and tier 3 matching are not implemented (§5).
+- `make tune` does not exist yet (requested from D); run the module directly.
 - Types assumed for A's tables are listed in `docs/handoffs/20261010-1500-B-to-A-contract-review.md`.

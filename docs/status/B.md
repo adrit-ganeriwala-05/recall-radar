@@ -4,7 +4,7 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 15:05 ET
+- Updated: 2026-10-10 15:10 ET
 - Branch / HEAD: b/method @ 02263ed (+ the commit that adds this file). **Local only: nothing pushed yet.**
 - Last origin/main merged: none. origin/main is still the empty `init` commit 6b73005.
 - Contract version: 1.0.0
@@ -16,7 +16,8 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - B2 → fe38661 → `uv run pytest tests/method/test_score.py tests/method/test_baseline.py tests/method/test_episodes.py` → all pass
 - B4, B5 → 4c4720f → `uv run pytest tests/method/test_matching.py tests/method/test_evaluation.py` → all pass (synthetic DB only)
 - B3, B6 (synthetic part) → 02263ed → `uv run pytest tests/method/test_replay.py tests/method/test_temporal_invariance.py tests/method/test_detector_isolation.py` → all pass
-- B0 → this commit → `docs/handoffs/20261010-1500-B-to-A-contract-review.md` (not yet delivered: needs push)
+- B7 (code only, no real run), B9/B10 (code + synthetic tests) → 0cc27a9 → `uv run pytest tests/method/test_reproducibility.py` → 6 passed
+- B0 → d5efab0 → `docs/handoffs/20261010-1500-B-to-A-contract-review.md` (not yet delivered: needs push)
 
 ## In progress
 - none
@@ -28,14 +29,16 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 4. B7 tier 2 (`review/system_map.csv`, `review/keywords.txt`) + development grid; B8 freeze PR; B9 exports + hero; B10 repro.
 
 ## Last passing commands (exact)
-- `uv run pytest` → 120 passed, 1 deselected @ 02263ed
+- `uv run pytest` → 126 passed, 1 deselected (the deselected one is the real_data test) @ 0cc27a9; earlier: 120 passed @ 02263ed
 - `uv run ruff check .` → All checks passed @ 02263ed
 - CLI smoke on a synthetic DuckDB file: `python -m recall_radar.method.detect --cutoff 2019-01-01`, `.match`, `.evaluate --period development`, `.replay --episode E-0003` → all ran; `.evaluate --period held_out` → "REFUSED … freeze-v1 does not exist", exit 2
 
 ## Blockers, requests sent, requests received
 - origin/main has no bootstrap files (only `init`). My checkout holds an untracked copy of the bundle so tests can run. D must land the bootstrap (START_HERE H3b) before a PR makes sense.
 - GitHub permission for SakethSagar05 on adrit-ganeriwala-05/recall-radar: READ at 14:35, WRITE at 15:00 (checked with `gh repo view --json viewerPermission`). Push of b/method attempted at 15:05; see the session report for the result.
-- No raw NHTSA files on this machine (`RR_RAW_DIR` unset, `~/rr-raw` not checked) and no ingest from A → no real-data run, no Gate 1 numbers yet.
+- Raw files: downloaded 15:01 ET into `~/rr-raw` with `scripts/fetch_sources.sh all` (8 files, `SHA256SUMS.txt` written). NOT yet compared with A's hashes (START_HERE P4); `RR_RAW_DIR` is not exported in the shell profile.
+- No ingest code from A on origin (a/data-api is still `init`) → no real-data run, no Gate 1 numbers. Gate 1 (3:30 PM) cannot be met from B's side alone.
+- PR #1 "D0 bootstrap" is CLOSED unmerged; origin/main is empty. Request to D: `docs/handoffs/20261010-1505-B-to-D-makefile-tune.md`.
 - Sent (in repo, undelivered): B→A contract review, 13 points.
 
 ## Decisions (what, why, who agreed)
