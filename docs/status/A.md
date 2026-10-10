@@ -4,14 +4,16 @@ Restart memory for session rr-A. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 19:00 ET
-- Branch / HEAD: a/data-api @ see `git log -1` (PR #4 to main)
-- Last origin/main merged: 8ef4d3f (PR #6 merge)
+- Updated: 2026-10-10 19:45 ET
+- Branch / HEAD: a/data-api @ see `git log -1` (PR #7 to main)
+- Last origin/main merged: a775d09 (PR #5 merge)
 - Contract version: 1.0.0 (doc-only clarifications dffb361; ready to tag contract-v1 at dffb361)
-- Snapshot id / config hash / availability basis: e808281f001a / 419a39bbf60b (b/method f53b396) / LDATE_PLUS_7 (decided A3)
+- Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a (main config.yaml) / LDATE_PLUS_7 (decided A3)
 - Mode: waiting(freeze-v1 → B9 held-out candidates for A8) since 19:00
 
 ## Done (task id → commit → evidence)
+- C stand-in (C out of quota until 22:30) → PR #5 fixes 738e88a/22e781a (merged, main a775d09); PR #3 review comment `Reviewed e69d362: ok` + 5 follow-ups (real-data integration 13 passed/8 skipped; API-down browser check 16/16). C's own files only; A's checkout untouched
+- Merge of main a775d09 into a/data-api for PR #7 → `make check` exit 0 (271 + 72 passed, 0 violations)
 - Contract review → e7ff01c, dffb361 → B0 answered; no shape change; C sent no comments
 - A0 → 4a7553a → `make verify-snapshot` → snapshot ok e808281f001a; corrupted copy → exit 1
 - A1/A2 → b806130 → `make test` → 78 passed; real gate1 ingest reconciled (489,809 read)
@@ -33,6 +35,8 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 1. A8 held-out labels (after B9), A9 displayed-vs-exported check overnight
 
 ## Last passing commands (exact)
+- `make check` after merging main a775d09 → ruff clean, 271 passed, web 72 passed, secrets 0, claims 0, ownership 0 violations
+- `uv run pytest -m real_data tests/data tests/api tests/method` (one process, ingest-only DB) → A's 6 passed, 1 skipped; B's test_real_replay_frames_equal_the_full_run errors (no alert_episode in an ingest-only DB; B's test, noted to B)
 - `make test` → 146 passed, ruff clean, secrets 0 (A6)
 - `uv run pytest -m real_data tests/api` → 4 passed (full DB + B's detect/match/evaluate/export run)
 - `uv run pytest tests/data tests/api` → 108 passed (A4)
