@@ -100,8 +100,12 @@ Wilson check (`test_evaluation.py`): 8 of 20 with z = 1.959964 → centre
 `1.959964 · sqrt(0.012 + 0.0024009) / 1.192073 = 0.197306`.
 
 ## 5. Matching (`match.py`) — tier 1 only so far
-- A family's vehicles = `inv_vehicle` rows of its actions in the family's component system,
-  plus the family's own make / model / `year_min…year_max` / system.
+- A family is one make + model + component system (A's `inv_family`); one investigation is
+  usually several families. A family's vehicles = `inv_vehicle` rows of its actions with the
+  family's own make, model and system. Only a family with no such row falls back to its
+  `year_min…year_max` range. (Before 2026-10-10 16:45 the code took every vehicle of the
+  family's actions in that system, which would have credited one model's alert to its sibling
+  models' families. Found while reviewing A3 and fixed before the first evaluation run.)
 - **Tier 1** = the episode's exact make, model, model year and system is one of them.
 - `lead_days = family odate_min − alert_date`. Status: early 60…730, late 0…59,
   after_official_action < 0, outside_window > 730.
@@ -149,6 +153,10 @@ Wilson check (`test_evaluation.py`): 8 of 20 with z = 1.959964 → centre
   the same rule as a case, using the case's opening date. Chance coverage = covered controls /
   controls. The control unit mirrors the case unit (same number of model years), so a
   multi-year family and its controls have the same number of chances.
+- Families of one investigation are not independent. The note of `early_coverage_all` also gives
+  the count by investigation (`earliest_action_no`): investigations with at least one early
+  family / investigations with an eligible family. The Wilson interval is per family and is
+  therefore too narrow.
 - Lead time: median and quartiles (linear interpolation) of `lead_days` over early families.
 - `episodes_per_month` = episodes starting in the period / months in the period; the note
   carries the median monthly count, which the alert budget uses.
@@ -181,7 +189,11 @@ families with an early tier-1 alert, and episodes per month. Budget = `alert_bud
 run: most early families within the budget; ties → fewer episodes, then higher `s_star`, then
 higher `c_min`. Only families opened inside the development period are loaded. The table is
 written to `exports/tuning_development*.csv`; the chosen setting and the table are copied here
-when B7 runs on real data. Nothing has been tuned yet: `config.yaml` holds the bootstrap defaults.
+when B7 runs on the full data. On the bounded Gate 1 data the rule kept the config's own
+setting (table in `docs/handoffs/20261010-1655-B-to-D-gate1.md`), so `config.yaml` still holds the
+bootstrap detector values. The only config change so far is `availability.primary:
+LDATE_PLUS_7`, A's Gate 1 decision (`docs/DATA_NOTES.md`): DATEA equals the received date for
+practically every complaint and says nothing about publication.
 
 ## 10. Demo bundle and hero (`export.py`)
 `exports/demo/` is built from `exports/results_<period>.json` (written by `evaluate.py`) and the
@@ -193,8 +205,7 @@ rule is the `hero_rule` text of `config.yaml` and `rule_commit` is the tagged co
 `MANIFEST.json` = `{files: {name: sha256}, run_ids, git_sha}`.
 
 ## 11. Open items
-- Real-data runs wait for A's ingest handoff. B's machine has its own download of the source
-  files; whether they match A's canonical snapshot is unknown until `make verify-snapshot` exists.
+- Gate 1 (bounded data, tier 1, development only): the method did not reach the required margin
+  over chance. Numbers and verdict: `docs/handoffs/20261010-1655-B-to-D-gate1.md`.
 - Tier 2 and tier 3 matching are not implemented (§5).
-- `make tune` does not exist yet (requested from D); run the module directly.
-- Types assumed for A's tables are listed in `docs/handoffs/20261010-1500-B-to-A-contract-review.md`.
+- Full 2014–2023 run, freeze, held-out run and export wait for A4 and for PR #2 / PR #4 on main.

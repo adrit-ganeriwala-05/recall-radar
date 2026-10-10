@@ -4,12 +4,12 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 16:15 ET
+- Updated: 2026-10-10 17:00 ET
 - Branch / HEAD: b/method, pushed to origin (first push 15:00 ET; code tip 0cc27a9, docs after it — check `git log`)
 - Last origin/main merged: 61c0c8c (D0 bootstrap bundle), merged 15:28 ET; the only conflict was this file (add/add), kept B's version
 - Contract version: 1.0.0
-- Snapshot id / config hash / availability basis: e808281f001a (verified on B's machine) / 59931d27c785 / DATEA (A's formal decision comes with A3)
-- Mode: waiting(A3 investigation + recall tables, needed for match/evaluate and the Gate 1 report — since 16:00)
+- Snapshot id / config hash / availability basis: e808281f001a / 419a39bbf60b / LDATE_PLUS_7 (A's Gate 1 decision, set in config.yaml at ba806ed)
+- Mode: waiting(A's re-review of PR #2 at the new head; D's merges of PR #2 and PR #4; A4 full ingest — since 17:00)
 
 ## Done (task id → commit → evidence)
 - B1 → fe38661 → `tests/fixtures/method/*.csv` + hand calculations in `docs/METHOD_NOTES.md` §4
@@ -25,14 +25,20 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - B6 real-data invariance → 498e09f → `uv run pytest -m real_data tests/method` → 1 passed
 - Review of A's PR #4 at f669be5 → posted "Reviewed f669be5: ok" with 3 follow-ups (phone numbers surviving redaction; self-referential redaction test; tracked .pyc files and empty alias table) and a note on DATEA = LDATE for 99.94% of complaints.
 
+- A3 received (a/data-api 2f7ca0a, handoff `20261010-1700-A-to-B-investigations-availability.md`): DB rebuilt with LDATE_PLUS_7 from A's commit in a separate directory; A's suite there → 99 passed.
+- Own bug found and fixed at ba806ed: family vehicles were taken from every vehicle of the family's actions; now only the family's own make + model. `uv run pytest` → 130 passed, 1 deselected.
+- **Gate 1 run (B4, B5, grid) at ba806ed → data PASS, method FAIL.** `make detect match evaluate SCOPE=gate1` + `python -m recall_radar.method.tune --scope gate1` → exit 0, log `logs/gate1_method.log`, outputs `exports/results_development_gate1.json`, `exports/tuning_development_gate1.csv` (gitignored). Report: `docs/handoffs/20261010-1655-B-to-D-gate1.md`.
+- Re-review of A's PR #4 at 2f7ca0a → posted on the PR (see PR for the verdict line).
+
 ## In progress
 - none
 
 ## Next (in order)
-1. When A3 lands (inv_family, inv_vehicle, recall_campaign): rebuild the DB from A's commit, `make detect match evaluate SCOPE=gate1`, `uv run python -m recall_radar.method.tune --db data/recall_radar.duckdb --scope gate1`, then write `docs/handoffs/<ts>-B-to-D-gate1.md` (pass/fail per EXECUTION_PLAN §2, PRELIMINARY, UNREVIEWED).
-2. Apply A's availability decision to `config.yaml` if it is LDATE_PLUS_7 (changes the config hash).
-3. B7 tier 2 (`review/system_map.csv`, `review/keywords.txt`) + development grid on full data; B8 freeze PR; B9 exports + hero; B10 repro.
-4. At the 8:30 review of A's API: re-check the redaction probes from the PR #4 review.
+1. After D merges PR #2 and PR #4: merge origin/main, re-run `make gate1` at that main SHA (EXECUTION_PLAN §2 wants a main SHA) and confirm the report's numbers.
+2. A4 handoff (full 2014–2023, built with LDATE_PLUS_7): `make ingest investigations detect match SCOPE=full`, `make evaluate PERIOD=development`, grid on full data (B7), real-data B6.
+3. Tier 2 (`review/system_map.csv`, `review/keywords.txt`) if time allows before 6:00 PM; else freeze with tier 1 and say so.
+4. B8 freeze PR (config, eligibility, matching, hero rule) → A review → tag `freeze-v1`; B9 held-out + `exports/demo/`; B10 repro.
+5. 8:30 PM review of A's API: evidence list must leave out `dup_text` rows; re-run the redaction probes.
 
 ## Last passing commands (exact)
 - `uv run pytest` → 127 passed, 1 deselected (the deselected one is the real_data test) at the tip after A's review changes @ 02263ed
