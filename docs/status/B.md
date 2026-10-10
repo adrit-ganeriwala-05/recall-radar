@@ -4,12 +4,12 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 15:45 ET
+- Updated: 2026-10-10 16:15 ET
 - Branch / HEAD: b/method, pushed to origin (first push 15:00 ET; code tip 0cc27a9, docs after it — check `git log`)
 - Last origin/main merged: 61c0c8c (D0 bootstrap bundle), merged 15:28 ET; the only conflict was this file (add/add), kept B's version
 - Contract version: 1.0.0
-- Snapshot id / config hash / availability basis: n/a / 59931d27c785 / DATEA (config default, A's Gate 1 decision pending)
-- Mode: waiting(A's review of PR #2 at b66915d; A's ingest 00e7477 not on origin; A3 tables — since 15:41)
+- Snapshot id / config hash / availability basis: e808281f001a (verified on B's machine) / 59931d27c785 / DATEA (A's formal decision comes with A3)
+- Mode: waiting(A3 investigation + recall tables, needed for match/evaluate and the Gate 1 report — since 16:00)
 
 ## Done (task id → commit → evidence)
 - B1 → fe38661 → `tests/fixtures/method/*.csv` + hand calculations in `docs/METHOD_NOTES.md` §4
@@ -19,14 +19,20 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - B7 (code only, no real run), B9/B10 (code + synthetic tests) → 0cc27a9 → `uv run pytest tests/method/test_reproducibility.py` → 6 passed
 - B0 → d5efab0 → `docs/handoffs/20261010-1500-B-to-A-contract-review.md` (not yet delivered: needs push)
 
+- Real gate1 data → built 15:56 from A's commit f669be5 exported to a separate directory (not merged into b/method): `make verify-snapshot` → snapshot ok e808281f001a; `make ingest SCOPE=gate1` → read 489809 = retained 485078 + excluded 4731 + rejected 0 + deduplicated 0, reconciled (same as A's handoff). DB: `data/recall_radar.duckdb`.
+- dup_text fix (A's review of PR #2) → 498e09f → `uv run pytest` → 129 passed, 1 deselected
+- B2 on real data → 498e09f → `make detect SCOPE=gate1` → `cutoff=2020-01-01 groups=65871 scored_months=2589670 episodes=1365` in 3 s (log: `logs/detect_gate1.log`). Not an evaluation result.
+- B6 real-data invariance → 498e09f → `uv run pytest -m real_data tests/method` → 1 passed
+- Review of A's PR #4 at f669be5 → posted "Reviewed f669be5: ok" with 3 follow-ups (phone numbers surviving redaction; self-referential redaction test; tracked .pyc files and empty alias table) and a note on DATEA = LDATE for 99.94% of complaints.
+
 ## In progress
 - none
 
 ## Next (in order)
-1. Merge `origin/main` once D's bootstrap is there (see Notes), push `b/method`, open the PR, ask A for review.
-2. Real data: `RR_RAW_DIR=~/rr-raw make verify-snapshot`, then `make gate1`; write `docs/handoffs/<ts>-B-to-D-gate1.md`.
-3. B6 real-data parts: `uv run pytest -m real_data tests/method`; full-data development run.
-4. B7 tier 2 (`review/system_map.csv`, `review/keywords.txt`) + development grid; B8 freeze PR; B9 exports + hero; B10 repro.
+1. When A3 lands (inv_family, inv_vehicle, recall_campaign): rebuild the DB from A's commit, `make detect match evaluate SCOPE=gate1`, `uv run python -m recall_radar.method.tune --db data/recall_radar.duckdb --scope gate1`, then write `docs/handoffs/<ts>-B-to-D-gate1.md` (pass/fail per EXECUTION_PLAN §2, PRELIMINARY, UNREVIEWED).
+2. Apply A's availability decision to `config.yaml` if it is LDATE_PLUS_7 (changes the config hash).
+3. B7 tier 2 (`review/system_map.csv`, `review/keywords.txt`) + development grid on full data; B8 freeze PR; B9 exports + hero; B10 repro.
+4. At the 8:30 review of A's API: re-check the redaction probes from the PR #4 review.
 
 ## Last passing commands (exact)
 - `uv run pytest` → 127 passed, 1 deselected (the deselected one is the real_data test) at the tip after A's review changes @ 02263ed
