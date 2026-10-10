@@ -346,6 +346,9 @@ def test_held_out_runs_with_the_tag_and_audits_top_episodes(repo, tmp_path_facto
     ]  # fmt: skip
     m = {x.name: x for x in summary.metrics}
     assert (m["top25_matched"].numerator, m["top25_matched"].denominator) == (1, 2)
+    # WORKED: early. WARM: outside_window (next PE 884 days later), so it is neither matched nor unmatched;
+    # the note accounts for every audited episode. WARM's recall 19V777 is not "recall only": that label is for unmatched.
+    assert "outcomes: early 1, outside_window 1; 0 of the unmatched had a recall campaign" in m["top25_matched"].note
     assert m["top25_unmatched"].numerator == 0
     assert math.isclose(m["top25_matched"].value, 0.5)
     con.close()

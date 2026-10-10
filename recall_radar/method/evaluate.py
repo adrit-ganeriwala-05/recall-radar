@@ -618,7 +618,14 @@ def evaluate(
             "top25_unmatched": sum(a.outcome.status == C.OutcomeStatus.unmatched for a in audit),
             "top25_ambiguous": sum(a.outcome.status == C.OutcomeStatus.ambiguous for a in audit),
         }
-        metrics += [proportion(n, v, k_audit, f"top {k_audit} episodes by peak score, not after official action") for n, v in counts.items()]
+        by_status = pd.Series([a.outcome.status.value for a in audit], dtype=object).value_counts()
+        spread = ", ".join(f"{s} {int(n)}" for s, n in sorted(by_status.items()))
+        recall_only = sum(a.outcome.status == C.OutcomeStatus.unmatched and bool(a.outcome.recall_campnos) for a in audit)
+        audit_note = (
+            f"top {k_audit} episodes by peak score, not after official action; outcomes: {spread}; "
+            f"{recall_only} of the unmatched had a recall campaign for the same vehicle and system inside the follow-up window"
+        )
+        metrics += [proportion(n, v, k_audit, audit_note) for n, v in counts.items()]
     else:
         metrics += [
             metric(n, status=C.MetricStatus.not_applicable, note="held_out only")
