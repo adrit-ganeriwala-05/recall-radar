@@ -104,11 +104,31 @@ def test_hero_follows_the_frozen_rule_and_its_commit_predates_the_run(repo, tmp_
     early = {c.family_id: c for c in held.cases if c.status == "early"}
     assert sorted((f, c.lead_days) for f, c in early.items()) == [("F-PE18001", 106), ("F-PE18003", 343)]
     assert hero.period == C.Period.held_out and hero.episode_id in {c.best_episode_id for c in early.values()}
-    assert hero.rule_commit == frozen and hero.rule.startswith("From held-out families with a tier-1 early alert")
+    assert hero.rule_commit == frozen and hero.rule.startswith("From held-out families with a tier-1 early alert whose alert did not follow")
     assert f"replays/{hero.episode_id}.json" in files
     # the rule's commit is an ancestor of, and different from, the commit that produced the results
     assert held.provenance.git_sha != frozen
     assert subprocess.run(["git", "merge-base", "--is-ancestor", frozen, held.provenance.git_sha], cwd=repo).returncode == 0
+
+
+def test_export_never_picks_a_hero_whose_alert_followed_official_action(repo, tmp_path, rows, monkeypatch):
+    run_git(repo, "tag", "-a", "freeze-v1", "-m", "frozen")
+    cfg = fixture_config()
+    cfg["periods"] = {**cfg["periods"], "held_out": ["2018-01-01", "2018-12-31"]}
+    monkeypatch.setattr(X, "data_cutoff", lambda cfg, scope: FIXTURE_CUTOFF)
+    con = build_db(tmp_path / "db.duckdb", rows)
+    M.run(con, cfg)
+    (tmp_path / "exports").mkdir()
+    for period in ("development", "held_out"):
+        summary, _ = E.evaluate(con, cfg, period, "full", config_path=repo / "config.yaml", repo=repo)
+        (tmp_path / "exports" / f"results_{period}.json").write_text(E.summary_json(summary))
+    # the two early held-out families are WORKED (2018-02) and COOLDOWN (2017-01); flag WORKED's alert
+    con.execute("UPDATE alert_episode SET after_official_action = true WHERE model = 'WORKED'")
+    cooldown = con.execute("SELECT episode_id FROM alert_episode WHERE model = 'COOLDOWN' AND start_month = '2017-01'").fetchone()[0]
+    X.export(con, cfg, tmp_path / "exports", tmp_path / "exports" / "demo", allow_synthetic=True, repo=repo)
+    con.close()
+    hero = C.HeroPointer.model_validate_json((tmp_path / "exports" / "demo" / "hero.json").read_text())
+    assert hero.episode_id == cooldown
 
 
 def test_choose_hero_picks_closest_to_median_then_falls_back():
@@ -132,6 +152,11 @@ def test_choose_hero_picks_closest_to_median_then_falls_back():
     # leads 100, 300, 320, 700 -> median 310; 300 and 320 are both 10 away; 100 and 700 never win
     assert X.choose_hero({"held_out": held, "development": dev}, seed=20261010) in {("held_out", "E-0002"), ("held_out", "E-0003")}
     assert X.choose_hero({"held_out": held, "development": dev}, 5) == X.choose_hero({"held_out": held, "development": dev}, 5)
+    # an alert that followed an earlier related investigation or recall is never the hero
+    assert X.choose_hero({"held_out": held}, 20261010, {"E-0002"}) == ("held_out", "E-0003")
+    # with both middle cases set aside: leads 100 and 700, median 400, both 300 away -> seeded tie-break
+    assert X.choose_hero({"held_out": held}, 1, {"E-0002", "E-0003"}) in {("held_out", "E-0001"), ("held_out", "E-0004")}
+    assert X.choose_hero({"held_out": held, "development": dev}, 1, {"E-0001", "E-0002", "E-0003", "E-0004"}) == ("development", "E-0009")
     none_early = summary("held_out", [case("F-0001", None, status="missed")])
     assert X.choose_hero({"held_out": none_early, "development": dev}, 1) == ("development", "E-0009")
     assert X.choose_hero({"held_out": none_early}, 1) is None

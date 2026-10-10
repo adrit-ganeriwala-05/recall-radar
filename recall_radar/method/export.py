@@ -76,12 +76,15 @@ def cases_csv(summaries: list[C.EvaluationSummary]) -> str:
     return to_csv(CASE_COLS, rows)
 
 
-def choose_hero(summaries: dict[str, C.EvaluationSummary], seed: int) -> tuple[str, str] | None:
+def choose_hero(
+    summaries: dict[str, C.EvaluationSummary], seed: int, after_official_action: frozenset[str] | set[str] = frozenset()
+) -> tuple[str, str] | None:
     """The frozen `hero_rule` of config.yaml: (period, episode_id) or None.
 
-    Held-out families with a tier-1 early alert; the one whose lead_days is closest to the
-    median lead_days of those families; ties broken with random.Random(seed). If there is none,
-    the same rule on development families. If neither, no hero.
+    Held-out families with a tier-1 early alert whose alert episode is not in
+    `after_official_action` (it did not follow an earlier related investigation or recall); the
+    one whose lead_days is closest to the median lead_days of those families; ties broken with
+    random.Random(seed). If there is none, the same rule on development families. If neither, no hero.
     """
     for period in (C.Period.held_out.value, C.Period.development.value):
         s = summaries.get(period)
@@ -89,7 +92,8 @@ def choose_hero(summaries: dict[str, C.EvaluationSummary], seed: int) -> tuple[s
             continue
         early = sorted(
             (c for c in s.cases if c.eligible and c.status == C.OutcomeStatus.early.value
-             and c.match_tier == C.MatchTier.direct and c.best_episode_id),
+             and c.match_tier == C.MatchTier.direct and c.best_episode_id
+             and c.best_episode_id not in after_official_action),
             key=lambda c: c.family_id,
         )  # fmt: skip
         if not early:
@@ -135,7 +139,12 @@ def export(
     hero = None
     rule_commit = git("rev-list", "-n", "1", FREEZE_TAG, cwd=repo)
     if rule_commit:  # the hero rule only exists once it has been frozen
-        hero = choose_hero(summaries, int(cfg["seed"]))
+        flagged = {
+            r[0] for r in con.execute(
+                "SELECT episode_id FROM alert_episode WHERE config_hash = ? AND after_official_action", [cfg["config_hash"]]
+            ).fetchall()
+        }  # fmt: skip
+        hero = choose_hero(summaries, int(cfg["seed"]), flagged)
     episode_ids: list[str] = []
     if hero:
         period, episode_id = hero

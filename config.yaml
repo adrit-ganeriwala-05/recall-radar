@@ -85,8 +85,8 @@ evaluation:
   interval: wilson_95
 
 hero_rule: >-
-  From held-out families with a tier-1 early alert, pick the one whose lead_days is closest to
-  the median lead_days of those families; break ties with random.Random(seed). If none
-  qualifies, apply the same rule to development families and label the replay
-  "development period". If neither qualifies, there is no hero replay; the pitch shows the
-  measured results page instead.
+  From held-out families with a tier-1 early alert whose alert did not follow an earlier related
+  investigation or recall, pick the one whose lead_days is closest to the median lead_days of
+  those families; break ties with random.Random(seed). If none qualifies, apply the same rule to
+  development families and label the replay "development period". If neither qualifies, there
+  is no hero replay; the pitch shows the measured results page instead.

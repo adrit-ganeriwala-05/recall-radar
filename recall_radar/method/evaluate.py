@@ -521,9 +521,12 @@ def evaluate(
     by_action: dict[str, bool] = {}
     for c in eligible:
         by_action[c.earliest_action_no] = by_action.get(c.earliest_action_no, False) or c.status == C.OutcomeStatus.early.value
+    flagged = set(episodes.loc[episodes["after_official_action"].astype(bool), "episode_id"])
+    n_followed = sum(c.best_episode_id in flagged for c in early_cases)
     inv_note = (
         f"by investigation: {sum(by_action.values())} of {len(by_action)} have at least one early family; "
-        "the interval treats families as independent, which they are not"
+        "the interval treats families as independent, which they are not; "
+        f"{n_followed} of the {len(early_cases)} early families' alerts followed an earlier related investigation or recall"
     )
     note = "; ".join(x for x in (tag_note, tier_note) if x)
 
