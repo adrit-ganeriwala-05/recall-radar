@@ -1,0 +1,196 @@
+{
+  "provenance": {
+    "contract_version": "1.0.0",
+    "data_label": "synthetic_fixture",
+    "snapshot_id": null,
+    "data_as_of": null,
+    "config_hash": null,
+    "git_sha": null,
+    "availability_basis": null,
+    "generated_at": "2026-10-10T16:00:00Z"
+  },
+  "episode_id": "E-0412",
+  "group_id": "g_6bc38243bb0a",
+  "vehicle": {
+    "make": "EXAMPLE MOTORS",
+    "model": "ROADSTER",
+    "model_year": 2017
+  },
+  "comp_system": "STEERING",
+  "frames": [
+    {
+      "cutoff": "2017-12-01",
+      "month": "2017-11",
+      "n_distinct": 1,
+      "baseline_lambda": 1.052632,
+      "score": 0.186431,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-01-01",
+      "month": "2017-12",
+      "n_distinct": 0,
+      "baseline_lambda": 1.0,
+      "score": 0.1992,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-02-01",
+      "month": "2018-01",
+      "n_distinct": 1,
+      "baseline_lambda": 1.047619,
+      "score": 0.187603,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-03-01",
+      "month": "2018-02",
+      "n_distinct": 0,
+      "baseline_lambda": 1.0,
+      "score": 0.1992,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-04-01",
+      "month": "2018-03",
+      "n_distinct": 4,
+      "baseline_lambda": 1.043478,
+      "score": 1.662128,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-05-01",
+      "month": "2018-04",
+      "n_distinct": 5,
+      "baseline_lambda": 1.0,
+      "score": 5.948769,
+      "partial": false,
+      "alert_active": true
+    },
+    {
+      "cutoff": "2018-06-01",
+      "month": "2018-05",
+      "n_distinct": 3,
+      "baseline_lambda": 1.25,
+      "score": 4.309231,
+      "partial": false,
+      "alert_active": true
+    },
+    {
+      "cutoff": "2018-07-01",
+      "month": "2018-06",
+      "n_distinct": 2,
+      "baseline_lambda": 1.666667,
+      "score": 1.559985,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-08-01",
+      "month": "2018-07",
+      "n_distinct": 1,
+      "baseline_lambda": 1.833333,
+      "score": 0.555455,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-09-01",
+      "month": "2018-08",
+      "n_distinct": 1,
+      "baseline_lambda": 2.0,
+      "score": 0.226218,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-10-01",
+      "month": "2018-09",
+      "n_distinct": 0,
+      "baseline_lambda": 2.0,
+      "score": 0.063152,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-11-01",
+      "month": "2018-10",
+      "n_distinct": 1,
+      "baseline_lambda": 2.083333,
+      "score": 0.057751,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-12-01",
+      "month": "2018-11",
+      "n_distinct": 0,
+      "baseline_lambda": 2.0,
+      "score": 0.063152,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2019-01-01",
+      "month": "2018-12",
+      "n_distinct": 1,
+      "baseline_lambda": 2.083333,
+      "score": 0.057751,
+      "partial": false,
+      "alert_active": false
+    }
+  ],
+  "markers": [
+    {
+      "type": "alert",
+      "date": "2018-05-01",
+      "label": "Alert",
+      "is_outcome": false,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "investigation_opened",
+      "date": "2018-10-15",
+      "label": "Investigation opened (PE18-000)",
+      "is_outcome": true,
+      "action_no": "PE18-000",
+      "match_tier": "1",
+      "lead_days": 167
+    },
+    {
+      "type": "recall_reported",
+      "date": "2019-02-04",
+      "label": "Recall 18V000000",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": "1",
+      "lead_days": null
+    }
+  ],
+  "outcome": {
+    "episode_id": "E-0412",
+    "family_id": "F-118",
+    "earliest_action_no": "PE18-000",
+    "inv_type": "PE",
+    "investigation_open_date": "2018-10-15",
+    "tier": "1",
+    "basis": "Tier 1: same make, model, model year and STEERING system",
+    "confidence": "high",
+    "lead_days": 167,
+    "status": "early",
+    "recall_campnos": [
+      "18V000000"
+    ],
+    "follow_up_end": "2020-04-30",
+    "follow_up_complete": true,
+    "reviewer": null
+  },
+  "banner": "SYNTHETIC FIXTURE. Replay uses complaints whose current NHTSA records show them available by each date (DATEA). Labels reflect today's records."
+}

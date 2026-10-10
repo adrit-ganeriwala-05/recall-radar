@@ -1,0 +1,161 @@
+{
+  "provenance": {
+    "contract_version": "1.0.0",
+    "data_label": "synthetic_fixture",
+    "snapshot_id": null,
+    "data_as_of": null,
+    "config_hash": null,
+    "git_sha": null,
+    "availability_basis": null,
+    "generated_at": "2026-10-10T16:00:00Z"
+  },
+  "run_id": "fixture-held-out-pending",
+  "period": "held_out",
+  "seed": 20261010,
+  "freeze_tag": null,
+  "metrics": [
+    {
+      "name": "eligible_families",
+      "status": "pending",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "excluded_families",
+      "status": "pending",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "early_coverage_all",
+      "status": "pending",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "early_coverage_sample",
+      "status": "pending",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "chance_coverage",
+      "status": "pending",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "median_lead_days",
+      "status": "pending",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "lead_days_q1",
+      "status": "pending",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "lead_days_q3",
+      "status": "pending",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "episodes_per_month",
+      "status": "pending",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "top25_matched",
+      "status": "pending",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "top25_unmatched",
+      "status": "pending",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "top25_ambiguous",
+      "status": "pending",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "ingestion_retained_share",
+      "status": "pending",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "pipeline_runtime_s",
+      "status": "pending",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    }
+  ],
+  "cases": [],
+  "audit": [],
+  "exclusions": []
+}

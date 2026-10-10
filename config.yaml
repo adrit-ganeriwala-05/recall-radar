@@ -1,0 +1,92 @@
+# Recall Radar run configuration. Owner: B. Reviewer: A.
+# Frozen at Gate "config freeze" with git tag freeze-v1. After the tag, any change is a new tag
+# (freeze-v2, ...) and is reported as a separate post-hoc run beside the frozen one.
+# config_hash = first 12 hex of sha256(json.dumps(yaml.safe_load(this file), sort_keys=True,
+#               separators=(",", ":"), default=str)).
+
+contract_version: "1.0.0"
+seed: 20261010
+
+paths:
+  db: ${RR_DATA_DIR}/recall_radar.duckdb   # resolved by the code; default RR_DATA_DIR=data
+  raw: ${RR_RAW_DIR}                       # default ${RR_DATA_DIR}/raw
+  exports: exports
+  demo_exports: exports/demo
+
+sources:   # verified 2026-10-10 from https://www.nhtsa.gov/nhtsa-datasets-and-apis
+  complaints:
+    - {file: COMPLAINTS_RECEIVED_2010-2014.zip, url: https://static.nhtsa.gov/odi/ffdd/cmpl/COMPLAINTS_RECEIVED_2010-2014.zip, keep_ldate_from: "2014-01-01"}
+    - {file: COMPLAINTS_RECEIVED_2015-2019.zip, url: https://static.nhtsa.gov/odi/ffdd/cmpl/COMPLAINTS_RECEIVED_2015-2019.zip}
+    - {file: COMPLAINTS_RECEIVED_2020-2024.zip, url: https://static.nhtsa.gov/odi/ffdd/cmpl/COMPLAINTS_RECEIVED_2020-2024.zip, keep_ldate_to: "2023-12-31"}
+  investigations: {file: FLAT_INV.zip, url: https://static.nhtsa.gov/odi/ffdd/inv/FLAT_INV.zip}
+  recalls: {file: FLAT_RCL_POST_2010.zip, url: https://static.nhtsa.gov/odi/ffdd/rcl/FLAT_RCL_POST_2010.zip}
+  layouts:
+    - https://static.nhtsa.gov/odi/ffdd/cmpl/CMPL.txt
+    - https://static.nhtsa.gov/odi/ffdd/inv/INV.txt
+    - https://static.nhtsa.gov/odi/ffdd/rcl/RCL.txt
+
+bounded_gate1:   # Gate 1 runs on this subset only
+  complaint_files: [COMPLAINTS_RECEIVED_2015-2019.zip]
+  families_opened: ["2017-01-01", "2019-12-31"]
+
+availability:
+  primary: DATEA            # DATEA | LDATE_PLUS_7 ; A records the Gate 1 decision in docs/status/A.md
+  datea_max_lag_days: 365
+  fallback_lag_days: 7
+
+filters:
+  prod_type: [V]
+  cmpl_types_keep: [IVOQ, MIVQ, MAVQ, VOQ, EVOQ, SVOQ, MVOQ, LETR, CON, CAG, INS]
+  cmpl_types_drop: [RC, RP, DP, EWR]
+  detection_exclude_comp_system: ["UNKNOWN OR OTHER"]
+  dup_text_prefix_chars: 200
+  dup_text_window_days: 30
+
+periods:
+  baseline_only: ["2014-01-01", "2015-12-31"]
+  development:   ["2016-01-01", "2019-12-31"]
+  buffer:        ["2020-01-01", "2020-12-31"]
+  held_out:      ["2021-01-01", "2021-12-31"]
+
+detector:
+  window_months: 2
+  history_months: 24
+  lambda_floor: 0.25
+  c_min: 5
+  s_star: 4.0
+  min_ratio: 3.0
+  cold_start_history_months: 6
+  cold_start_c_min: 8
+  cooldown_months: 6
+
+tuning:          # development years only; held_out is sealed until freeze-v1 exists
+  grid:
+    c_min: [5, 8]
+    s_star: [3.0, 4.0, 5.0, 6.0]
+  alert_budget_multiplier: 1.5   # max national episodes/month = 1.5 x development median
+
+matching:
+  family_link_months: 36
+  tier2_model_year_slack: 1
+  tier2_system_map: review/system_map.csv       # owner B, ~30 pairs
+  tier2_keywords: review/keywords.txt           # owner B
+  exclude_family_types_only: [RQ, AQ]
+
+evaluation:
+  eligible_first_types: [PE, DP]
+  early_window_days: [60, 730]
+  follow_up_days: 730
+  sample_size: 20
+  top_k_audit: 25
+  controls_per_case: 5
+  control_model_year_window: 2
+  control_volume_tolerance: 0.5
+  control_no_investigation_years: 3
+  interval: wilson_95
+
+hero_rule: >-
+  From held-out families with a tier-1 early alert, pick the one whose lead_days is closest to
+  the median lead_days of those families; break ties with random.Random(seed). If none
+  qualifies, apply the same rule to development families and label the replay
+  "development period". If neither qualifies, there is no hero replay; the pitch shows the
+  measured results page instead.

@@ -1,0 +1,362 @@
+{
+  "provenance": {
+    "contract_version": "1.0.0",
+    "data_label": "synthetic_fixture",
+    "snapshot_id": null,
+    "data_as_of": null,
+    "config_hash": null,
+    "git_sha": null,
+    "availability_basis": null,
+    "generated_at": "2026-10-10T16:00:00Z"
+  },
+  "vehicle": {
+    "make": "EXAMPLE MOTORS",
+    "model": "ROADSTER",
+    "model_year": 2017
+  },
+  "distinct_complaints": 35,
+  "components": [
+    {
+      "group": {
+        "group_id": "g_6bc38243bb0a",
+        "vehicle": {
+          "make": "EXAMPLE MOTORS",
+          "model": "ROADSTER",
+          "model_year": 2017
+        },
+        "comp_system": "STEERING",
+        "sub_issue": null,
+        "distinct_complaints": 30,
+        "first_month": "2016-03",
+        "last_month": "2018-12"
+      },
+      "episodes": [
+        {
+          "episode_id": "E-0412",
+          "group_id": "g_6bc38243bb0a",
+          "vehicle": {
+            "make": "EXAMPLE MOTORS",
+            "model": "ROADSTER",
+            "model_year": 2017
+          },
+          "comp_system": "STEERING",
+          "sub_issue": null,
+          "start_month": "2018-04",
+          "end_month": "2018-05",
+          "alert_date": "2018-05-01",
+          "peak_score": 5.948769,
+          "window_count": 9,
+          "baseline_lambda": 1.0,
+          "ratio": 9.0,
+          "severity_share": 0.222222,
+          "evidence_n": 9,
+          "described_share": 1.0,
+          "dup_text_share": 0.0,
+          "avail_fallback_share": 0.0,
+          "after_official_action": false,
+          "explanation": "9 complaints in 2 months; this vehicle and component averaged about 1 per 2 months before. A jump this large would happen by chance about once in a million two-month windows.",
+          "config_hash": "synthetic000"
+        }
+      ]
+    },
+    {
+      "group": {
+        "group_id": "g_bf23f78a9706",
+        "vehicle": {
+          "make": "EXAMPLE MOTORS",
+          "model": "ROADSTER",
+          "model_year": 2017
+        },
+        "comp_system": "SERVICE BRAKES",
+        "sub_issue": null,
+        "distinct_complaints": 7,
+        "first_month": "2017-01",
+        "last_month": "2018-11"
+      },
+      "episodes": []
+    }
+  ],
+  "monthly": [
+    {
+      "month": "2016-03",
+      "n_distinct": 1,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2016-04",
+      "n_distinct": 0,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2016-05",
+      "n_distinct": 1,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2016-06",
+      "n_distinct": 0,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2016-07",
+      "n_distinct": 1,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2016-08",
+      "n_distinct": 0,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2016-09",
+      "n_distinct": 1,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2016-10",
+      "n_distinct": 0,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2016-11",
+      "n_distinct": 1,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2016-12",
+      "n_distinct": 0,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2017-01",
+      "n_distinct": 2,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2017-02",
+      "n_distinct": 0,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2017-03",
+      "n_distinct": 1,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2017-04",
+      "n_distinct": 0,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2017-05",
+      "n_distinct": 1,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2017-06",
+      "n_distinct": 1,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2017-07",
+      "n_distinct": 1,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2017-08",
+      "n_distinct": 0,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2017-09",
+      "n_distinct": 1,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2017-10",
+      "n_distinct": 0,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2017-11",
+      "n_distinct": 1,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2017-12",
+      "n_distinct": 0,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2018-01",
+      "n_distinct": 1,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2018-02",
+      "n_distinct": 0,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2018-03",
+      "n_distinct": 4,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2018-04",
+      "n_distinct": 5,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2018-05",
+      "n_distinct": 3,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2018-06",
+      "n_distinct": 2,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2018-07",
+      "n_distinct": 1,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2018-08",
+      "n_distinct": 2,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2018-09",
+      "n_distinct": 0,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2018-10",
+      "n_distinct": 1,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2018-11",
+      "n_distinct": 2,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    },
+    {
+      "month": "2018-12",
+      "n_distinct": 1,
+      "baseline_lambda": null,
+      "score": null,
+      "alert": false,
+      "partial": false
+    }
+  ],
+  "recall_campaigns": [
+    {
+      "campno": "18V000000",
+      "component": "STEERING",
+      "report_date": "2019-02-04"
+    }
+  ],
+  "vin_lookup_url": "https://www.nhtsa.gov/recalls",
+  "note": "These are recalls for this model and model year. To see whether your car has an open recall, check its VIN at NHTSA."
+}
