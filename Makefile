@@ -81,8 +81,12 @@ test: lint ## CI-equivalent: python tests (no real data), web tests, secrets + c
 	$(PY) scripts/check_secrets.py
 	$(MAKE) --no-print-directory claims
 
-test-real: ## tests that need the local snapshot (marker real_data)
-	uv run pytest -m real_data
+test-real: ## real_data tests (local snapshot), one process per folder; live-server tests: make integration
+	@# One process per folder: a DuckDB file opened with different settings by an earlier test in the
+	@# same process is refused (REQUEST B->A 20261010-1836). Exit 5 = no real_data tests in that folder.
+	@rc=0; for d in tests/data tests/method tests/api tests/ml; do \
+	  [ -d $$d ] || continue; echo "== real_data $$d"; uv run pytest -m real_data $$d; s=$$?; \
+	  [ $$s = 0 ] || [ $$s = 5 ] || rc=1; done; exit $$rc
 
 claims: ## D: banned words + placeholder grammar + no hand-typed numbers in submission/ and README
 	$(PY) scripts/check_claims.py

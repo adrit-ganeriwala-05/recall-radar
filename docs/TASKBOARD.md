@@ -24,16 +24,16 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | D3 | Integration tests + Playwright smoke | D | C | A5 (live), C0 | 4:30 PM | doing (smoke passes on C's real build 981ae41, fixture + cached; live API tests wait on A5) |
 | A4 | Full ingest 2014–2023 | A | B | Gate 1 | 4:30 PM | done@8ef4d3f (PR #6; DB 344 MB) |
 | B3 | Replay engine (as-of frames, outcome markers) | B | A | B2 | 4:30 PM | review (PR #2 @ 461fccc) |
-| B6 | Temporal invariance + isolation tests; full-data run | B | A | A4, B3 | 5:30 PM | doing (synthetic part in PR #2; real-data part needs A4) |
+| B6 | Temporal invariance + isolation tests; full-data run | B | A | A4, B3 | 5:30 PM | review (PR #2 @ 454d8b3; full-data dev run done) |
 | A5 | FastAPI: all endpoints, fixture mode, static mount, errors | A | B (+C ack) | A4, contract-v1 | 5:30 PM | done@8ef4d3f (PR #6, Reviewed fdcb05c by B) |
 | A6 | API tests incl. timing | A | B | A5 | 5:30 PM | done@8ef4d3f (PR #6: 146 passed) |
 | C4 | Results page | C | D | C0 | 5:00 PM | review (PR #5) |
 | C5 | States + accessibility | C | D | C2–C4 | 5:30 PM | review (PR #5) |
 | D5 | Real-data deploy path (size/upload strategy) | D | C | A5 | 5:30 PM | doing (full DB 344 MB → make sync-data) |
 | C6 | Vitest suite (agreement, states, boundaries, banned words, VIN) | C | D | C2–C5 | 6:00 PM | review (PR #5: 61 Vitest) |
-| B7 | Development grid search within alert budget | B | A | B6 | 6:00 PM | doing (dev grid in Gate 1 report; c_min 5 / s_star 4.0 within budget) |
-| A7 | Tier-3 labels, development sample of 20 | A | — | B5 | 7:00 PM | todo |
-| B8 | Final matcher, misses list, hero rule, freeze PR | B | A | B7, A7 | 6:40 PM | todo |
+| B7 | Development grid search within alert budget | B | A | B6 | 6:00 PM | review (PR #2; grid keeps c_min 5 / s_star 4.0, no retune) |
+| A7 | Tier-3 labels, development sample of 20 | A | — | B5 | 7:00 PM | doing (16 candidate rows in review/candidates_dev.csv on b/method) |
+| B8 | Final matcher, misses list, hero rule, freeze PR | B | A | B7, A7 | 6:40 PM | review (PR #2 now carries the freeze content; config 0c26e23e0a3a) |
 | A8 | Tier-3 labels held-out sample; real-data redaction test | A | B | B9 | 8:30 PM | todo |
 | B9 | Held-out run, top-25 audit, `exports/demo/` | B | A | freeze-v1 | 8:30 PM | todo (export code in PR #2; no held-out run) |
 | C7 | Real API wiring, offline `/demo/` bundle, displayed=exported test | C | D | B9, A5 | 8:30 PM | review (PR #5; needs B9 exports) |
@@ -68,6 +68,10 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | 18:35 | Trial deploy d19a570 (local merge main+c/web+d/delivery, not pushed) fixture mode → http://64.177.53.230: /healthz git_sha ok; integration 11 passed/10 skipped; Playwright 2/2 (desktop, phone); outage check 0 FAIL 1 WARN (/demo not built) | D |
 | 18:40 | deploy fixes found by the trial: npm ci via cd (EUSAGE with --prefix), release chmod go+rX (Caddy 403), outage_check trap + HTML-fallback detection | D |
 | 18:45 | PR #2 head 461fccc not reviewed by A (last ok f53b396); B's later work on short-lived branch b/freeze | D |
+| 18:50 | B full 2014-2023 development run (PRELIMINARY, tiers 1-2, handoff 20261010-1825): early coverage 8.9% (23/257) = chance 8.9% (70/783); grid keeps defaults. Gate 1 reframe stands | B → D |
+| 18:50 | PR #2 head 454d8b3 (contains main 8ef4d3f; includes freeze content): D pre-check make test 270 passed, ownership 0 → merge on A's "Reviewed 454d8b3: ok". Delete b/freeze after merge | D |
+| 18:55 | `make test-real` runs one process per test folder (DuckDB config clash across folders, REQUEST B→A 1836); Gate 2/3 commands in EXECUTION_PLAN now `make test-real` + `make integration` | D |
+| 18:55 | Config hash will be 0c26e23e0a3a after PR #2: the deployed DB must be rebuilt (detect + match) with it, and again with the frozen config (A's note) | D |
 
 ## Gate log
 | Gate | Time | Main SHA | Result | Decision |
