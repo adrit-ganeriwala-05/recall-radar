@@ -74,7 +74,7 @@ at defaults or at some grid setting within the alert budget (development only).
 Check on D's integration checkout at the current main SHA: `make test && make serve`, then in
 a browser: real vehicle → vehicle page → issue with evidence → replay of a development episode
 → results (development, PRELIMINARY until freeze); data labels visible on every screen;
-`uv run pytest tests/integration -m real_data` green.
+`make integration` (RR_BASE_URL = the server under test) green.
 - Pipeline failure → owner of the broken link fixes; C keeps working on fixtures; Gate 2 may
   slip ≤ 45 min; if it does, all P1 is cancelled.
 - Presentation problems → logged for C; not blocking.
@@ -87,7 +87,7 @@ unless `freeze-v1` exists and its `config.yaml` hash equals the working config h
 
 ### Gate 3 — 9:00 PM · owner D · reviewers: A (method), B (data), C (UI agreement)
 Artifacts: `exports/demo/` committed; deployed URL serving main on real data; review records
-in PRs. Check: `make check` and `uv run pytest -m real_data` at the main SHA; C's agreement
+in PRs. Check: `make check` and `make test-real` (one process per test folder) at the main SHA; C's agreement
 test; D's `tests/integration/test_displayed_vs_exported.py` against the deployed URL.
 Pass: every P0 row in §6 green; both independent reviews recorded.
 - Pipeline failure → P1 cancelled; all four on P0 gaps until green.

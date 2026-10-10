@@ -11,8 +11,9 @@ SCOPE ?= full
 PERIOD ?= development
 
 .PHONY: help setup whoami contracts contracts-check fetch verify-snapshot ingest investigations \
-        detect match evaluate export gate1 pipeline lint test test-real check serve serve-fixture \
-        web-build e2e repro deploy
+        detect match evaluate tune export gate1 pipeline lint test test-real check claims serve \
+        serve-fixture web-build e2e e2e-install integration repro submission deploy vm-setup \
+        sync-data rollback outage-check
 
 help: ## list targets
 	@grep -E '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*## "}{printf "  %-16s %s\n",$$1,$$2}'
@@ -52,6 +53,9 @@ match: ## B: tier 1-2 matching (+ tier-3 labels from review/)
 evaluate: ## B: metrics for PERIOD=development|held_out (held_out refuses without freeze-v1)
 	$(PY) -m recall_radar.method.evaluate --config config.yaml --db "$(DB)" --period $(PERIOD) --scope $(SCOPE)
 
+tune: ## B: development-only threshold grid (SCOPE=gate1|full); writes exports/tuning_development*.csv
+	$(PY) -m recall_radar.method.tune --config config.yaml --db "$(DB)" --scope $(SCOPE)
+
 export: ## B: write exports/ and exports/demo/ from the evaluated DB
 	$(PY) -m recall_radar.method.export --config config.yaml --db "$(DB)"
 
@@ -71,13 +75,22 @@ pipeline: ## full run; held_out only if tag freeze-v1 exists
 lint: ## ruff
 	uv run ruff check .
 
-test: lint ## CI-equivalent: python tests (no real data), web tests, secrets check
+test: lint ## CI-equivalent: python tests (no real data), web tests, secrets + claims checks
 	uv run pytest
 	@if [ -f web/package-lock.json ]; then npm --prefix web run typecheck && npm --prefix web run test; fi
 	$(PY) scripts/check_secrets.py
+	$(MAKE) --no-print-directory claims
 
-test-real: ## tests that need the local snapshot (marker real_data)
-	uv run pytest -m real_data
+test-real: ## real_data tests (local snapshot), one process per folder; live-server tests: make integration
+	@# One process per folder: a DuckDB file opened with different settings by an earlier test in the
+	@# same process is refused (REQUEST B->A 20261010-1836). Exit 5 = no real_data tests in that folder.
+	@rc=0; for d in tests/data tests/method tests/api tests/ml; do \
+	  [ -d $$d ] || continue; echo "== real_data $$d"; uv run pytest -m real_data $$d; s=$$?; \
+	  [ $$s = 0 ] || [ $$s = 5 ] || rc=1; done; exit $$rc
+
+claims: ## D: banned words + placeholder grammar + no hand-typed numbers in submission/ and README
+	$(PY) scripts/check_claims.py
+	$(PY) scripts/fill_numbers.py --check
 
 check: contracts-check test ## everything CI runs, plus the ownership check for this branch
 	$(PY) scripts/check_ownership.py
@@ -95,8 +108,29 @@ serve-fixture: ## same server, but every endpoint returns contracts/fixtures/api
 e2e: ## D: Playwright smoke against BASE_URL (default local serve)
 	BASE_URL=$(or $(BASE_URL),http://127.0.0.1:$(RR_API_PORT)) npm --prefix web run e2e
 
+e2e-install: ## D: one-time Playwright Chromium download for make e2e
+	npm --prefix web exec -- playwright install chromium
+
+integration: ## D: live API conformance + displayed=exported vs RR_BASE_URL (RR_RELEASE=1 at gates)
+	RR_BASE_URL=$(or $(RR_BASE_URL),http://127.0.0.1:$(RR_API_PORT)) uv run pytest tests/integration -m real_data
+
 repro: ## B/D: clean-clone rerun of HEAD; compares exports with committed exports/demo
 	bash scripts/repro.sh
 
-deploy: ## D: release REF (default HEAD) to the VM; asks before running
-	bash deploy/deploy.sh $(or $(REF),HEAD)
+submission: ## D: fill placeholders in submission/*.md from exports/demo/results.csv -> submission/out/
+	$(PY) scripts/fill_numbers.py $(if $(CUT),--cut-unmeasured)
+
+deploy: ## D: release REF (default HEAD) to the VM, MODE=cached|fixture; asks before running
+	bash deploy/deploy.sh $(or $(REF),HEAD) --mode $(or $(MODE),cached)
+
+vm-setup: ## D: one-time VM preparation (Caddy, uv, user rr, systemd unit, ufw); asks first
+	bash deploy/vm_setup.sh
+
+sync-data: ## D: upload the DuckDB file (default $RR_DATA_DIR/recall_radar.duckdb) to the VM (D5, <= 500 MB); asks first
+	bash deploy/sync_data.sh "$(DB)"
+
+rollback: ## D: VM back to the previous release (or REF=<sha prefix>); asks first
+	bash deploy/rollback.sh $(REF)
+
+outage-check: ## D: VM serves every screen with outbound traffic blocked (RELEASE=1 at gates)
+	bash deploy/outage_check.sh $(if $(RELEASE),--release)
