@@ -1,0 +1,19 @@
+inv_system,complaint_system,why
+"SERVICE BRAKES, HYDRAULIC",SERVICE BRAKES,older NHTSA name for the same system
+"SERVICE BRAKES, AIR",SERVICE BRAKES,older NHTSA name for the same system
+"SERVICE BRAKES, ELECTRIC",SERVICE BRAKES,older NHTSA name for the same system
+SERVICE BRAKES,"SERVICE BRAKES, HYDRAULIC",older NHTSA name for the same system
+ENGINE AND ENGINE COOLING,ENGINE,older NHTSA name for the same system
+ENGINE,ENGINE AND ENGINE COOLING,older NHTSA name for the same system
+"FUEL SYSTEM, GASOLINE",FUEL/PROPULSION SYSTEM,older NHTSA name for the same system
+"FUEL SYSTEM, DIESEL",FUEL/PROPULSION SYSTEM,older NHTSA name for the same system
+"FUEL SYSTEM, OTHER",FUEL/PROPULSION SYSTEM,older NHTSA name for the same system
+FUEL/PROPULSION SYSTEM,"FUEL SYSTEM, GASOLINE",older NHTSA name for the same system
+FUEL/PROPULSION SYSTEM,"FUEL SYSTEM, DIESEL",older NHTSA name for the same system
+FUEL/PROPULSION SYSTEM,"FUEL SYSTEM, OTHER",older NHTSA name for the same system
+ELECTRONIC STABILITY CONTROL,ELECTRONIC STABILITY CONTROL (ESC),same system; complaints add the abbreviation
+VISIBILITY,VISIBILITY/WIPER,older NHTSA name for the same system
+VISIBILITY/WIPER,VISIBILITY,older NHTSA name for the same system
+FORWARD COLLISION AVOIDANCE,SERVICE BRAKES,automatic emergency braking complaints are often filed under service brakes
+INTERIOR LIGHTING,ELECTRICAL SYSTEM,lighting faults are often filed under the electrical system
+EXTERIOR LIGHTING,ELECTRICAL SYSTEM,lighting faults are often filed under the electrical system
