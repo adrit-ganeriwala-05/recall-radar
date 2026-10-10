@@ -34,7 +34,7 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - none
 
 ## Next (in order)
-1. On C's Windows machine: `git fetch origin && git switch c/web && git pull --ff-only` (local c/web 981ae41 fast-forwards; it had no uncommitted work). Read `docs/handoffs/20261010-1915-C-standin-takeover.md`.
+1. On C's Windows machine: `git fetch origin && git switch c/web && git pull --ff-only` (local c/web 981ae41 fast-forwards; it had no uncommitted work). Read `docs/handoffs/20261010-1915-C-to-C-standin-takeover.md`.
 2. C's background audit (workflow wf_b4213359-e12 on Windows) — compare its confirmed findings with 738e88a; fix what remains.
 3. After freeze-v1 + B9 (`exports/demo/` with hero on main): merge origin/main, `npm --prefix web run test` (agreement picks up the files), build, rerun D's smoke (`make e2e`; hero step then runs), handoff C→D.
 4. C8 on the deployed real-data build: `web/HALLWAY_TEST.md` with 2 non-team people.
