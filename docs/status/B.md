@@ -5,7 +5,7 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
 - Updated: 2026-10-10 15:10 ET
-- Branch / HEAD: b/method @ 02263ed (+ the commit that adds this file). **Local only: nothing pushed yet.**
+- Branch / HEAD: b/method, pushed to origin (first push 15:00 ET; code tip 0cc27a9, docs after it — check `git log`)
 - Last origin/main merged: none. origin/main is still the empty `init` commit 6b73005.
 - Contract version: 1.0.0
 - Snapshot id / config hash / availability basis: n/a / 59931d27c785 / DATEA (config default, A's Gate 1 decision pending)
