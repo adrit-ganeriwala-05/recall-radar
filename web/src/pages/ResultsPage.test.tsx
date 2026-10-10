@@ -96,7 +96,11 @@ describe("agreement: rendered results equal every results JSON we ship (fixtures
           expect(text).toContain(fmtNumber(kind, m.ci_low));
           expect(text).toContain(fmtNumber(kind, m.ci_high));
         }
-        if (m.numerator !== null && m.denominator !== null) expect(text).toContain(`${m.numerator} of ${m.denominator}`);
+        if (m.numerator !== null && m.denominator !== null) {
+          // thousands separators are display only; a rate reads "n over d", a share "n of d"
+          const word = kind === "rate" ? "over" : "of";
+          expect(text.replace(/,/g, "")).toContain(`${m.numerator} ${word} ${m.denominator}`);
+        }
       }
     }
   });

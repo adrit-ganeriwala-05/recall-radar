@@ -59,8 +59,12 @@ function qs(params: Record<string, string>): string {
 
 // ----------------------------------------------------------------------------- fixtures
 
-// Lazy: fixture JSON is split into its own chunks and loaded only in fixture mode.
-const FIXTURES = import.meta.glob("../../../contracts/fixtures/api/*.json", { import: "default" });
+// Lazy, and only in a fixture build: Vite replaces VITE_API_MODE at build time, so a live build drops
+// this branch and ships no synthetic fixture JSON at all.
+const FIXTURES: Record<string, () => Promise<unknown>> =
+  import.meta.env.VITE_API_MODE === "fixture"
+    ? import.meta.glob("../../../contracts/fixtures/api/*.json", { import: "default" })
+    : {};
 
 async function fixture<T>(name: string): Promise<T | undefined> {
   const key = Object.keys(FIXTURES).find((k) => k.endsWith(`/${name}`));

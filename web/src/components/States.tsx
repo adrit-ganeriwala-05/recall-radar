@@ -25,14 +25,18 @@ const HINT: Record<ErrorResponse["error"]["code"], string> = {
   internal: "Something went wrong on our side. Try again in a moment.",
 };
 
+/** Retrying helps only when the service is down or failed; not for a bad or unknown selection. */
+const RETRYABLE: ErrorResponse["error"]["code"][] = ["unavailable", "internal"];
+
 export function ErrorState({ error, retry }: { error: ErrorResponse; retry?: () => void }) {
+  const canRetry = retry && RETRYABLE.includes(error.error.code);
   return (
     <div className="state state-error" role="alert">
       <p>
         <strong>{error.error.message}</strong>
       </p>
       <p>{HINT[error.error.code]}</p>
-      {retry && (
+      {canRetry && (
         <button type="button" onClick={retry}>
           Try again
         </button>

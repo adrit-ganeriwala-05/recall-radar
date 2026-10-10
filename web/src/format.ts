@@ -121,7 +121,9 @@ export function metricCiText(m: Metric): string | null {
 
 export function metricFractionText(m: Metric): string | null {
   if (m.status !== "measured" || m.numerator === null || m.denominator === null) return null;
-  return `${m.numerator.toLocaleString("en-US")} of ${m.denominator.toLocaleString("en-US")}`;
+  // A rate (e.g. alert episodes per month) is "n over d months", not a share "n of d".
+  const word = METRICS[m.name].kind === "rate" ? "over" : "of";
+  return `${m.numerator.toLocaleString("en-US")} ${word} ${m.denominator.toLocaleString("en-US")}`;
 }
 
 export const STATUS_TEXT: Record<OutcomeStatus | "missed" | "excluded", string> = {
@@ -164,4 +166,46 @@ export function dateText(d: string): string {
 
 export function plural(n: number, one: string, many: string): string {
   return `${n.toLocaleString("en-US")} ${n === 1 ? one : many}`;
+}
+
+// ----------------------------------------------------------------------------- honest summary
+/**
+ * EXECUTION_PLAN §2, Gate 1 (set before any evaluation ran): coverage must beat chance by at least
+ * 10 percentage points. A decision rule, not a measured result; every number shown comes from the JSON.
+ */
+export const MARGIN_POINTS = 10;
+
+/**
+ * One plain statement of early-alert coverage against chance, built only from the two metrics.
+ * null when either metric is not measured (pending results say "Not yet measured" elsewhere).
+ */
+export function coverageVerdict(cov: Metric | undefined, chance: Metric | undefined): string | null {
+  if (!cov || !chance || cov.status !== "measured" || chance.status !== "measured") return null;
+  if (cov.value === null || chance.value === null) return null;
+  const head = `Early-alert coverage was ${fmtNumber("share", cov.value)}; chance coverage was ${fmtNumber("share", chance.value)}.`;
+  const diff = roundDecimal(Math.abs(cov.value - chance.value) * 100, 1);
+  const overlap =
+    cov.ci_low !== null && cov.ci_high !== null && chance.ci_low !== null && chance.ci_high !== null
+      ? cov.ci_low <= chance.ci_high && chance.ci_low <= cov.ci_high
+      : null;
+  const gap =
+    Number(diff) === 0
+      ? "That is the same as chance."
+      : `That is ${diff} percentage points ${cov.value > chance.value ? "above" : "below"} chance.`;
+  const margin = `The margin set before the evaluation was ${MARGIN_POINTS} points above chance`;
+  if ((cov.value - chance.value) * 100 < MARGIN_POINTS) {
+    return `${head} ${gap} ${margin}, so these results do not show that alerts came earlier for investigated vehicles than for comparable vehicles that were never investigated.`;
+  }
+  if (overlap) {
+    return `${head} ${gap} ${margin}, and it is met, but the two 95% intervals overlap, so the difference is uncertain.`;
+  }
+  return `${head} ${gap} ${margin}, and it is met. It compares the timing of alerts with chance and says nothing about any single vehicle.`;
+}
+
+/** Development results are PRELIMINARY until the thresholds are frozen (EXECUTION_PLAN §2, Gate 2). */
+export function periodNote(period: "development" | "held_out", freezeTag: string | null): string | null {
+  if (period === "held_out") return null;
+  return freezeTag
+    ? "Development period: these results were used to choose the detector settings. The held-out period is the test."
+    : "PRELIMINARY: development-period results. The detector settings are not frozen yet (freeze-v1); the held-out period is the test.";
 }

@@ -33,6 +33,11 @@ export default function SelectorPage() {
       </p>
       <section className="what-alert" aria-labelledby="what-alert-h">
         <h2 id="what-alert-h">What an alert means</h2>
+        <p data-testid="reframe">
+          Use Recall Radar to read a vehicle&apos;s full complaint history and to see what was public before each
+          NHTSA investigation. Whether alerts came earlier for investigated vehicles than for comparable ones is
+          measured against chance on the <Link to="/results">Results</Link> page.
+        </p>
         <p>
           An alert means complaints about one vehicle and one component grew much faster than that vehicle and
           component usually see. It means the pattern deserves a closer look. It is not a defect finding, not a recall
@@ -111,7 +116,7 @@ export default function SelectorPage() {
             Open replay {hero.data.episode_id}
           </Link>
           {hero.data.provenance.data_label === "synthetic_fixture" && (
-            <p className="small">Example uses synthetic test data.</p>
+            <p className="small">This example is built from made-up test records, not real complaints.</p>
           )}
         </aside>
       )}

@@ -10,10 +10,12 @@ import type { AuditRow, EvalCase, EvaluationSummary, Metric } from "../contracts
 import {
   HELD_OUT_NOT_RUN,
   METRICS,
+  coverageVerdict,
   dateText,
   metricCiText,
   metricFractionText,
   metricValueText,
+  periodNote,
   statusText,
   vehicleText,
 } from "../format";
@@ -185,6 +187,10 @@ export function Results({ data, source }: { data: EvaluationSummary; source?: So
     ...data.metrics.filter((m) => !FIRST.includes(m.name)),
   ];
   const csv = source ? resultsCsvUrl(data.period, source) : null;
+  const verdict = coverageVerdict(
+    data.metrics.find((m) => m.name === "early_coverage_all"),
+    data.metrics.find((m) => m.name === "chance_coverage"),
+  );
   const prov = data.provenance;
   const by = (s: EvalCase["status"]) => data.cases.filter((c) => c.status === s);
   const missed = by("missed");
@@ -200,6 +206,16 @@ export function Results({ data, source }: { data: EvaluationSummary; source?: So
       {data.period === "held_out" && allPending && (
         <p className="notice" data-testid="held-out-not-run">
           {HELD_OUT_NOT_RUN}
+        </p>
+      )}
+      {periodNote(data.period, data.freeze_tag) && (
+        <p className="notice" data-testid="period-note">
+          {periodNote(data.period, data.freeze_tag)}
+        </p>
+      )}
+      {verdict && (
+        <p className="verdict" data-testid="coverage-verdict">
+          {verdict}
         </p>
       )}
       <p className="small" data-testid="run-info">
