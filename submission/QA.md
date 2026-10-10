@@ -10,14 +10,16 @@ investigation opening dates afterwards; we never label a vehicle.
 **Did you beat NHTSA?** We make no such claim. NHTSA staff use data we don't have (manufacturer
 reports, field data). We only compare with the public opening date.
 
-**How do you avoid using future data?** Each complaint has an "added to file" date; at every
-replay cutoff the detector sees only complaints added before it. Investigation and recall tables
+**How do you avoid using future data?** Each complaint counts as public seven days after NHTSA
+received it; at every replay cutoff the detector sees only complaints public before it. Investigation and recall tables
 are never read by detector code (a test drops them and checks the output is identical). A
 property test adds future complaints and checks no earlier score changes.
 
-**Isn't the "added to file" date itself rewritten later?** Partly; current files reflect later
-corrections. The UI says the replay uses today's records and labels. If those dates were
-unreliable, we would have switched to the received date plus seven days and labeled it.
+**Why not the "added to file" date?** In today's files it equals the received date for almost
+all complaints, so it looks rewritten and cannot show when a record became public. We decided at
+our first checkpoint to use the received date plus seven days instead, and every screen labels the
+replay a "received-date experiment". Current files also reflect later corrections; the UI says
+the replay uses today's records and labels.
 
 **How good is it?** On the held-out year, with thresholds frozen first: early alerts for
 [held_out.early_coverage_all] of eligible investigations (95-percent interval
