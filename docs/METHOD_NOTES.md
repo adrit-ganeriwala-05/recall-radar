@@ -127,8 +127,22 @@ Wilson check (`test_evaluation.py`): 8 of 20 with z = 1.959964 → centre
   reported before the alert still sets the flag. Their file-wide count is quoted in the note
   of `excluded_families`; they are not cases.
 - `family_id` may be `F-<action>` or `F-<action>~<SYSTEM>`; the code treats it as an opaque key.
-- Tier 2 (year ±1, mapped system, shared keyword) and tier 3 (A's labels) are not implemented
-  yet. Until they are, results say "tier 1 only".
+- **Tier 2** (added 2026-10-10 17:30, after the first Gate 1 run and before any freeze): same make
+  and model; model year within `matching.tier2_model_year_slack` of a year the family names;
+  the episode's system equal to the family's or paired with it in `review/system_map.csv`; and
+  at least one keyword of `review/keywords.txt` found in the family's SUBJECT/SUMMARY text **and**
+  in at least max(2, 20%) of the episode's evidence complaints. A pair that is tier 1 is never
+  tier 2. Confidence `medium`; the basis sentence lists the shared keywords.
+  - The system map holds old and new NHTSA names for the same system (investigations still use
+    names such as "SERVICE BRAKES, HYDRAULIC" where recent complaints say "SERVICE BRAKES"), plus
+    three cross-filings that the keyword test then has to confirm. It was written from the
+    2016–2019 families only.
+  - Keywords are parts and symptoms taken from investigation subjects opened 2014–2019. Bare
+    system names are left out so the keyword test is not automatic. A keyword matches a word
+    that starts with it.
+- Within an episode the outcome is still the nearest opening (ties: tier 1 first). Within a
+  family the best pair is picked by status, then tier 1 before tier 2, then lead.
+- Tier 3 (A's manual labels) is not implemented. `early_coverage_sample` stays `pending`.
 
 ## 6. Evaluation (`evaluate.py`)
 - **Cases** = families whose `odate_min` falls in the period (`gate1` scope: the
@@ -148,7 +162,10 @@ Wilson check (`test_evaluation.py`): 8 of 20 with z = 1.959964 → centre
   for that make + model opened within ±`control_no_investigation_years` of the case's opening
   date; complaint volume in the 24 complete months before the opening month within
   ±`control_volume_tolerance` of the case's. One candidate per make + model (closest volume,
-  then smallest shift). Up to `controls_per_case` are drawn with
+  then smallest shift). When tier 2 is in use, a case's volume, a control's volume, the
+  "no investigation" test and a control's alerts all use the same paired system names, and a
+  control's alerts may be within the same model-year slack; a control is not asked for a
+  keyword, so it is held to the looser test. Up to `controls_per_case` are drawn with
   `random.Random(f"{seed}|{family_id}")` from the sorted candidates. A control is "covered" by
   the same rule as a case, using the case's opening date. Chance coverage = covered controls /
   controls. The control unit mirrors the case unit (same number of model years), so a
@@ -207,5 +224,5 @@ rule is the `hero_rule` text of `config.yaml` and `rule_commit` is the tagged co
 ## 11. Open items
 - Gate 1 (bounded data, tier 1, development only): the method did not reach the required margin
   over chance. Numbers and verdict: `docs/handoffs/20261010-1655-B-to-D-gate1.md`.
-- Tier 2 and tier 3 matching are not implemented (§5).
+- Tier 3 matching is not implemented (§5). Gate 1 re-run with tier 2: `docs/handoffs/20261010-1740-B-to-D-gate1-tier2.md`.
 - Full 2014–2023 run, freeze, held-out run and export wait for A4 and for PR #2 / PR #4 on main.

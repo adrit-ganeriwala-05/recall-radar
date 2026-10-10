@@ -4,12 +4,12 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 17:00 ET
+- Updated: 2026-10-10 17:45 ET
 - Branch / HEAD: b/method, pushed to origin (first push 15:00 ET; code tip 0cc27a9, docs after it — check `git log`)
-- Last origin/main merged: 61c0c8c (D0 bootstrap bundle), merged 15:28 ET; the only conflict was this file (add/add), kept B's version
+- Last origin/main merged: 5dca3a3 (PR #4: A's data code; tag contract-v1), merged 17:25 ET, no conflicts
 - Contract version: 1.0.0
 - Snapshot id / config hash / availability basis: e808281f001a / 419a39bbf60b / LDATE_PLUS_7 (A's Gate 1 decision, set in config.yaml at ba806ed)
-- Mode: waiting(A's re-review of PR #2 at the new head; D's merges of PR #2 and PR #4; A4 full ingest — since 17:00)
+- Mode: waiting(A's review of PR #2 at the new head; D's merge; A4 full ingest — since 17:45)
 
 ## Done (task id → commit → evidence)
 - B1 → fe38661 → `tests/fixtures/method/*.csv` + hand calculations in `docs/METHOD_NOTES.md` §4
@@ -30,15 +30,18 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - **Gate 1 run (B4, B5, grid) at ba806ed → data PASS, method FAIL.** `make detect match evaluate SCOPE=gate1` + `python -m recall_radar.method.tune --scope gate1` → exit 0, log `logs/gate1_method.log`, outputs `exports/results_development_gate1.json`, `exports/tuning_development_gate1.csv` (gitignored). Report: `docs/handoffs/20261010-1655-B-to-D-gate1.md`.
 - Re-review of A's PR #4 at 2f7ca0a → posted on the PR (see PR for the verdict line).
 
+- B7 tier 2 → c42a397 → `uv run pytest tests/method/test_tier2.py` → all pass; full suite after merging main: `make test` → 215 passed, 3 deselected.
+- Gate 1 re-run in B's own checkout at 4c4a4b8 (contains main 5dca3a3): `RR_RAW_DIR=~/rr-raw make verify-snapshot && make gate1` + tune module → exit 0, log `logs/gate1_main.log`. **Still data PASS, method FAIL** with tiers 1–2. Report: `docs/handoffs/20261010-1740-B-to-D-gate1-tier2.md`.
+- Human decision 17:15 (Saketh): go ahead with the reframe (transparency tool + honest result); B to build the system-name map before freeze. Done.
+
 ## In progress
 - none
 
 ## Next (in order)
-1. After D merges PR #2 and PR #4: merge origin/main, re-run `make gate1` at that main SHA (EXECUTION_PLAN §2 wants a main SHA) and confirm the report's numbers.
-2. A4 handoff (full 2014–2023, built with LDATE_PLUS_7): `make ingest investigations detect match SCOPE=full`, `make evaluate PERIOD=development`, grid on full data (B7), real-data B6.
-3. Tier 2 (`review/system_map.csv`, `review/keywords.txt`) if time allows before 6:00 PM; else freeze with tier 1 and say so.
-4. B8 freeze PR (config, eligibility, matching, hero rule) → A review → tag `freeze-v1`; B9 held-out + `exports/demo/`; B10 repro.
-5. 8:30 PM review of A's API: evidence list must leave out `dup_text` rows; re-run the redaction probes.
+1. A4 handoff (full 2014–2023 ingest with LDATE_PLUS_7): `RR_RAW_DIR=~/rr-raw make ingest investigations detect match SCOPE=full`, `make evaluate PERIOD=development`, grid on full data, `uv run pytest -m real_data tests/method`.
+2. B8 freeze PR by 6:40 PM (config, eligibility, matching rules, review files, hero rule) → A "Reviewed <sha7>: ok" → D merges → tag `freeze-v1` on that main commit (asks the human) at 7:00 PM.
+3. B9: `make pipeline` (held-out once), top-25 audit, `make export`, commit `exports/demo/` only; hand off to A (API), C, D.
+4. 8:30 PM review of A's API: evidence list must leave out `dup_text` rows; re-run the redaction probes. B10 repro after 1:00 AM.
 
 ## Last passing commands (exact)
 - `uv run pytest` → 127 passed, 1 deselected (the deselected one is the real_data test) at the tip after A's review changes @ 02263ed
