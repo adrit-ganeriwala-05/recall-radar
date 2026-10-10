@@ -74,6 +74,8 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | 18:55 | Config hash will be 0c26e23e0a3a after PR #2: the deployed DB must be rebuilt (detect + match) with it, and again with the frozen config (A's note) | D |
 | 18:57 | A "Reviewed 454d8b3: ok" → D merged PR #2 → main c70db51 (tree = reviewed head; make test 270 passed; config 0c26e23e0a3a). Deleted b/freeze and d/bootstrap (both fully contained in main) | D |
 | 19:20 | D "Reviewed 22e781a: ok" (C's stand-in delta: Gate 1 reframe copy, fixture-free live build) → merged PR #5 → main a775d09. main lacks deploy/ until PR #3 merges: the real-data deploy needs #3 first; C (stand-in until 22:30) to review #3 | D |
+| 19:40 | C stand-in "Reviewed e69d362: ok" → D merged PR #3 → main f4eac57 (deploy/ on main). Deployed main f4eac57 (fixture) to http://64.177.53.230: integration 11 passed/10 skipped, Playwright 2/2, outage check 0 FAIL (1 WARN: no /demo until B9) | D |
+| 19:55 | Review follow-ups 1–2 (PR #3): submission copy now says LDATE_PLUS_7 (not "added to file"); `[verdict.<period>]` fills the results page's chance sentence; coverage shown with one decimal like the UI. PR to C | D |
 
 ## Gate log
 | Gate | Time | Main SHA | Result | Decision |

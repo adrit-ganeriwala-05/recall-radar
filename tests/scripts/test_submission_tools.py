@@ -58,7 +58,7 @@ def test_fills_measured_numbers_with_default_formats(tmp_path: Path, csv_path: P
         "[development.episodes_per_month] per month; [held_out.top25_matched:pct].\n",
     )
     assert code == 0
-    assert out == "Coverage 33% (95% CI 6%-79%), 1 of 3; median 167 days; 12.3 per month; 20%.\n"
+    assert out == "Coverage 33.3% (95% CI 6.2%-79.2%), 1 of 3; median 167 days; 12.3 per month; 20%.\n"
 
 
 def test_pending_metric_is_never_filled(tmp_path: Path, csv_path: Path) -> None:
@@ -77,6 +77,38 @@ def test_fractional_value_needs_an_explicit_format(tmp_path: Path, csv_path: Pat
     assert code == 1  # 0.2 must not silently become "0"
 
 
+VERDICT_ROWS = [  # synthetic; expected sentences worked out by hand from the rule in web/src/format.ts
+    "development,early_coverage_all,measured,0.089,0.06,0.13,23,257,synthetic_fixture-dev,c,g,s",
+    "development,chance_coverage,measured,0.089,0.07,0.11,,,synthetic_fixture-dev,c,g,s",
+    "held_out,early_coverage_all,measured,0.40,0.25,0.57,10,25,synthetic_fixture-ho,c,g,s",
+    "held_out,chance_coverage,measured,0.25,0.18,0.33,,,synthetic_fixture-ho,c,g,s",
+]
+
+
+@pytest.mark.parametrize(
+    "period,expected",
+    [
+        ("development", "Early-alert coverage was 8.9%; chance coverage was 8.9%. That is the same as "
+         "chance. The margin set before the evaluation was 10 points above chance, so these results do "
+         "not show that alerts came earlier for investigated vehicles than for comparable vehicles that "
+         "were never investigated."),
+        ("held_out", "Early-alert coverage was 40.0%; chance coverage was 25.0%. That is 15.0 percentage "
+         "points above chance. The margin set before the evaluation was 10 points above chance, and it "
+         "is met, but the two 95% intervals overlap, so the difference is uncertain."),
+    ],
+)
+def test_verdict_matches_the_results_page_rule(tmp_path: Path, period: str, expected: str) -> None:
+    p = tmp_path / "results.csv"
+    p.write_text(HEADER + "\n".join(VERDICT_ROWS) + "\n")
+    code, out = run_fill(tmp_path, p, f"[verdict.{period}]\n")
+    assert code == 0 and out == expected + "\n"
+
+
+def test_verdict_is_cut_when_chance_is_not_measured(tmp_path: Path, csv_path: Path) -> None:
+    code, out = run_fill(tmp_path, csv_path, "a\n[verdict.held_out]\nb\n", "--cut-unmeasured")
+    assert code == 0 and out == "a\nb\n"
+
+
 @pytest.mark.parametrize(
     "line",
     [
@@ -85,6 +117,7 @@ def test_fractional_value_needs_an_explicit_format(tmp_path: Path, csv_path: Pat
         "Median lead time 0.5 years.",  # typed decimal
         "[held_out.early_coverage]",  # unknown metric
         "[early_coverage_all]",  # placeholder without a period
+        "[verdict.heldout]",  # verdict for an unknown period
     ],
 )
 def test_check_rejects_hand_typed_numbers_and_bad_placeholders(tmp_path: Path, line: str) -> None:
@@ -97,6 +130,7 @@ def test_check_accepts_placeholders_and_method_facts(tmp_path: Path) -> None:
     src = tmp_path / "DEVPOST.md"
     src.write_text(
         "Early coverage [held_out.early_coverage_all] vs chance [held_out.chance_coverage].\n"
+        "[verdict.held_out]\n"
         "Data 2014-2023, excerpts up to 400 characters, a [link](https://www.nhtsa.gov/recalls).\n"
     )
     assert fill.main([str(src), "--check"]) == 0

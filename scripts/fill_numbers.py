@@ -6,9 +6,12 @@ Placeholder grammar:  [<period>.<metric>(.<field>)(:<fmt>)]
   metric  a Metric name from recall_radar/contracts.py
   field   value (default) | ci_low | ci_high | numerator | denominator
   fmt     pct (whole percent) | pct1 | int | num1 | num2
-          default: pct for coverage/share metrics, int for counts and days (fails if the value
-          is not a whole number), num1 otherwise; numerator/denominator are always int
-Examples: [held_out.early_coverage_all] -> "40%"   [held_out.early_coverage_all.denominator] -> "25"
+          default: pct1 for coverage/share metrics (one decimal, as the results page shows them),
+          int for counts and days (fails if the value is not a whole number), num1 otherwise;
+          numerator/denominator are always int
+Examples: [held_out.early_coverage_all] -> "40.0%"   [held_out.early_coverage_all.denominator] -> "25"
+Verdict:  [verdict.<period>] -> the sentence the results page shows for that period (web/src/format.ts
+          coverageVerdict: coverage vs chance, the margin set before evaluation, interval overlap)
 Usage:
   uv run python scripts/fill_numbers.py                  fill into submission/out/; exit 1 on any
                                                          placeholder that is unknown or not measured
@@ -44,6 +47,8 @@ INT_METRICS = {
 }
 PLACEHOLDER = re.compile(r"\[([a-z_]+)\.([a-z0-9_]+)(?:\.([a-z_]+))?(?::([a-z0-9]+))?\]")
 SUSPECT = re.compile(r"\[[a-z0-9_.:]*[_.][a-z0-9_.:]*\](?!\()")  # anything placeholder-like
+VERDICT = re.compile(r"\[verdict\.([a-z_]+)\]")
+MARGIN_POINTS = Decimal(10)  # = MARGIN_POINTS in web/src/format.ts; set before the evaluation
 TYPED_NUMBER = re.compile(r"\d+(?:\.\d+)?\s?%|\b\d+\s+(?:of|out of)\s+\d+\b|\b\d+\.\d+\b")
 OPT_OUT = "<!-- numbers-ok -->"
 
@@ -74,7 +79,7 @@ def fmt_number(raw: str, name: str, field: str, fmt: str | None, token: str) -> 
         if field in ("numerator", "denominator"):
             fmt = "int"
         elif name in PCT_METRICS:
-            fmt = "pct"
+            fmt = "pct1"
         elif name in INT_METRICS:
             if x != x.to_integral_value():
                 raise Unfilled(f"{token}: value {raw} is not a whole number; add :pct, :num1 or :num2")
@@ -87,12 +92,51 @@ def fmt_number(raw: str, name: str, field: str, fmt: str | None, token: str) -> 
     return str(x.quantize(q, ROUND_HALF_UP))
 
 
+def share(raw: str) -> str:
+    return fmt_number(raw, "early_coverage_all", "value", "pct1", raw)
+
+
+def verdict(period: str, rows: dict[tuple[str, str], dict[str, str]]) -> tuple[str, str]:
+    """Same sentence and rule as coverageVerdict in web/src/format.ts."""
+    if period not in PERIODS:
+        raise Unfilled(f"[verdict.{period}]: period must be development or held_out")
+    got = {}
+    for name in ("early_coverage_all", "chance_coverage"):
+        row = rows.get((period, name))
+        if row is None or row["status"] != "measured" or row["value"] == "":
+            raise Unfilled(f"[verdict.{period}]: {period}.{name} is not measured")
+        got[name] = row
+    cov, chance = got["early_coverage_all"], got["chance_coverage"]
+    c, k = Decimal(cov["value"]), Decimal(chance["value"])
+    head = f"Early-alert coverage was {share(cov['value'])}; chance coverage was {share(chance['value'])}."
+    diff = (abs(c - k) * 100).quantize(Decimal("0.1"), ROUND_HALF_UP)
+    gap = (
+        "That is the same as chance."
+        if diff == 0
+        else f"That is {diff} percentage points {'above' if c > k else 'below'} chance."
+    )
+    margin = f"The margin set before the evaluation was {MARGIN_POINTS} points above chance"
+    cis = [cov["ci_low"], cov["ci_high"], chance["ci_low"], chance["ci_high"]]
+    overlap = all(cis) and Decimal(cis[0]) <= Decimal(cis[3]) and Decimal(cis[2]) <= Decimal(cis[1])
+    if (c - k) * 100 < MARGIN_POINTS:
+        text = (f"{head} {gap} {margin}, so these results do not show that alerts came earlier for "
+                "investigated vehicles than for comparable vehicles that were never investigated.")
+    elif overlap:
+        text = f"{head} {gap} {margin}, and it is met, but the two 95% intervals overlap, so the difference is uncertain."
+    else:
+        text = (f"{head} {gap} {margin}, and it is met. It compares the timing of alerts with chance "
+                "and says nothing about any single vehicle.")
+    return text, f"verdict.{period} from {cov['value']} vs {chance['value']} run_id={cov['run_id']}"
+
+
 def load_rows(csv_path: Path) -> dict[tuple[str, str], dict[str, str]]:
     with csv_path.open(newline="") as fh:
         return {(r["period"], r["name"]): r for r in csv.DictReader(fh)}
 
 
 def fill_token(token: str, rows: dict[tuple[str, str], dict[str, str]]) -> tuple[str, str]:
+    if m := VERDICT.fullmatch(token):
+        return verdict(m.group(1), rows)
     period, name, field, fmt = parse(token)
     row = rows.get((period, name))
     if row is None:
@@ -133,6 +177,8 @@ def check_template(text: str, where: str) -> list[str]:
     problems = []
     for no, line in enumerate(text.splitlines(), 1):
         for m in SUSPECT.finditer(line):
+            if (v := VERDICT.fullmatch(m.group(0))) and v.group(1) in PERIODS:
+                continue
             try:
                 parse(m.group(0))
             except Unfilled as e:
