@@ -193,7 +193,9 @@ export function coverageVerdict(cov: Metric | undefined, chance: Metric | undefi
       ? "That is the same as chance."
       : `That is ${diff} percentage points ${cov.value > chance.value ? "above" : "below"} chance.`;
   const margin = `The margin set before the evaluation was ${MARGIN_POINTS} points above chance`;
-  if ((cov.value - chance.value) * 100 < MARGIN_POINTS) {
+  // Exports carry 6 decimals; rounding the gap there drops binary noise ((0.3 - 0.2) * 100 is
+  // 9.999999999999998), so the comparison agrees with the Decimal one in scripts/fill_numbers.py.
+  if (Number(roundDecimal((cov.value - chance.value) * 100, 6)) < MARGIN_POINTS) {
     return `${head} ${gap} ${margin}, so these results do not show that alerts came earlier for investigated vehicles than for comparable vehicles that were never investigated.`;
   }
   if (overlap) {

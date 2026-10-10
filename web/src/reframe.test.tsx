@@ -49,6 +49,20 @@ describe("coverage verdict", () => {
     expect(v).toContain("do not show");
   });
 
+  it("a gap of exactly 10 points meets the margin, as scripts/fill_numbers.py says", () => {
+    // 30.0% - 20.0% = 10.0 points: not below the margin. In binary floats (0.3 - 0.2) * 100 is
+    // 9.999999999999998, which must not turn the verdict around. CIs 20-41% and 15-25% overlap.
+    const v = coverageVerdict(
+      metric("early_coverage_all", 0.3, 30, 100, 0.2, 0.41),
+      metric("chance_coverage", 0.2, 20, 100, 0.15, 0.25),
+    );
+    expect(v).toBe(
+      "Early-alert coverage was 30.0%; chance coverage was 20.0%. That is 10.0 percentage points above chance. " +
+        "The margin set before the evaluation was 10 points above chance, and it is met, but the two 95% intervals " +
+        "overlap, so the difference is uncertain.",
+    );
+  });
+
   it("is absent while either metric is pending (held-out fixture)", () => {
     const ho = resultsFixture("held_out");
     const get = (n: string) => ho.metrics.find((m) => m.name === n);
