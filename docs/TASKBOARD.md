@@ -8,35 +8,35 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | D0 | Bootstrap main, CI green, task board, `contract-v1` tag | D | C | bundle | 2:15 PM | done@5dca3a3 (contract-v1 tag 16:2x; main CI green) |
 | A0 | Source check + `snapshots/SNAPSHOT.lock.json` + `make verify-snapshot` | A | B | downloads | 2:30 PM | done@5dca3a3 (PR #4) |
 | B0 | Review `config.yaml`, `method/config.py`, CONTRACTS §3–5 | B | A | D0 | 2:15 PM | done@d5efab0 (A replied e7ff01c; B ACK 4ed08e1) |
-| C0 | Web scaffold, generated types, fixture client, routes, synthetic banner | C | D | D0 | 2:30 PM | review (PR #5 @ 981ae41, Reviewed by D) |
+| C0 | Web scaffold, generated types, fixture client, routes, synthetic banner | C | D | D0 | 2:30 PM | done@a775d09 (PR #5) |
 | A1 | Parse + filter + normalize + drop personal fields (bounded) | A | B | A0 | 2:45 PM | done@5dca3a3 (PR #4) |
 | A2 | Dedup, availability, dup_text, redaction, `ingest_report`, complaint tables | A | B | A1 | 2:55 PM PR | done@5dca3a3 (PR #4, redaction fix c015403) |
 | B1 | Hand-calculated method fixtures | B | A | B0 | 2:40 PM | done@c70db51 (PR #2) |
 | B2 | Groups, monthly counts, Poisson score, alerts, episodes, cooldown, explanation | B | A | B1 | 2:55 PM PR | done@c70db51 (PR #2) |
 | D1 | Track/rules/judging/video-length answers → SOURCES.md | D | C | — | 3:30 PM | doing (facts in SOURCES.md 15:30; track/video/Zero Data need humans) |
 | D2 | VM + Caddy + systemd + deploy/rollback scripts; fixture build live | D | C | C0, human VM | 3:30 PM | done (trial d19a570 fixture live at http://64.177.53.230; /healthz SHA ok; e2e 2/2; outage 0 FAIL) |
-| C1 | Landing + make→model→year selector | C | D | C0 | 2:45 PM | review (PR #5) |
-| C2 | Vehicle page + issue/evidence page | C | D | C1 | 3:30 PM | review (PR #5) |
+| C1 | Landing + make→model→year selector | C | D | C0 | 2:45 PM | done@a775d09 (PR #5) |
+| C2 | Vehicle page + issue/evidence page | C | D | C1 | 3:30 PM | done@a775d09 (PR #5) |
 | A3 | INV/RCL parse, families, recall campaigns, prefix check, DATEA lag | A | B | A2 | 3:25 PM | done@5dca3a3 (PR #4; availability LDATE_PLUS_7) |
 | B4 | Tier-1 matching + OutcomeMatch statuses | B | A | A3, B2 | 3:25 PM | done@c70db51 (PR #2) |
 | B5 | Dev evaluation: eligibility, coverage, Wilson CI, chance controls; Gate 1 report | B | A, D | B4 | 3:30 PM | done@c70db51 (PR #2) |
-| C3 | Replay screen | C | D | C2 | 4:30 PM | review (PR #5) |
+| C3 | Replay screen | C | D | C2 | 4:30 PM | done@a775d09 (PR #5) |
 | D3 | Integration tests + Playwright smoke | D | C | A5 (live), C0 | 4:30 PM | doing (smoke passes on C's real build 981ae41, fixture + cached; live API tests wait on A5) |
 | A4 | Full ingest 2014–2023 | A | B | Gate 1 | 4:30 PM | done@8ef4d3f (PR #6; DB 344 MB) |
 | B3 | Replay engine (as-of frames, outcome markers) | B | A | B2 | 4:30 PM | done@c70db51 (PR #2) |
 | B6 | Temporal invariance + isolation tests; full-data run | B | A | A4, B3 | 5:30 PM | done@c70db51 (PR #2; full-data dev run) |
 | A5 | FastAPI: all endpoints, fixture mode, static mount, errors | A | B (+C ack) | A4, contract-v1 | 5:30 PM | done@8ef4d3f (PR #6, Reviewed fdcb05c by B) |
 | A6 | API tests incl. timing | A | B | A5 | 5:30 PM | done@8ef4d3f (PR #6: 146 passed) |
-| C4 | Results page | C | D | C0 | 5:00 PM | review (PR #5) |
-| C5 | States + accessibility | C | D | C2–C4 | 5:30 PM | review (PR #5) |
+| C4 | Results page | C | D | C0 | 5:00 PM | done@a775d09 (PR #5) |
+| C5 | States + accessibility | C | D | C2–C4 | 5:30 PM | done@a775d09 (PR #5) |
 | D5 | Real-data deploy path (size/upload strategy) | D | C | A5 | 5:30 PM | doing (full DB 344 MB → make sync-data) |
-| C6 | Vitest suite (agreement, states, boundaries, banned words, VIN) | C | D | C2–C5 | 6:00 PM | review (PR #5: 61 Vitest) |
+| C6 | Vitest suite (agreement, states, boundaries, banned words, VIN) | C | D | C2–C5 | 6:00 PM | done@a775d09 (PR #5) |
 | B7 | Development grid search within alert budget | B | A | B6 | 6:00 PM | done@c70db51 (PR #2; defaults kept) |
 | A7 | Tier-3 labels, development sample of 20 | A | — | B5 | 7:00 PM | doing (16 candidate rows in review/candidates_dev.csv on b/method) |
 | B8 | Final matcher, misses list, hero rule, freeze PR | B | A | B7, A7 | 6:40 PM | review (freeze content in main c70db51; tag freeze-v1 next, human approves push) |
 | A8 | Tier-3 labels held-out sample; real-data redaction test | A | B | B9 | 8:30 PM | todo |
 | B9 | Held-out run, top-25 audit, `exports/demo/` | B | A | freeze-v1 | 8:30 PM | todo (export code in PR #2; no held-out run) |
-| C7 | Real API wiring, offline `/demo/` bundle, displayed=exported test | C | D | B9, A5 | 8:30 PM | review (PR #5; needs B9 exports) |
+| C7 | Real API wiring, offline `/demo/` bundle, displayed=exported test | C | D | B9, A5 | 8:30 PM | review (in main a775d09; real exports/demo agreement after B9) |
 | D6 | Deploy main on real data; outage check; e2e on URL | D | C | B9, C7 | 8:30 PM | todo |
 | D7 | `submission/` DEVPOST, PITCH, VIDEO_SHOTLIST, QA (numbers from CSV only) | D | C | B9 | 10:00 PM | doing (drafts + fill/claims guards @ 3670062; numbers wait on B9) |
 | D8 | P1-2 evidence-grounded summaries (stretch, 90 min) | D | C | Gate 3 pass | 11:30 PM | cut (Gate 2 slipped past 6:45 → all P1 cancelled, EXECUTION_PLAN §2) |
@@ -73,6 +73,7 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | 18:55 | `make test-real` runs one process per test folder (DuckDB config clash across folders, REQUEST B→A 1836); Gate 2/3 commands in EXECUTION_PLAN now `make test-real` + `make integration` | D |
 | 18:55 | Config hash will be 0c26e23e0a3a after PR #2: the deployed DB must be rebuilt (detect + match) with it, and again with the frozen config (A's note) | D |
 | 18:57 | A "Reviewed 454d8b3: ok" → D merged PR #2 → main c70db51 (tree = reviewed head; make test 270 passed; config 0c26e23e0a3a). Deleted b/freeze and d/bootstrap (both fully contained in main) | D |
+| 19:20 | D "Reviewed 22e781a: ok" (C's stand-in delta: Gate 1 reframe copy, fixture-free live build) → merged PR #5 → main a775d09. main lacks deploy/ until PR #3 merges: the real-data deploy needs #3 first; C (stand-in until 22:30) to review #3 | D |
 
 ## Gate log
 | Gate | Time | Main SHA | Result | Decision |
