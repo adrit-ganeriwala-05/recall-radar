@@ -183,7 +183,9 @@ def _empty(cols: list[str]) -> pd.DataFrame:
 def detect(rows: pd.DataFrame, cutoff: date, p: DetectorParams, config_hash: str) -> DetectorOutput:
     """Run the detector on `complaint_system` rows as of the start of day `cutoff`.
 
-    Only rows with avail_date < cutoff are used (CONTRACTS §3.1). Months are scored from each
+    Only rows with avail_date < cutoff are used (CONTRACTS §3.1), and rows flagged `dup_text`
+    are not counted (the first complaint of a repeated burst is unflagged and counts once).
+    Months are scored from each
     group's first complaint month to the last complete month. `detector_score.alert` is true
     for months that belong to an episode (threshold crossings suppressed by the cooldown are
     false). A month that is incomplete at the cutoff appears in `group_month` only.
@@ -205,6 +207,15 @@ def detect(rows: pd.DataFrame, cutoff: date, p: DetectorParams, config_hash: str
     rows = rows.sort_values([*GROUP_COLS, "odino", "avail_date"], kind="stable")
     rows = rows.drop_duplicates([*GROUP_COLS, "odino"])
     rows["mi"] = rows["avail_date"].dt.year * 12 + rows["avail_date"].dt.month - 1
+    # PROJECT_SPEC §4: a probable repeat submission counts once. A flags only the later
+    # complaints of a burst (the first is never flagged), so the flagged rows are not counted.
+    repeats = rows[rows["dup_text"]]
+    rows = rows[~rows["dup_text"]]
+    if rows.empty:
+        return DetectorOutput(
+            _empty(VEHICLE_GROUP_COLS), _empty(GROUP_MONTH_COLS), _empty(DETECTOR_SCORE_COLS),
+            _empty(ALERT_EPISODE_COLS), cutoff,
+        )  # fmt: skip
 
     groups = rows[GROUP_COLS].drop_duplicates().sort_values(GROUP_COLS, kind="stable").reset_index(drop=True)
     groups["group_id"] = [group_id(*t) for t in groups.itertuples(index=False, name=None)]
@@ -267,6 +278,8 @@ def detect(rows: pd.DataFrame, cutoff: date, p: DetectorParams, config_hash: str
     if found:
         ep_groups = {g for g, _, _ in found}
         by_group = {g: df for g, df in rows[rows["g"].isin(ep_groups)].groupby("g")}
+        repeats = repeats.merge(groups[[*GROUP_COLS, "g"]], on=GROUP_COLS, how="inner")
+        repeats_by_group = {g: df["mi"].to_numpy() for g, df in repeats[repeats["g"].isin(ep_groups)].groupby("g")}
         for g, i0, i1 in found:
             start_mi = int(mi_flat[i0])
             ev = by_group[g]
@@ -275,6 +288,8 @@ def detect(rows: pd.DataFrame, cutoff: date, p: DetectorParams, config_hash: str
             if len(ev) != c0:
                 raise RuntimeError(f"evidence count {len(ev)} != window count {c0} for {gid[g]}")
             lam0, ratio0 = float(s["baseline_lambda"][i0]), float(s["ratio"][i0])
+            rep = repeats_by_group.get(g, np.array([], dtype=np.int64))
+            n_repeats = int(((rep > start_mi - p.window_months) & (rep <= start_mi)).sum())
             grp = groups.iloc[g]
             episode_rows.append(
                 {
@@ -294,7 +309,8 @@ def detect(rows: pd.DataFrame, cutoff: date, p: DetectorParams, config_hash: str
                     "severity_share": float(ev["severe"].mean()),
                     "evidence_n": len(ev),
                     "described_share": float(ev["described"].mean()),
-                    "dup_text_share": float(ev["dup_text"].mean()),
+                    # repeats are not in the evidence; this is their share of all submissions in the window
+                    "dup_text_share": n_repeats / (c0 + n_repeats),
                     "avail_fallback_share": float(ev["avail_fallback"].mean()),
                     # set by match.py after detection; the detector cannot know outcomes
                     "after_official_action": False,

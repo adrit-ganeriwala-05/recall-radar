@@ -8,6 +8,11 @@ numbers live only in `exports/` files written by `recall_radar.method.evaluate`.
 ## 1. Detector (`recall_radar/method/detect.py`)
 - Input: `complaint_system` only. One row per (complaint, component system); a complaint counts
   once per group. Group = make, model, model year, component system.
+- Rows flagged `dup_text` are not counted (PROJECT_SPEC §4: a probable repeat counts once). A's
+  chain rule never flags the first complaint of a burst, so that one is the count. The repeats
+  are not evidence either: `evidence_n = window_count`, and `dup_text_share` is the repeats'
+  share of all submissions in the first alert window, `repeats / (window_count + repeats)`.
+  (Added after A's review of PR #2, before any real-data run.)
 - Months are calendar months of `avail_date`. With window `w = 2` and history `H = 24`:
   - window count `c[m] = y[m-1] + y[m]`
   - history = months `m-25 … m-2` that are on or after the group's first complaint month;

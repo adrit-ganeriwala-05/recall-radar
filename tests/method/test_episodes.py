@@ -167,3 +167,33 @@ def test_database_output_is_complete_and_rerun_is_idempotent(out, tmp_path):
     per_cfg = dict(con.execute("SELECT config_hash, count(*) FROM alert_episode GROUP BY 1").fetchall())
     assert per_cfg == {FIXTURE_HASH: 6, other: 6}
     con.close()
+
+
+def test_flagged_repeat_submissions_are_not_counted(rows, params):
+    # WORKED alerts with c = 9 (4 in 2018-01, 5 in 2018-02). Flag 5 of those 9 as repeats of earlier
+    # complaints: the window count drops to 4, below c_min, and the alert disappears.
+    worked = rows[rows["model"] == "WORKED"].copy()
+    window = worked[worked["avail_date"] >= date(2018, 1, 1)].index
+    worked.loc[window[:5], "dup_text"] = True
+    got = detect(worked, FIXTURE_CUTOFF, params, FIXTURE_HASH)
+    gm = got.group_month.set_index("month")["n_distinct"]
+    assert (gm.get("2018-01", 0), gm["2018-02"]) == (0, 4)
+    assert got.detector_score.set_index("month").loc["2018-02", "c"] == 4
+    assert got.alert_episode.empty
+
+    # flag only 2 of the 5 February complaints: c = 4 + 3 = 7 still alerts at lambda 1.0, the
+    # evidence is the 7 counted complaints, and 2 of the 9 submissions in the window are repeats
+    worked = rows[rows["model"] == "WORKED"].copy()
+    feb = worked[worked["avail_date"] >= date(2018, 2, 1)].index
+    worked.loc[feb[:2], "dup_text"] = True
+    ep = detect(worked, FIXTURE_CUTOFF, params, FIXTURE_HASH).alert_episode.iloc[0]
+    assert (ep["window_count"], ep["evidence_n"], ep["baseline_lambda"]) == (7, 7, 1.0)
+    assert ep["dup_text_share"] == pytest.approx(2 / 9)
+
+
+def test_group_with_only_flagged_rows_does_not_exist(params):
+    base = {"make": "SYNTHCO", "model": "ECHO", "model_year": 2017, "comp_system": "ENGINE", "avail_fallback": False,
+            "dup_text": True, "severe": False, "described": True}  # fmt: skip
+    rows = pd.DataFrame([{**base, "odino": "1", "avail_date": date(2018, 1, 5)}])
+    got = detect(rows, date(2018, 3, 1), params, FIXTURE_HASH)
+    assert got.vehicle_group.empty and got.group_month.empty and got.detector_score.empty
