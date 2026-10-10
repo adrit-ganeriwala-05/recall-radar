@@ -4,12 +4,12 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 18:30 ET (clock times before 17:10 in this file were estimates; `git log` has the true times)
+- Updated: 2026-10-10 18:40 ET (clock times before 17:10 in this file were estimates; `git log` has the true times)
 - Branch / HEAD: b/method, pushed to origin (first push 15:00 ET; code tip 0cc27a9, docs after it — check `git log`)
-- Last origin/main merged: 5dca3a3 (PR #4: A's data code; tag contract-v1), merged about 17:05 ET, no conflicts
+- Last origin/main merged: 8ef4d3f (PR #6: full ingest, alias table, API), merged 18:35 ET, no conflicts
 - Contract version: 1.0.0
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a (hero rule text changed at b93a89e; was 419a39bbf60b) / LDATE_PLUS_7
-- Mode: waiting(A's review of PR #2 at 461fccc and D's merge; A's tier-3 labels — since 18:30). Local branch is ahead of origin/b/method; see Blockers.
+- Mode: waiting(A's review of PR #2 at its new head and D's merge; A's tier-3 labels — since 18:40)
 
 ## Done (task id → commit → evidence)
 - B1 → fe38661 → `tests/fixtures/method/*.csv` + hand calculations in `docs/METHOD_NOTES.md` §4
@@ -46,11 +46,13 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - Export dry run on real development results into a scratch directory (not `exports/demo/`): 24 files, under 5 MB, 20 replays validate, second run byte-identical, no hero without the tag.
 - Hero rule tightened at b93a89e (alerts that followed an earlier related investigation or recall are never the hero); full development pipeline re-run under the new config hash, same counts; `uv run pytest` → 223 passed, 3 deselected.
 
+- Test helpers renamed to `tests/method/method_support.py` (commit after b93a89e): with conftest.py files in tests/api, tests/data and tests/method, a bare `from conftest import …` resolves to whichever loaded last. `uv run pytest` → 270 passed, 8 deselected; `uv run pytest tests/method tests/api` → passes. A's tests still use the bare import and fail to collect in some non-default orders (not in `make test`).
+
 ## In progress
 - none
 
 ## Next (in order)
-1. When PR #2 merges: `git fetch && git merge origin/main`, push b/method, open the freeze PR (B8) with everything after 461fccc; ask A for "Reviewed <sha7>: ok".
+1. PR #2 now carries the freeze content. A reviews its head ("Reviewed <sha7>: ok"), D merges.
 2. When A's `review/match_labels_dev.csv` is on main: merge, re-run `make evaluate SCOPE=full PERIOD=development`; `early_coverage_sample` should become measured.
 3. After A approves the freeze PR and D merges it: `git tag -a freeze-v1 -m "frozen config <hash>"` on that main commit and push the tag (asks the human).
 4. B9: `RR_RAW_DIR=~/rr-raw make pipeline` (held-out once), `python -m recall_radar.method.candidates --period held_out` for A8, `make export`, commit `exports/demo/` only; hand off to A, C, D.
@@ -76,7 +78,7 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 
 - Gate 1 diagnostics (17:10, `logs/gate1_diagnostics.log`, gitignored; rerun the queries, do not quote from memory): the data checks out; the weak result has three causes. (1) Linkage: 55 of 177 eligible families have no complaint group, mostly because the investigation's component-system name differs from the name complaints of that vehicle use (old vs new NHTSA names), plus bus/coach makes and model-name variants. (2) Volume: at the detector's grain (one model year + one system) only 32 of 177 families ever reach 5 complaints in a 2-month window in the 60–730 days before opening; the detector alerted early on 15 of those. (3) Timing: complaints for linked families roughly double in the year after opening. Candidate work, development only and before freeze: a system-name map (tier 2 / normalisation) and A's alias table.
 
-- D asked (PR #2 comment, 18:05): no pushes to b/method until PR #2 is reviewed/merged. Honoured: PR #2's head stays 461fccc. Work after it is pushed to the short-lived branch `b/freeze` only so A can fetch the candidates; delete that branch once the freeze PR is opened from b/method.
+- PR #2 head: D asked at 18:05 for no pushes until review/merge, so later work first went to the short-lived branch `b/freeze`. At 18:32 main moved to 8ef4d3f (PR #6), so 461fccc no longer contained main and could not be merged under EXECUTION_PLAN §5 anyway. b/method was then pushed with main merged and all work up to the freeze content; PR #2 is now also the freeze PR (B8). `b/freeze` is an ancestor of b/method and can be deleted once PR #2 merges.
 
 ## Decisions (what, why, who agreed)
 - Cold start = months since first complaint month < 6 (spec wording). B, not yet reviewed by A.
