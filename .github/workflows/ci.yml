@@ -1,0 +1,74 @@
+# Owner: D. Runs on every push and PR. D merges a PR only when this workflow is green on the
+# PR's exact head SHA and that head already contains origin/main (see docs/EXECUTION_PLAN.md §5),
+# so the tested tree is the tree that lands on main.
+name: ci
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Sync locked deps
+        run: uv sync --locked
+      - name: Lint
+        run: uv run ruff check .
+      - name: Tests (synthetic fixtures only; real_data tests are skipped)
+        run: uv run pytest
+      - name: Contract schema is current
+        run: |
+          uv run python scripts/export_contracts.py
+          git diff --exit-code -- contracts/schema
+      - name: Secrets and large-file guard
+        run: uv run python scripts/check_secrets.py
+      - name: Ownership (pull requests from worker branches)
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin "${{ github.base_ref }}"
+          git switch -c "${{ github.head_ref }}" "${{ github.event.pull_request.head.sha }}"
+          uv run python scripts/check_ownership.py --branch "${{ github.head_ref }}" --base "origin/${{ github.base_ref }}"
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - id: has_web
+        run: if [ -f web/package-lock.json ]; then echo "yes=true" >> "$GITHUB_OUTPUT"; else echo "yes=false" >> "$GITHUB_OUTPUT"; fi
+      - if: steps.has_web.outputs.yes == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - if: steps.has_web.outputs.yes == 'true'
+        run: npm --prefix web ci
+      - name: TS contract types are current
+        if: steps.has_web.outputs.yes == 'true'
+        run: |
+          npm --prefix web run gen:contracts
+          git diff --exit-code -- web/src/contracts.gen.ts
+      - if: steps.has_web.outputs.yes == 'true'
+        run: npm --prefix web run typecheck
+      - if: steps.has_web.outputs.yes == 'true'
+        run: npm --prefix web run test
+      - if: steps.has_web.outputs.yes == 'true'
+        run: npm --prefix web run build
+      - name: No secrets in the browser bundle
+        if: steps.has_web.outputs.yes == 'true'
+        run: |
+          if grep -rEn "AIza[0-9A-Za-z_-]{35}|sk-ant-|GEMINI_API_KEY|RR_VM_" web/dist; then
+            echo "secret-like string in web/dist"; exit 1; fi

@@ -1,0 +1,11 @@
+{
+  "error": {
+    "code": "not_found",
+    "message": "No complaints for this vehicle in the data range.",
+    "detail": {
+      "make": "EXAMPLE MOTORS",
+      "model": "ROADSTER",
+      "year": "1999"
+    }
+  }
+}

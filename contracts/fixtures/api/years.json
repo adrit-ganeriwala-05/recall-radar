@@ -1,0 +1,16 @@
+{
+  "provenance": {
+    "contract_version": "1.0.0",
+    "data_label": "synthetic_fixture",
+    "snapshot_id": null,
+    "data_as_of": null,
+    "config_hash": null,
+    "git_sha": null,
+    "availability_basis": null,
+    "generated_at": "2026-10-10T16:00:00Z"
+  },
+  "items": [
+    2016,
+    2017
+  ]
+}
