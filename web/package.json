@@ -11,7 +11,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "gen:contracts": "json2ts --unreachableDefinitions -i ../contracts/schema/recall_radar.schema.json -o src/contracts.gen.ts",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "capture": "node scripts/capture.mjs"
   },
   "dependencies": {
     "react": "^19.3.0",
