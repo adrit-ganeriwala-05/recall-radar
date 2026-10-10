@@ -349,6 +349,9 @@ def test_held_out_runs_with_the_tag_and_audits_top_episodes(repo, tmp_path_facto
     # WORKED: early. WARM: outside_window (next PE 884 days later), so it is neither matched nor unmatched;
     # the note accounts for every audited episode. WARM's recall 19V777 is not "recall only": that label is for unmatched.
     assert "outcomes: early 1, outside_window 1; 0 of the unmatched had a recall campaign" in m["top25_matched"].note
+    # 5 episodes start in 2018; RUN3 (recall before the alert), COOLDOWN 2018-02 and PARTIAL (investigation
+    # already open) are after official action, which leaves WORKED and WARM
+    assert "top 2 episodes by peak score among the 2 of 5 episodes of the period" in m["top25_matched"].note
     assert m["top25_unmatched"].numerator == 0
     assert math.isclose(m["top25_matched"].value, 0.5)
     con.close()

@@ -621,8 +621,10 @@ def evaluate(
         by_status = pd.Series([a.outcome.status.value for a in audit], dtype=object).value_counts()
         spread = ", ".join(f"{s} {int(n)}" for s, n in sorted(by_status.items()))
         recall_only = sum(a.outcome.status == C.OutcomeStatus.unmatched and bool(a.outcome.recall_campnos) for a in audit)
+        n_pool = int((~in_period["after_official_action"].astype(bool)).sum())
         audit_note = (
-            f"top {k_audit} episodes by peak score, not after official action; outcomes: {spread}; "
+            f"top {k_audit} episodes by peak score among the {n_pool} of {len(in_period)} episodes of the period with no "
+            f"earlier investigation or recall for the same vehicle and component system; outcomes: {spread}; "
             f"{recall_only} of the unmatched had a recall campaign for the same vehicle and system inside the follow-up window"
         )
         metrics += [proportion(n, v, k_audit, audit_note) for n, v in counts.items()]
