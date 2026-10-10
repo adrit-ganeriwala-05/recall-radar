@@ -1,7 +1,7 @@
 # HANDOFF B→A, B→D: full development run (2014–2023 data) and tier-3 candidates for A7
 - From: B · To: A (labels, reviewer), D (pitch, gate log) · Contract version: 1.0.0
-- Snapshot: e808281f001a · Config hash: 419a39bbf60b · Availability basis: LDATE_PLUS_7
-- Run id: `development-419a39bbf60b-bb2f181` · Data code: a/data-api at fdcb05c (PR #6: full ingest with alias table), exported to a
+- Snapshot: e808281f001a · Config hash: 0c26e23e0a3a · Availability basis: LDATE_PLUS_7
+- Run id: `development-0c26e23e0a3a-b93a89e` · Data code: a/data-api at fdcb05c (PR #6: full ingest with alias table), exported to a
   separate directory to build the database; method code: the commit in the run id (b/method plus B's unpushed work).
 - Commands: `make verify-snapshot && make ingest SCOPE=full && make investigations` (A's tree), then
   `make detect match SCOPE=full`, `make evaluate SCOPE=full PERIOD=development`,
@@ -20,6 +20,7 @@
 investigated vehicles about as often as they precede matched vehicles that were never investigated.
 - Tier 1 alone (exact vehicle and component system): 16 early; 7 more through tier 2.
 - By investigation: 11 of 65 have at least one early family.
+- 6 of the 23 early families' alerts followed an earlier related investigation or recall. These still count as early under the pre-written rule; they can never be the hero replay.
 - 160 cases have at least one control.
 - Lead time of early families, median (quartiles), days: 354 (139–444.5).
 - Episodes per month, all vehicle groups: 22.2 (1064 in 48 months).
@@ -46,6 +47,12 @@ Best outcome of each eligible family:
 | 8 | 5.0 | 14/257 | 5.4% | 741 | 12 | yes |  |
 | 8 | 6.0 | 13/257 | 5.1% | 637 | 10.5 | yes |  |
 The pre-written rule picks c_min 5, s_star 4.0: the values already in `config.yaml`. Nothing is retuned.
+
+## Rule change before freeze: hero selection
+`hero_rule` in `config.yaml` now skips families whose alert followed an earlier related investigation or recall,
+so the showcase replay can never show an alert that came after official action. Only the hero text changed; the
+config hash moved from 419a39bbf60b to 0c26e23e0a3a and every count in this file was reproduced under the new hash.
+A database built under the old hash needs `make detect match` again before the API shows episodes.
 
 ## For A (A7): tier-3 candidates
 - File: `review/candidates_dev.csv` — 16 rows for 4 of the 20 sampled families. The other sampled

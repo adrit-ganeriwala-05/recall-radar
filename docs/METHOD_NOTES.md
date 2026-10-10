@@ -237,6 +237,14 @@ decimals, empty cell = null, so `pending` metrics carry no number). Replays: the
 rule is the `hero_rule` text of `config.yaml` and `rule_commit` is the tagged commit.
 `MANIFEST.json` = `{files: {name: sha256}, run_ids, git_sha}`.
 
+**Hero rule (changed 2026-10-10 about 18:45, before any freeze, after the first dry run of the
+export on development data).** A family can be "early" for its own investigation although its
+alert came after an *earlier* related investigation or recall (a neighbouring model year, a
+paired system, or a prior campaign). Such families still count in early coverage, which keeps
+the pre-written coverage rule, and the note of `early_coverage_all` says how many there are.
+They are never eligible as the hero: `hero_rule` skips any family whose best episode has
+`after_official_action = true`.
+
 ## 11. Open items
 - Development period, full data, tiers 1–2: early coverage is no higher than chance. Numbers:
   `docs/handoffs/20261010-1825-B-to-A-D-full-dev-run.md`; Gate 1 on bounded data: the two

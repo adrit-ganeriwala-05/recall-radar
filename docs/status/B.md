@@ -8,7 +8,7 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - Branch / HEAD: b/method, pushed to origin (first push 15:00 ET; code tip 0cc27a9, docs after it — check `git log`)
 - Last origin/main merged: 5dca3a3 (PR #4: A's data code; tag contract-v1), merged about 17:05 ET, no conflicts
 - Contract version: 1.0.0
-- Snapshot id / config hash / availability basis: e808281f001a / 419a39bbf60b / LDATE_PLUS_7 (A's Gate 1 decision, set in config.yaml at ba806ed)
+- Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a (hero rule text changed at b93a89e; was 419a39bbf60b) / LDATE_PLUS_7
 - Mode: waiting(A's review of PR #2 at 461fccc and D's merge; A's tier-3 labels — since 18:30). Local branch is ahead of origin/b/method; see Blockers.
 
 ## Done (task id → commit → evidence)
@@ -35,13 +35,16 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - Human decision about 16:55 (Saketh): go ahead with the reframe (transparency tool + honest result); B to build the system-name map before freeze. Done.
 
 - Full database (2014–2023, alias table) built 18:17 from a/data-api fdcb05c in a separate directory with B's config: read 1301663 = retained 914165 + excluded 387498, reconciled; snapshot ok.
-- Full development run at bb2f181: `make detect match SCOPE=full`, `make evaluate SCOPE=full PERIOD=development`, tune and candidates modules → exit 0 (logs `logs/full_dev.log`, `logs/full_dev2.log`). Early coverage is no higher than chance. Report: `docs/handoffs/20261010-1825-B-to-A-D-full-dev-run.md`.
+- Full development run (first at bb2f181, repeated at b93a89e after the hero-rule change): `make detect match SCOPE=full`, `make evaluate SCOPE=full PERIOD=development`, tune and candidates modules → exit 0 (logs `logs/full_dev.log`, `logs/full_dev2.log`). Early coverage is no higher than chance. Report: `docs/handoffs/20261010-1825-B-to-A-D-full-dev-run.md`.
 - B6 real-data invariance on the full DB: `uv run pytest -m real_data tests/method` → 1 passed.
 - B7 grid on full data: rule keeps the config setting; nothing retuned.
 - B8 (code): tier-3 candidates + labels (`candidates.py`), freeze check now covers the two review files, retained-share metric over in-range rows → bb2f181 → `uv run pytest` → 222 passed, 3 deselected.
 - `review/candidates_dev.csv`: 16 rows for 4 of the 20 sampled families.
 - Verification before pushing (asked by Saketh): headline counts recomputed with plain SQL (families, eligible, tier-1 early, linked, investigations, episodes) all equal the export; 8 random covered controls re-derived by SQL all agree.
 - Review of A's PR #6 at fdcb05c → posted "Reviewed fdcb05c: ok" (API evidence count = window_count on 310 episodes; no pattern leaks in 3,962 served excerpts).
+
+- Export dry run on real development results into a scratch directory (not `exports/demo/`): 24 files, under 5 MB, 20 replays validate, second run byte-identical, no hero without the tag.
+- Hero rule tightened at b93a89e (alerts that followed an earlier related investigation or recall are never the hero); full development pipeline re-run under the new config hash, same counts; `uv run pytest` → 223 passed, 3 deselected.
 
 ## In progress
 - none
