@@ -4,12 +4,12 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 17:45 ET
+- Updated: 2026-10-10 17:10 ET (earlier entries in this file carry clock times I estimated; `git log` has the true times)
 - Branch / HEAD: b/method, pushed to origin (first push 15:00 ET; code tip 0cc27a9, docs after it — check `git log`)
-- Last origin/main merged: 5dca3a3 (PR #4: A's data code; tag contract-v1), merged 17:25 ET, no conflicts
+- Last origin/main merged: 5dca3a3 (PR #4: A's data code; tag contract-v1), merged about 17:05 ET, no conflicts
 - Contract version: 1.0.0
 - Snapshot id / config hash / availability basis: e808281f001a / 419a39bbf60b / LDATE_PLUS_7 (A's Gate 1 decision, set in config.yaml at ba806ed)
-- Mode: waiting(A's review of PR #2 at the new head; D's merge; A4 full ingest — since 17:45)
+- Mode: waiting(A's review of PR #2 at the new head; D's merge; A4 full ingest — since 17:10)
 
 ## Done (task id → commit → evidence)
 - B1 → fe38661 → `tests/fixtures/method/*.csv` + hand calculations in `docs/METHOD_NOTES.md` §4
@@ -32,7 +32,7 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 
 - B7 tier 2 → c42a397 → `uv run pytest tests/method/test_tier2.py` → all pass; full suite after merging main: `make test` → 215 passed, 3 deselected.
 - Gate 1 re-run in B's own checkout at 4c4a4b8 (contains main 5dca3a3): `RR_RAW_DIR=~/rr-raw make verify-snapshot && make gate1` + tune module → exit 0, log `logs/gate1_main.log`. **Still data PASS, method FAIL** with tiers 1–2. Report: `docs/handoffs/20261010-1740-B-to-D-gate1-tier2.md`.
-- Human decision 17:15 (Saketh): go ahead with the reframe (transparency tool + honest result); B to build the system-name map before freeze. Done.
+- Human decision about 16:55 (Saketh): go ahead with the reframe (transparency tool + honest result); B to build the system-name map before freeze. Done.
 
 ## In progress
 - none

@@ -103,7 +103,7 @@ Wilson check (`test_evaluation.py`): 8 of 20 with z = 1.959964 → centre
 - A family is one make + model + component system (A's `inv_family`); one investigation is
   usually several families. A family's vehicles = `inv_vehicle` rows of its actions with the
   family's own make, model and system. Only a family with no such row falls back to its
-  `year_min…year_max` range. (Before 2026-10-10 16:45 the code took every vehicle of the
+  `year_min…year_max` range. (Until ba806ed the code took every vehicle of the
   family's actions in that system, which would have credited one model's alert to its sibling
   models' families. Found while reviewing A3 and fixed before the first evaluation run.)
 - **Tier 1** = the episode's exact make, model, model year and system is one of them.
@@ -127,7 +127,7 @@ Wilson check (`test_evaluation.py`): 8 of 20 with z = 1.959964 → centre
   reported before the alert still sets the flag. Their file-wide count is quoted in the note
   of `excluded_families`; they are not cases.
 - `family_id` may be `F-<action>` or `F-<action>~<SYSTEM>`; the code treats it as an opaque key.
-- **Tier 2** (added 2026-10-10 17:30, after the first Gate 1 run and before any freeze): same make
+- **Tier 2** (added 2026-10-10 about 17:00, after the first Gate 1 run and before any freeze): same make
   and model; model year within `matching.tier2_model_year_slack` of a year the family names;
   the episode's system equal to the family's or paired with it in `review/system_map.csv`; and
   at least one keyword of `review/keywords.txt` found in the family's SUBJECT/SUMMARY text **and**
