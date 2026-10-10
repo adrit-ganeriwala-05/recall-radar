@@ -5,19 +5,19 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 
 | ID | Task | Owner | Reviewer | Depends on | Due | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| D0 | Bootstrap main, CI green, task board, `contract-v1` tag | D | C | bundle | 2:15 PM | doing (main=61c0c8c CI green 15:24; contract-v1 waits on A) |
-| A0 | Source check + `snapshots/SNAPSHOT.lock.json` + `make verify-snapshot` | A | B | downloads | 2:30 PM | done@4a7553a (snapshot e808281f001a; a/data-api, unmerged) |
+| D0 | Bootstrap main, CI green, task board, `contract-v1` tag | D | C | bundle | 2:15 PM | done@5dca3a3 (contract-v1 tag 16:2x; main CI green) |
+| A0 | Source check + `snapshots/SNAPSHOT.lock.json` + `make verify-snapshot` | A | B | downloads | 2:30 PM | done@5dca3a3 (PR #4) |
 | B0 | Review `config.yaml`, `method/config.py`, CONTRACTS §3–5 | B | A | D0 | 2:15 PM | done@d5efab0 (A replied e7ff01c; B ACK 4ed08e1) |
 | C0 | Web scaffold, generated types, fixture client, routes, synthetic banner | C | D | D0 | 2:30 PM | todo |
-| A1 | Parse + filter + normalize + drop personal fields (bounded) | A | B | A0 | 2:45 PM | review (a/data-api dffb361; no PR yet) |
-| A2 | Dedup, availability, dup_text, redaction, `ingest_report`, complaint tables | A | B | A1 | 2:55 PM PR | review (a/data-api dffb361; gate1 DB 317 MB reconciled) |
+| A1 | Parse + filter + normalize + drop personal fields (bounded) | A | B | A0 | 2:45 PM | done@5dca3a3 (PR #4) |
+| A2 | Dedup, availability, dup_text, redaction, `ingest_report`, complaint tables | A | B | A1 | 2:55 PM PR | done@5dca3a3 (PR #4, redaction fix c015403) |
 | B1 | Hand-calculated method fixtures | B | A | B0 | 2:40 PM | review (PR #2 @ b66915d) |
 | B2 | Groups, monthly counts, Poisson score, alerts, episodes, cooldown, explanation | B | A | B1 | 2:55 PM PR | review (PR #2 @ b66915d) |
 | D1 | Track/rules/judging/video-length answers → SOURCES.md | D | C | — | 3:30 PM | doing (facts in SOURCES.md 15:30; track/video/Zero Data need humans) |
 | D2 | VM + Caddy + systemd + deploy/rollback scripts; fixture build live | D | C | C0, human VM | 3:30 PM | doing (scripts @ 47ce44e; waits on VM from human) |
 | C1 | Landing + make→model→year selector | C | D | C0 | 2:45 PM | todo |
 | C2 | Vehicle page + issue/evidence page | C | D | C1 | 3:30 PM | todo |
-| A3 | INV/RCL parse, families, recall campaigns, prefix check, DATEA lag | A | B | A2 | 3:25 PM | todo |
+| A3 | INV/RCL parse, families, recall campaigns, prefix check, DATEA lag | A | B | A2 | 3:25 PM | done@5dca3a3 (PR #4; availability LDATE_PLUS_7) |
 | B4 | Tier-1 matching + OutcomeMatch statuses | B | A | A3, B2 | 3:25 PM | review (PR #2, tier 1; synthetic only) |
 | B5 | Dev evaluation: eligibility, coverage, Wilson CI, chance controls; Gate 1 report | B | A, D | B4 | 3:30 PM | review (PR #2; synthetic only) |
 | C3 | Replay screen | C | D | C2 | 4:30 PM | todo |
@@ -59,11 +59,13 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | 15:50 | D5: gate1 DB 317 MB (A's handoff) ≤ 500 MB → `make sync-data` path | D |
 | 16:05 | PR #4 head 2f7ca0a has 3 commits after B's "Reviewed f669be5: ok" (A3, redaction, family_id doc). Human chose: B re-reviews 2f7ca0a, then D merges + tags contract-v1. D check at 2f7ca0a: make test 99 passed, ownership 0 | D + human |
 | 16:05 | .gitignore `data/` `logs/` → `/data/` `/logs/` (A's request: they ignored recall_radar/data and tests/data) | D |
+| 16:20 | B: "Reviewed 2f7ca0a: ok" → D merged PR #4 (--match-head-commit) → main 5dca3a3; tree = reviewed tree; make test 99 passed; contracts-check clean | D |
+| 16:22 | tag `contract-v1` (annotated) → 5dca3a3, pushed. A5 may start. PR #2 and PR #3 must merge origin/main again (CI re-runs; PR #2 then needs B's head re-reviewed by A) | D |
 
 ## Gate log
 | Gate | Time | Main SHA | Result | Decision |
 | --- | --- | --- | --- | --- |
-| G0 | 15:32 (due 2:15) | 61c0c8c | NOT PASSED: main empty until 15:24 (now bootstrap, CI green); `contract-v1` tag missing (A finishing review edits); A/C first progress lines + /status model checks not seen by D | pipeline: D landed bootstrap (H3b, fast-forward to PR #1's CI-green commit); re-gate when A reports "ready to tag" |
+| G0 | 16:25 (due 2:15) | 5dca3a3 | PARTIAL: main CI green; `contract-v1` → 5dca3a3; A and B building + testing on main; C not started (c/web = init) and session model checks not reported to D | no lkg-g0 tag until C reports `make setup && make test` green on c/web; C is the critical path |
 | G1 | | | | |
 | G2 | | | | |
 | Freeze | | | | |

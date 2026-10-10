@@ -4,10 +4,10 @@ Restart memory for session rr-D. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 15:50 ET
+- Updated: 2026-10-10 16:25 ET
 - Branch / HEAD: d/delivery @ (see `git log -1`; this commit) — checkout `~/recall-radar`; integration checkout `~/rr-int`
-- Last origin/main merged: 61c0c8c (d/delivery is built on it)
-- Contract version: 1.0.0 (tag `contract-v1` not yet created)
+- Last origin/main merged: 5dca3a3
+- Contract version: 1.0.0 (tag `contract-v1` → 5dca3a3)
 - Snapshot id / config hash / availability basis: n/a / 59931d27c785 / n/a
 - Mode: implementing (regular phase; D0 open only for the contract-v1 tag)
 
@@ -18,6 +18,8 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - D3 Playwright smoke → 0ea628e → Playwright 1.64 vs mock UI + stub: 2 passed (desktop, phone) in both modes; 4 injected UI defects each fail; `tsc --strict` clean
 - D7 drafts + guards, Makefile targets (incl. B's `tune`), CI claims step → 3670062 → `uv run pytest tests/scripts` 15 passed; `make test` green
 - D1 facts → this commit → docs/SOURCES.md (Devpost overview/rules + hacklanta.dev, fetched 15:30)
+
+- D0 contract-v1 → tag on 5dca3a3 after merging PR #4 (B reviewed head 2f7ca0a; merged with --match-head-commit; main CI green)
 
 ## In progress
 - D1: humans must pick main track, get video length and Zero Data answer
