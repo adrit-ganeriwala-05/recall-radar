@@ -4,12 +4,12 @@ Restart memory for session rr-A. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 18:06 ET
+- Updated: 2026-10-10 19:00 ET
 - Branch / HEAD: a/data-api @ see `git log -1` (PR #4 to main)
-- Last origin/main merged: 5dca3a3 (PR #4 merge; contract-v1 tagged)
+- Last origin/main merged: 8ef4d3f (PR #6 merge)
 - Contract version: 1.0.0 (doc-only clarifications dffb361; ready to tag contract-v1 at dffb361)
 - Snapshot id / config hash / availability basis: e808281f001a / 419a39bbf60b (b/method f53b396) / LDATE_PLUS_7 (decided A3)
-- Mode: waiting(B's tier-3 candidate CSVs for A7; reviews) since 18:06
+- Mode: waiting(freeze-v1 → B9 held-out candidates for A8) since 19:00
 
 ## Done (task id → commit → evidence)
 - Contract review → e7ff01c, dffb361 → B0 answered; no shape change; C sent no comments
@@ -17,6 +17,9 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - A1/A2 → b806130 → `make test` → 78 passed; real gate1 ingest reconciled (489,809 read)
 - Review of B's PR #2 → `Reviewed b66915d: ok`, re-review `Reviewed 6fbffa8: ok`
 - PR #4 follow-ups → 40b8ddb (pyc untracked), c015403 (redaction: 1,444 → 0 leaks by independent check)
+- test-real fix (B's request 1836) → 0f4ee84 (PR #7) → `pytest -m real_data` one process → 6 passed, 1 skipped
+- Freeze review → `Reviewed 454d8b3: ok` on PR #2 (held_out + candidates refuse, exit 2)
+- A7 → review/match_labels_dev.csv: 16 pairs (13 not_related, 2 unsure, 1 related); B's evaluate at 454d8b3 reads all 16
 - A5 → 73ab9a3 → API for every CONTRACTS §6 endpoint; D's conformance test passes locally (cached + fixture)
 - A6 → 4e285a0 → `uv run pytest tests/api` → 62 passed; real_data → 4 passed on full DB + B pipeline copy
 - A4 → 5b1b641 → full ingest 1,301,663 read reconciled; 344 MB; `pytest -m real_data tests/data` → 3 passed
@@ -27,9 +30,7 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - none
 
 ## Next (in order)
-1. A7 tier-3 labels, dev sample of 20 (needs B's candidate CSV)
-2. Review B's freeze PR (6:55–7:00 with schedule shift)
-3. A8 held-out labels (after B9), A9 displayed-vs-exported check overnight
+1. A8 held-out labels (after B9), A9 displayed-vs-exported check overnight
 
 ## Last passing commands (exact)
 - `make test` → 146 passed, ruff clean, secrets 0 (A6)
@@ -49,6 +50,7 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - Availability LDATE_PLUS_7: DATEA = LDATE for 99.94% (docs/DATA_NOTES.md); B agreed in PR #4 review.
 - family_id collision suffix = sha1(make|model|system)[:6].
 - API reads detector rows for the config hash of the config.yaml it is given (RR_CONFIG): build the DB with the deployed config.
+- Tier-3 labels: judged from investigation subject + redacted window excerpts only, never scores; unsure = never a hit.
 - Episode evidence excludes dup_text rows (matches B's window_count; verified on 2,532 episodes).
 - .gitignore `data/` also matches recall_radar/data and tests/data: use `git add -f` for new files there (asked D to anchor it).
 
