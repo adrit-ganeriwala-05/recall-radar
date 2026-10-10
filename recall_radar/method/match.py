@@ -117,8 +117,8 @@ def match_episodes(
 ) -> pd.DataFrame:
     """One OutcomeMatch per episode, plus `after_official_action` for the episode table.
 
-    `horizon` is the last day for which investigation openings are known (the retrieval date
-    of the investigations file); follow-up is complete when alert_date + follow_up_days <= horizon.
+    `horizon` is the last day for which investigation openings are known (the investigations
+    file's NHTSA "Updated" date); follow-up is complete when alert_date + follow_up_days <= horizon.
     `recalls` has make, model, model_year, comp_system, campno, report_date (one row per campaign
     and vehicle); a related campaign reported before the alert also sets after_official_action.
     """
@@ -224,13 +224,19 @@ def load_recalls(con: duckdb.DuckDBPyConnection) -> pd.DataFrame:
 
 
 def outcome_horizon(con: duckdb.DuckDBPyConnection, families: pd.DataFrame) -> date:
-    """Last day for which investigation openings are known: when the INV file was retrieved."""
+    """Last day for which investigation openings are known.
+
+    The investigations file's NHTSA "Updated" date (A's review reply, item 4): the file can be
+    days older than our download. Falls back to the retrieval time, then to the latest opening.
+    """
     if table_exists(con, "source_snapshot"):
         row = con.execute(
-            "SELECT max(CAST(retrieved_at AS TIMESTAMP)) FROM source_snapshot WHERE upper(file_name) LIKE '%INV%'"
+            """SELECT max(CAST(nhtsa_updated AS TIMESTAMP)), max(CAST(retrieved_at AS TIMESTAMP))
+               FROM source_snapshot WHERE upper(file_name) LIKE '%INV%'"""
         ).fetchone()
-        if row and row[0] is not None:
-            return row[0].date()
+        for value in row or ():
+            if value is not None:
+                return value.date()
     return max(families["odate_min"])
 
 

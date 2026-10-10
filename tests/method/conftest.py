@@ -89,7 +89,7 @@ FAMILIES = [
     ("F-PE18002", ["PE18002"], "PE", "2018-02-20", "RUN3", 2016, 2016, "ENGINE", []),
     ("F-PE18003", ["PE18003"], "PE", "2018-01-10", "COOLDOWN", 2015, 2015, "ENGINE", []),
     ("F-DP18004", ["DP18004"], "DP", "2018-10-01", "PARTIAL", 2016, 2016, "ENGINE", []),
-    ("F-PE18005", ["PE18005"], "PE", "2018-05-01", "T-150", 2016, 2016, "SERVICE BRAKES", []),
+    ("F-PE18005~SERVICE_BRAKES", ["PE18005"], "PE", "2018-05-01", "T-150", 2016, 2016, "SERVICE BRAKES", []),
     ("F-RQ18006", ["RQ18006"], "RQ", "2018-09-01", "WARM", 2017, 2017, "ENGINE", []),
     ("F-PE18007", ["PE18007"], "PE", "2018-03-01", "MYSTERY", None, None, "ENGINE", []),
     ("F-PE20008", ["PE20008"], "PE", "2020-12-01", "WARM", 2017, 2017, "ENGINE", []),
@@ -139,7 +139,8 @@ def build_db(path, rows: pd.DataFrame, config_hash: str = FIXTURE_HASH, cutoff: 
     con.execute(
         """CREATE TABLE ingest_report AS SELECT * FROM (VALUES ('synthetic-fixture', 'read', 'all', 200),
            ('synthetic-fixture', 'retained', 'kept', 150), ('synthetic-fixture', 'excluded', 'type', 30),
-           ('synthetic-fixture', 'rejected', 'fields', 5), ('synthetic-fixture', 'deduplicated', 'exact', 15))
+           ('synthetic-fixture', 'rejected', 'fields', 5), ('synthetic-fixture', 'deduplicated', 'exact', 15),
+           ('synthetic-fixture', 'investigations', 'family_rq_aq_only', 3))
            t(snapshot_id, stage, reason, n)"""
     )
     write_output(con, detect(rows, cutoff, FIXTURE_PARAMS, config_hash), config_hash)

@@ -336,6 +336,18 @@ def provenance(
     )
 
 
+def rq_aq_only_note(con: duckdb.DuckDBPyConnection) -> str:
+    """A leaves RQ/AQ-only families out of inv_family and counts them in ingest_report (all years)."""
+    if not table_exists(con, "ingest_report"):
+        return ""
+    row = con.execute(
+        "SELECT sum(n) FROM ingest_report WHERE lower(stage) = 'investigations' AND lower(reason) = 'family_rq_aq_only'"
+    ).fetchone()
+    if not row or row[0] is None:
+        return ""
+    return f"; not cases at all: {int(row[0])} RQ/AQ-only families in the whole investigations file (any year)"
+
+
 def retained_share(con: duckdb.DuckDBPyConnection) -> C.Metric:
     name = "ingestion_retained_share"
     if not table_exists(con, "ingest_report"):
@@ -405,7 +417,8 @@ def evaluate(
     metrics = [
         metric("eligible_families", len(eligible), k=len(eligible), n=len(cases),
                note=f"families opened {lo}..{hi}; {n_linked} of {len(eligible)} eligible families name a vehicle group with complaints"),
-        metric("excluded_families", len(cases) - len(eligible), k=len(cases) - len(eligible), n=len(cases), note="see exclusions"),
+        metric("excluded_families", len(cases) - len(eligible), k=len(cases) - len(eligible), n=len(cases),
+               note="see exclusions" + rq_aq_only_note(con)),
         proportion("early_coverage_all", len(early_cases), len(eligible), note),
         metric("early_coverage_sample", status=C.MetricStatus.pending, note="needs tier-3 review labels for the seeded sample"),
         proportion("chance_coverage", int(controls["covered"].sum()), len(controls),

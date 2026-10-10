@@ -4,7 +4,7 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 15:10 ET
+- Updated: 2026-10-10 15:20 ET
 - Branch / HEAD: b/method, pushed to origin (first push 15:00 ET; code tip 0cc27a9, docs after it — check `git log`)
 - Last origin/main merged: none. origin/main is still the empty `init` commit 6b73005.
 - Contract version: 1.0.0
@@ -29,17 +29,19 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 4. B7 tier 2 (`review/system_map.csv`, `review/keywords.txt`) + development grid; B8 freeze PR; B9 exports + hero; B10 repro.
 
 ## Last passing commands (exact)
-- `uv run pytest` → 126 passed, 1 deselected (the deselected one is the real_data test) @ 0cc27a9; earlier: 120 passed @ 02263ed
+- `uv run pytest` → 127 passed, 1 deselected (the deselected one is the real_data test) at the tip after A's review changes @ 02263ed
 - `uv run ruff check .` → All checks passed @ 02263ed
 - CLI smoke on a synthetic DuckDB file: `python -m recall_radar.method.detect --cutoff 2019-01-01`, `.match`, `.evaluate --period development`, `.replay --episode E-0003` → all ran; `.evaluate --period held_out` → "REFUSED … freeze-v1 does not exist", exit 2
 
 ## Blockers, requests sent, requests received
 - origin/main has no bootstrap files (only `init`). My checkout holds an untracked copy of the bundle so tests can run. D must land the bootstrap (START_HERE H3b) before a PR makes sense.
 - GitHub permission for SakethSagar05 on adrit-ganeriwala-05/recall-radar: READ at 14:35, WRITE at 15:00 (checked with `gh repo view --json viewerPermission`). Push of b/method attempted at 15:05; see the session report for the result.
-- Raw files: downloaded 15:01 ET into `~/rr-raw` with `scripts/fetch_sources.sh all` (8 files, `SHA256SUMS.txt` written). NOT yet compared with A's hashes (START_HERE P4); `RR_RAW_DIR` is not exported in the shell profile.
+- Raw files: downloaded 15:01 ET into `~/rr-raw` (8 files). The five lines A sent (2015–2019, FLAT_INV, FLAT_RCL_POST_2010, INV.txt, RCL.txt) are identical to mine; the 2010–2014, 2020–2024 and CMPL.txt lines are not yet compared. `RR_RAW_DIR` is not exported in the shell profile.
 - No ingest code from A on origin (a/data-api is still `init`) → no real-data run, no Gate 1 numbers. Gate 1 (3:30 PM) cannot be met from B's side alone.
 - PR #1 "D0 bootstrap" is CLOSED unmerged; origin/main is empty. Request to D: `docs/handoffs/20261010-1505-B-to-D-makefile-tune.md`.
-- Sent (in repo, undelivered): B→A contract review, 13 points.
+- B→A contract review (13 points): answered by A in e7ff01c on a/data-api; ACK + changes in `docs/handoffs/20261010-1520-B-to-A-ack-review-reply.md`. Item 12 (`generated_at`) still needs C's ack.
+- Ownership slip, fixed: 83ed0ac tracked ten bundle docs B does not own (too-broad `git add docs`); untracked again at the tip. Add files by exact path from now on.
+- B9 is NOT done: 0cc27a9's subject says "B7 B9 B10" but it is code + synthetic tests only. No held-out run exists.
 
 ## Decisions (what, why, who agreed)
 - Cold start = months since first complaint month < 6 (spec wording). B, not yet reviewed by A.

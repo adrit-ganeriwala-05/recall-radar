@@ -132,3 +132,15 @@ def test_contract_rejects_unmatched_with_open_follow_up():
             status="unmatched", recall_campnos=[], follow_up_end=date(2020, 1, 1), follow_up_complete=False,
             reviewer=None,
         )  # fmt: skip
+
+
+def test_horizon_is_the_investigation_files_nhtsa_updated_date(db):
+    # fixture: FLAT_INV.zip "Updated" 2020-12-30, retrieved 2020-12-31 -> openings are known through the 30th
+    assert M.outcome_horizon(db, M.load_families(db)) == date(2020, 12, 30)
+    db.execute("CREATE TEMP TABLE keep AS SELECT * FROM source_snapshot")
+    try:
+        db.execute("UPDATE source_snapshot SET nhtsa_updated = NULL")
+        assert M.outcome_horizon(db, M.load_families(db)) == date(2020, 12, 31)  # falls back to retrieval
+    finally:
+        db.execute("DELETE FROM source_snapshot")
+        db.execute("INSERT INTO source_snapshot SELECT * FROM keep")

@@ -57,7 +57,7 @@ def test_cases_and_exclusions(result):
         "F-PE18002": ("late", 19, True, None),
         "F-PE18003": ("early", 343, True, None),  # the earlier of its two alerts is the one that counts
         "F-DP18004": ("after_official_action", -31, True, None),
-        "F-PE18005": ("missed", None, False, None),
+        "F-PE18005~SERVICE_BRAKES": ("missed", None, False, None),  # A's id form when one action heads two families
         "F-RQ18006": ("excluded", None, False, "first_action_type_RQ"),
         "F-PE18007": ("excluded", None, False, "unknown_model_years"),
     }  # F-PE20008 opened outside the development period and is not a case
@@ -82,7 +82,10 @@ def test_metrics_from_hand_counts(result):
     assert (m["lead_days_q1"].value, m["median_lead_days"].value, m["lead_days_q3"].value) == (165.25, 224.5, 283.75)
     # 6 episodes in total, all starting inside 2016-01..2019-12 (48 months)
     assert (m["episodes_per_month"].numerator, m["episodes_per_month"].denominator) == (6, 48)
-    assert m["ingestion_retained_share"].value == 0.75
+    assert m["ingestion_retained_share"].value == 0.75  # 150 retained / 200 read; the investigations stage is not a complaint stage
+    assert m["excluded_families"].note == (
+        "see exclusions; not cases at all: 3 RQ/AQ-only families in the whole investigations file (any year)"
+    )
     for name in ("early_coverage_sample", "pipeline_runtime_s"):
         assert m[name].status == C.MetricStatus.pending and m[name].value is None
     for name in ("top25_matched", "top25_unmatched", "top25_ambiguous"):

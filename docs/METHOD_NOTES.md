@@ -107,11 +107,17 @@ Wilson check (`test_evaluation.py`): 8 of 20 with z = 1.959964 → centre
      action type is in `evaluation.eligible_first_types`** (a Recall Query that follows an
      alert is not counted as a later investigation);
   3. else `unmatched` if `alert_date + follow_up_days ≤ horizon`, otherwise
-     `follow_up_incomplete`. `horizon` = retrieval date of the investigations file.
+     `follow_up_incomplete`. `horizon` = the investigations file's NHTSA "Updated" date
+     (A's review reply, item 4), falling back to its retrieval date.
 - `alert_episode.after_official_action` = rule 1 is true, or a recall campaign naming the
   same vehicle and system has `report_date < alert_date`.
 - `recall_campnos`: the matched family's campaigns (deduplicated, sorted); for unmatched
   episodes, campaigns for the same vehicle and system reported inside the follow-up window.
+- A leaves RQ/AQ-only families out of `inv_family`, so rule 1 and the `after_official_action`
+  flag cannot see a Recall Query or Audit Query that stands alone; a related recall campaign
+  reported before the alert still sets the flag. Their file-wide count is quoted in the note
+  of `excluded_families`; they are not cases.
+- `family_id` may be `F-<action>` or `F-<action>~<SYSTEM>`; the code treats it as an opaque key.
 - Tier 2 (year ±1, mapped system, shared keyword) and tier 3 (A's labels) are not implemented
   yet. Until they are, results say "tier 1 only".
 
