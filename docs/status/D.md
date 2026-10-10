@@ -4,9 +4,9 @@ Restart memory for session rr-D. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 19:25 ET
+- Updated: 2026-10-10 20:10 ET
 - Branch / HEAD: d/delivery @ (see `git log -1`; this commit) — checkout `~/recall-radar`; integration checkout `~/rr-int`
-- Last origin/main merged: a775d09
+- Last origin/main merged: cc40c0b
 - Contract version: 1.0.0 (tag `contract-v1` → 5dca3a3)
 - Snapshot id / config hash / availability basis: n/a / 0c26e23e0a3a (after PR #2) / LDATE_PLUS_7
 - Mode: implementing (regular phase; D0 open only for the contract-v1 tag)
@@ -28,10 +28,12 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - D2 trial deploy d19a570 (fixture) → http://64.177.53.230 → integration 11 passed/10 skipped, Playwright 2/2, outage check 0 FAIL
 - D4 merged PR #2 (B) → main c70db51; deleted b/freeze, d/bootstrap
 - D4 re-review of PR #5 at C stand-in's head 22e781a → "Reviewed 22e781a: ok" (72 web tests, live build has 0 fixture JSON, no secrets, smoke 2/2 both modes) → merged → main a775d09, tree = reviewed tree
+- Merged PR #3 (C stand-in ok e69d362) → main f4eac57; deployed f4eac57 fixture: integration 11/10 skipped, Playwright 2/2, outage 0 FAIL
+- Merged PR #9 (submission copy: LDATE_PLUS_7 wording, [verdict.<period>]) at a9fb133 → main cc40c0b
 - `make check` on d/delivery cc9eda0 → 285 Python + 72 web passed (after `make setup`; first run failed 127 for missing node_modules — corrected on PR #3)
 
 ## In progress
-- D4: PR #3 (d/delivery, head cc9eda0) CI green — waiting for C's stand-in "Reviewed cc9eda0: ok" (C back 22:30). Blocks the real deploy: main has no deploy/ until it merges
+- D4: PR #8 (B, A ok f7606e1) and PR #7 (A, B ok aad9b77) lack main — order posted: B merges main → A re-ok → merge #8; A merges main → B re-ok → merge #7; then freeze-v1. PR #10 (C) Reviewed 34c212e: ok, needs main merged
 - D1: humans must pick main track, get video length and Zero Data answer
 
 ## Next (in order)
