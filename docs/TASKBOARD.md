@@ -6,11 +6,11 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | ID | Task | Owner | Reviewer | Depends on | Due | Status |
 | --- | --- | --- | --- | --- | --- | --- |
 | D0 | Bootstrap main, CI green, task board, `contract-v1` tag | D | C | bundle | 2:15 PM | doing (main=61c0c8c CI green 15:24; contract-v1 waits on A) |
-| A0 | Source check + `snapshots/SNAPSHOT.lock.json` + `make verify-snapshot` | A | B | downloads | 2:30 PM | todo |
+| A0 | Source check + `snapshots/SNAPSHOT.lock.json` + `make verify-snapshot` | A | B | downloads | 2:30 PM | done@4a7553a (snapshot e808281f001a; a/data-api, unmerged) |
 | B0 | Review `config.yaml`, `method/config.py`, CONTRACTS §3–5 | B | A | D0 | 2:15 PM | done@d5efab0 (A replied e7ff01c; B ACK 4ed08e1) |
 | C0 | Web scaffold, generated types, fixture client, routes, synthetic banner | C | D | D0 | 2:30 PM | todo |
-| A1 | Parse + filter + normalize + drop personal fields (bounded) | A | B | A0 | 2:45 PM | todo |
-| A2 | Dedup, availability, dup_text, redaction, `ingest_report`, complaint tables | A | B | A1 | 2:55 PM PR | todo |
+| A1 | Parse + filter + normalize + drop personal fields (bounded) | A | B | A0 | 2:45 PM | review (a/data-api dffb361; no PR yet) |
+| A2 | Dedup, availability, dup_text, redaction, `ingest_report`, complaint tables | A | B | A1 | 2:55 PM PR | review (a/data-api dffb361; gate1 DB 317 MB reconciled) |
 | B1 | Hand-calculated method fixtures | B | A | B0 | 2:40 PM | review (PR #2 @ b66915d) |
 | B2 | Groups, monthly counts, Poisson score, alerts, episodes, cooldown, explanation | B | A | B1 | 2:55 PM PR | review (PR #2 @ b66915d) |
 | D1 | Track/rules/judging/video-length answers → SOURCES.md | D | C | — | 3:30 PM | doing (facts in SOURCES.md 15:30; track/video/Zero Data need humans) |
@@ -29,7 +29,7 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | A6 | API tests incl. timing | A | B | A5 | 5:30 PM | todo |
 | C4 | Results page | C | D | C0 | 5:00 PM | todo |
 | C5 | States + accessibility | C | D | C2–C4 | 5:30 PM | todo |
-| D5 | Real-data deploy path (size/upload strategy) | D | C | A5 | 5:30 PM | doing (sync_data.sh ready; waits on A's DB) |
+| D5 | Real-data deploy path (size/upload strategy) | D | C | A5 | 5:30 PM | doing (decision: rsync path, gate1 DB 317 MB; recheck full DB at A4) |
 | C6 | Vitest suite (agreement, states, boundaries, banned words, VIN) | C | D | C2–C5 | 6:00 PM | todo |
 | B7 | Development grid search within alert budget | B | A | B6 | 6:00 PM | doing (code in PR #2, no real run) |
 | A7 | Tier-3 labels, development sample of 20 | A | — | B5 | 7:00 PM | todo |
@@ -54,6 +54,9 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | 15:30 | REQUEST B→D `make tune` accepted (Makefile on d/delivery) | D |
 | 15:30 | REQUEST D→C Playwright + UI hooks; REQUEST D→A /healthz git_sha from RR_GIT_SHA | D |
 | 15:30 | PR #2 (B) waits for A's "Reviewed b66915d: ok"; CI green; `make test` on ~/rr-int → 127 passed | D |
+| 15:45 | ACK B→D 61c0c8c (bootstrap merged on b/method at b66915d; make tune noted) | B |
+| 15:50 | a/data-api dffb361: make test 78 passed, ownership 0; REQUEST D→A untrack 8 .pyc, open PR, then contract-v1 (CONTRACTS.md doc-only) | D |
+| 15:50 | D5: gate1 DB 317 MB (A's handoff) ≤ 500 MB → `make sync-data` path | D |
 
 ## Gate log
 | Gate | Time | Main SHA | Result | Decision |

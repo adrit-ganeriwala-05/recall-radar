@@ -4,7 +4,7 @@ Restart memory for session rr-D. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 15:35 ET
+- Updated: 2026-10-10 15:50 ET
 - Branch / HEAD: d/delivery @ (see `git log -1`; this commit) — checkout `~/recall-radar`; integration checkout `~/rr-int`
 - Last origin/main merged: 61c0c8c (d/delivery is built on it)
 - Contract version: 1.0.0 (tag `contract-v1` not yet created)
@@ -28,18 +28,20 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 1. Merge window: PR #2 after A's review (EXECUTION_PLAN §5 commands); then my PR (C reviews)
 2. contract-v1 tag when A reports "ready to tag contract-v1 at <sha7>" and it is on main
 3. D2 fixture deploy once the VM exists; D3 run vs `make serve-fixture` once A5 lands
-4. D5 measure A's DuckDB size → `make sync-data` or VM pipeline; D6 at 7:00 PM
+4. D5: gate1 DB 317 MB → `make sync-data` (rsync path); recheck size at A4; D6 at 7:00 PM
 5. D7 fill at B9 (`make submission CUT=1`), D8 only if Gate 3 passes
 
 ## Last passing commands (exact)
 - `make test` → 39 passed (24 + 15 tools), secrets 0, claims 0 @ d/delivery 3670062
 - `cd ~/rr-int && make test` on origin/b/method b66915d → 127 passed, 1 deselected
+- `cd ~/rr-int && make test` on origin/a/data-api dffb361 → 78 passed, 1 deselected; ownership 0 violations
 
 ## Blockers, requests sent, requests received
 - Received: REQUEST B→D `20261010-1505-B-to-D-makefile-tune.md` → accepted, in Makefile
 - Sent: `20261010-1530-D-to-C-e2e-hooks.md` (Playwright dep, e2e script, vitest exclude, 5 hooks)
 - Sent: `20261010-1530-D-to-A-healthz-sha.md` (/healthz git_sha from RR_GIT_SHA/REVISION)
-- Sent: `20261010-1530-D-to-B-bootstrap-landed-tune.md` (bootstrap on main; everyone merge origin/main)
+- Sent: `20261010-1530-D-to-B-bootstrap-landed-tune.md` (bootstrap on main) → ACK B 15:45 (merged at b66915d)
+- Sent: `20261010-1550-D-to-A-pr-pycache-contract-v1.md` (untrack 8 .pyc, open PR, then contract-v1 from dffb361)
 - Blocked on humans: VM, main track, video length, Zero Data answer
 - C has pushed nothing (c/web = init at 15:32)
 
