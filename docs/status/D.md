@@ -4,11 +4,11 @@ Restart memory for session rr-D. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 18:45 ET
+- Updated: 2026-10-10 19:25 ET
 - Branch / HEAD: d/delivery @ (see `git log -1`; this commit) — checkout `~/recall-radar`; integration checkout `~/rr-int`
-- Last origin/main merged: 5dca3a3
+- Last origin/main merged: a775d09
 - Contract version: 1.0.0 (tag `contract-v1` → 5dca3a3)
-- Snapshot id / config hash / availability basis: n/a / 59931d27c785 / n/a
+- Snapshot id / config hash / availability basis: n/a / 0c26e23e0a3a (after PR #2) / LDATE_PLUS_7
 - Mode: implementing (regular phase; D0 open only for the contract-v1 tag)
 
 ## Done (task id → commit → evidence)
@@ -26,18 +26,19 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 
 - D4 merged PR #6 (A4-A6) at reviewed head fdcb05c → main 8ef4d3f
 - D2 trial deploy d19a570 (fixture) → http://64.177.53.230 → integration 11 passed/10 skipped, Playwright 2/2, outage check 0 FAIL
+- D4 merged PR #2 (B) → main c70db51; deleted b/freeze, d/bootstrap
+- D4 re-review of PR #5 at C stand-in's head 22e781a → "Reviewed 22e781a: ok" (72 web tests, live build has 0 fixture JSON, no secrets, smoke 2/2 both modes) → merged → main a775d09, tree = reviewed tree
+- `make check` on d/delivery cc9eda0 → 285 Python + 72 web passed (after `make setup`; first run failed 127 for missing node_modules — corrected on PR #3)
 
 ## In progress
+- D4: PR #3 (d/delivery, head cc9eda0) CI green — waiting for C's stand-in "Reviewed cc9eda0: ok" (C back 22:30). Blocks the real deploy: main has no deploy/ until it merges
 - D1: humans must pick main track, get video length and Zero Data answer
-- D2: waiting for the VM (human creates it; IP into `.env` as RR_VM_HOST) → `make vm-setup`, `make deploy REF=origin/main MODE=fixture`
-- D4: PR #2 (B, head b66915d) CI green, `make test` on ~/rr-int 127 passed — merge after A comments "Reviewed b66915d: ok"
 
 ## Next (in order)
-1. Merge window: PR #2 after A's review (EXECUTION_PLAN §5 commands); then my PR (C reviews)
-2. contract-v1 tag when A reports "ready to tag contract-v1 at <sha7>" and it is on main
-3. D2 fixture deploy once the VM exists; D3 run vs `make serve-fixture` once A5 lands
-4. D5: gate1 DB 317 MB → `make sync-data` (rsync path); recheck size at A4; D6 at 7:00 PM
-5. D7 fill at B9 (`make submission CUT=1`), D8 only if Gate 3 passes
+1. Merge PR #3 at the reviewed head (--match-head-commit)
+2. After B's freeze-v1 + B9: get recall_radar.duckdb built with the frozen config → `make sync-data` → `make deploy REF=origin/main` (cached) → integration RR_RELEASE=1, e2e, outage-check RELEASE=1
+3. Gate 2 (late) / Gate 3 (9 PM) on ~/rr-int; tag lkg-g<N>
+4. D7 `make submission CUT=1` after B9; D9 video; D10 rc1 + submit by 7:30. D8 cut (Gate 2 slipped)
 
 ## Last passing commands (exact)
 - `make test` → 39 passed (24 + 15 tools), secrets 0, claims 0 @ d/delivery 3670062
