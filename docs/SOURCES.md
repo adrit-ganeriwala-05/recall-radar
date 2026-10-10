@@ -8,9 +8,12 @@ Checked 2026-10-10 (America/New_York) unless noted. Re-verify only when a questi
 | Deadline | Sun Oct 11 2026, 9:00 AM EDT | https://hacklanta.devpost.com/ |
 | Team size | ≤ 4; every member registered at hacklanta.dev | same |
 | Submission must include | description, problem/users, roster, **one main track** + sponsor challenges, **public repo + README**, demo link or run instructions, short demo video, tech/APIs/datasets, pre-event disclosure, judge credentials | same |
-| Judging criteria | "TBA at Opening Ceremony" → ask organizers | same |
-| Tracks / challenges | Social Good (Cox Automotive), Creative, AI/ML, Fintech; Replit, Photon, Shock Tracker (Zero Data); MLH side quests incl. Vultr, Gemini, GoDaddy | https://hacklanta.dev/ , https://www.mlh.com/events/hacklanta-db/prizes (per PRD) |
-| Open | main track choice (Social Good per PRD vs AI/ML per earlier team plan); video length; Zero Data eligibility | D asks organizers |
+| Judging criteria | Overview still says "TBA at Opening Ceremony". Rules page (D1, re-checked 15:30): "evaluated using the criteria associated with their selected track or challenge. General considerations may include: clarity and importance of the problem, originality and creativity, technical execution, functionality and completeness, product design and user experience, practical value or potential impact, quality of the demonstration and presentation, fit with the selected track or sponsor challenge, appropriate use of any required sponsor technology." Judges "may inspect the submission, repository, live demo, and video and may ask the team questions" | https://hacklanta.devpost.com/rules (15:30) |
+| Video length | **Not stated** ("A short demo video showing the project in action"). Plan default: 3 minutes; ask organizers | overview + rules (15:30) |
+| Repo | Overview: "A public source-code repository with a useful README"; rules: "accessible". Make it public before submitting | same |
+| Pre-event work | "Teams must clearly disclose anything that existed before Hacklanta. The substantial design, development, and integration … must happen during the event." → `submission/DISCLOSURE.md` | same |
+| Tracks / challenges | Social Good ("access, safety, mobility, and the everyday systems communities run on"), Creative, AI/ML ("agents, assistants, and data pipelines that take real tasks off someone's plate"), Fintech; challenges Replit, Photon, Zero Data ("no accounts, tracking, profiles, or stored personal info"); MLH side quests incl. Best Use of Vultr ("Deploy your project on Vultr"), Gemini API, GoDaddy Registry domain | https://hacklanta.dev/ , overview (15:30) |
+| Open (humans decide) | **main track** (Social Good per PRD — its text names safety and mobility — vs AI/ML per earlier plan; D does not decide); **video length**; **Zero Data** eligibility (we store public complaint records with personal fields dropped — needs an organizer yes) | organizer desk / Discord |
 
 ## Data (A)
 | File | Size | NHTSA "Updated" (ET) | URL |
