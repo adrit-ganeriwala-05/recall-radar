@@ -57,6 +57,8 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | 15:45 | ACK B→D 61c0c8c (bootstrap merged on b/method at b66915d; make tune noted) | B |
 | 15:50 | a/data-api dffb361: make test 78 passed, ownership 0; REQUEST D→A untrack 8 .pyc, open PR, then contract-v1 (CONTRACTS.md doc-only) | D |
 | 15:50 | D5: gate1 DB 317 MB (A's handoff) ≤ 500 MB → `make sync-data` path | D |
+| 16:05 | PR #4 head 2f7ca0a has 3 commits after B's "Reviewed f669be5: ok" (A3, redaction, family_id doc). Human chose: B re-reviews 2f7ca0a, then D merges + tags contract-v1. D check at 2f7ca0a: make test 99 passed, ownership 0 | D + human |
+| 16:05 | .gitignore `data/` `logs/` → `/data/` `/logs/` (A's request: they ignored recall_radar/data and tests/data) | D |
 
 ## Gate log
 | Gate | Time | Main SHA | Result | Decision |
