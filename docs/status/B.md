@@ -4,12 +4,12 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 15:30 ET
+- Updated: 2026-10-10 15:45 ET
 - Branch / HEAD: b/method, pushed to origin (first push 15:00 ET; code tip 0cc27a9, docs after it — check `git log`)
 - Last origin/main merged: 61c0c8c (D0 bootstrap bundle), merged 15:28 ET; the only conflict was this file (add/add), kept B's version
 - Contract version: 1.0.0
 - Snapshot id / config hash / availability basis: n/a / 59931d27c785 / DATEA (config default, A's Gate 1 decision pending)
-- Mode: waiting(A's ingest commit 00e7477 is not on origin yet; A3 investigations tables, since 15:26)
+- Mode: waiting(A's review of PR #2 at b66915d; A's ingest 00e7477 not on origin; A3 tables — since 15:41)
 
 ## Done (task id → commit → evidence)
 - B1 → fe38661 → `tests/fixtures/method/*.csv` + hand calculations in `docs/METHOD_NOTES.md` §4
@@ -42,6 +42,9 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - B→A contract review (13 points): answered by A in e7ff01c on a/data-api; ACK + changes in `docs/handoffs/20261010-1520-B-to-A-ack-review-reply.md`. Item 12 (`generated_at`) still needs C's ack.
 - Ownership slip, fixed: 83ed0ac tracked ten bundle docs B does not own (too-broad `git add docs`); untracked again at the tip. Add files by exact path from now on.
 - B9 is NOT done: 0cc27a9's subject says "B7 B9 B10" but it is code + synthetic tests only. No held-out run exists.
+
+- PR #2 (b/method → main) open at head b66915d, CI green, no review yet at 15:41. D asked A to comment "Reviewed b66915d: ok". Do not push to b/method until that review is in or A asks for changes: a new head SHA would void the review.
+- Received 15:40: HANDOFF D→A,B,C 61c0c8c (record `20261010-1530-D-to-B-bootstrap-landed-tune.md` is on d/delivery c551fdd, PR #3, not on main). Already merged at 15:28. `make tune` accepted, lands with PR #3; until then run the module directly. ACK given to the human.
 
 ## Decisions (what, why, who agreed)
 - Cold start = months since first complaint month < 6 (spec wording). B, not yet reviewed by A.
