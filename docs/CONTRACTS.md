@@ -15,7 +15,8 @@ Version 1 is frozen at tag `contract-v1` after the 2:00–2:15 PM review.
   systems counts once in each system's group and once in vehicle totals. UI says "complaints".
 - IDs: `group_id = "g_" + sha1("MAKE|MODEL|YEAR|SYSTEM|SUB_ISSUE")[:12]` (empty sub-issue in
   P0); `episode_id = "E-" + base36 counter ordered by (alert_date, group_id)`; `family_id =
-  "F-" + earliest action number`; `run_id = <period>-<config_hash>-<git_sha7>`.
+  "F-" + earliest action number` (when that action heads more than one family, each gets
+  `"~" + comp_system` with spaces as `_` appended); `run_id = <period>-<config_hash>-<git_sha7>`.
 - Every top-level payload carries `provenance` with `data_label`:
   `synthetic_fixture` (tests/UI dev only) · `cached_real` (real records, not an evaluation) ·
   `measured_evaluation` (written by `evaluate`). Real labels require snapshot_id, data_as_of,
@@ -75,6 +76,13 @@ A cutoff `C` means knowledge at the **start** of day `C`:
 | `alert_match` | (episode_id, config_hash) | all OutcomeMatch fields |
 | `eval_case` | (run_id, family_id) | EvalCase fields |
 | `eval_metric` | (run_id, name) | Metric fields + period, config_hash, git_sha, snapshot_id |
+Storage notes (B0 review, doc only): `alert_episode` stores the vehicle flat (`make`, `model`,
+`model_year`), `sub_issue` NULL; `after_official_action` is final only after `make match`.
+`detector_score` has a row for every month from the group's first complaint month to the last
+complete month; `alert` = month belongs to an episode (cooldown-suppressed crossings are false),
+which is the meaning of `MonthlyPoint.alert` and `ReplayFrame.alert_active`. `group_month` holds
+only months with `n_distinct > 0` (missing month = 0). `episode_id` = `E-` + 4-wide upper-case
+base36. `eval_case.vehicles` is JSON text; `comp_system` is `""` when the family has none.
 Every row produced by B carries `config_hash`; reruns with the same snapshot + config + seed
 produce byte-identical `exports/results*.json|csv` (B's reproducibility test).
 
@@ -123,3 +131,5 @@ defect in the producer or a change request, never a reason to edit the contract 
 
 ## 10. Changelog
 - 1.0.0 (2026-10-10): initial contract from the bootstrap bundle.
+- 1.0.0 (2026-10-10, review): doc-only clarifications from B's B0 review (family_id
+  collision suffix, §5 storage notes). No shape change; C sent no comments.
