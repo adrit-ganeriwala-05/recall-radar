@@ -86,7 +86,7 @@ def test_bundle_contents_validate_and_manifest_matches(repo, tmp_path, rows, mon
         row = by_key[("development", m.name)]
         assert row[2] == m.status.value
         assert row[3] == ("" if m.value is None else repr(round(m.value, 6)))
-    assert by_key[("development", "early_coverage_sample")][3:8] == ["", "", "", "", ""]  # pending: no numbers
+    assert by_key[("development", "pipeline_runtime_s")][2:8] == ["pending", "", "", "", "", ""]  # pending: no numbers
     assert sum(len(b) for b in files.values()) < 5 * 1024 * 1024
 
 

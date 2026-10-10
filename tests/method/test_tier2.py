@@ -9,6 +9,8 @@ import pandas as pd
 import pytest
 from conftest import FIXTURE_HASH, FIXTURE_PARAMS, fixture_config
 
+from recall_radar import contracts as C
+from recall_radar.method import candidates as K
 from recall_radar.method import evaluate as E
 from recall_radar.method import match as M
 from recall_radar.method.detect import detect, write_output
@@ -154,3 +156,104 @@ def test_controls_are_widened_like_tier2_cases():
     assert E.control_covered(controls, paired, (60, 730), year_slack=0) == [False]  # model year 2018 needs the slack
     other_system = pd.DataFrame([{**ep, "model_year": 2017, "comp_system": "STEERING"}])
     assert E.control_covered(controls, other_system, (60, 730), year_slack=1) == [False]
+
+
+# ----------------------------------------------------------------------------- tier 3 (manual labels)
+
+
+def test_retained_share_leaves_out_rows_outside_the_date_range(db):
+    db.execute("CREATE OR REPLACE TABLE ingest_report (snapshot_id VARCHAR, stage VARCHAR, reason VARCHAR, n BIGINT)")
+    db.execute(
+        """INSERT INTO ingest_report VALUES ('s', 'read', 'file', 1000), ('s', 'excluded', 'ldate_out_of_scope', 600),
+           ('s', 'excluded', 'prod_type_not_vehicle', 40), ('s', 'retained', 'complaint_row', 360)"""
+    )
+    m = E.retained_share(db)
+    assert (m.numerator, m.denominator, m.value) == (360, 400, 0.9)  # 1000 read - 600 outside the range
+    db.execute("DROP TABLE ingest_report")
+
+
+def candidates_for(db):
+    return E.evaluation_inputs(db, fixture_config(), "development", "full")["candidates"]
+
+
+def test_candidates_are_sample_families_without_an_early_alert(db):
+    M.run(db, fixture_config())
+    cand = candidates_for(db)
+    # the sample holds all 6 eligible families; F-PE18101 (tier 2) and F-PE18106 (tier 1) are already early.
+    # The other four share the BRAKER make and model, and the one episode (alert 2018-04-01) lies
+    # 92 to 95 days before their opening dates.
+    assert cand["family_id"].tolist() == ["F-PE18102", "F-PE18103", "F-PE18104", "F-PE18105"]
+    assert set(cand["start_month"]) == {"2018-03"} and set(cand["window_count"]) == {6}
+    assert not {"peak_score", "score", "ratio", "baseline_lambda"} & set(K.CANDIDATE_COLS)  # no scores for the reviewer
+    with_subject = K.add_subjects(db, cand).set_index("family_id")["investigation_subject"]
+    assert with_subject["F-PE18104"] == "PEDAL INTERFERENCE"
+
+
+def write_labels(tmp_path, cand, labels: dict[str, str]):
+    rows = cand[cand["family_id"].isin(labels)][K.KEY].copy()
+    rows["label"] = [labels[f] for f in rows["family_id"]]
+    rows["reviewer"] = "A"
+    rows.to_csv(tmp_path / "match_labels_dev.csv", index=False)
+
+
+def test_sample_metric_is_pending_until_every_candidate_is_labeled(db, tmp_path):
+    cfg = fixture_config()
+    cand = candidates_for(db)
+    summary, _ = E.evaluate(db, cfg, "development", "full", review_dir=tmp_path)
+    sample = {m.name: m for m in summary.metrics}["early_coverage_sample"]
+    assert sample.status == C.MetricStatus.pending and "0 of 4 candidate pairs" in sample.note
+
+    write_labels(tmp_path, cand, {"F-PE18104": "related", "F-PE18102": "not_related", "F-PE18103": "unsure"})
+    summary, _ = E.evaluate(db, cfg, "development", "full", review_dir=tmp_path)
+    sample = {m.name: m for m in summary.metrics}["early_coverage_sample"]
+    assert sample.status == C.MetricStatus.pending and "3 of 4 candidate pairs" in sample.note
+    # labels already show on the cases, but an unfinished review never produces a number
+    assert {c.family_id: c.review_label for c in summary.cases}["F-PE18104"] == "related"
+
+
+def test_labels_add_tier3_to_the_sample_only(db, tmp_path):
+    cfg = fixture_config()
+    cand = candidates_for(db)
+    write_labels(tmp_path, cand, {"F-PE18104": "related", "F-PE18102": "not_related", "F-PE18103": "unsure", "F-PE18105": "not_related"})
+    summary, _ = E.evaluate(db, cfg, "development", "full", review_dir=tmp_path)
+    got = {c.family_id: (c.status, c.match_tier.value, c.lead_days, c.review_label) for c in summary.cases}
+    assert got == {
+        "F-PE18101": ("early", "2", 91, None),
+        "F-PE18102": ("missed", "none", None, "not_related"),
+        "F-PE18103": ("ambiguous", "none", None, "unsure"),  # unresolved after review: never a hit
+        "F-PE18104": ("early", "3", 94, "related"),  # alert 2018-04-01, opened 2018-07-04
+        "F-PE18105": ("missed", "none", None, "not_related"),
+        "F-PE18106": ("early", "1", 275, None),
+    }
+    m = {x.name: x for x in summary.metrics}
+    assert (m["early_coverage_sample"].numerator, m["early_coverage_sample"].denominator) == (3, 6)
+    assert "manual matches have no chance comparison" in m["early_coverage_sample"].note
+    # the all-families metric stays tiers 1-2
+    assert (m["early_coverage_all"].numerator, m["early_coverage_all"].denominator) == (2, 6)
+    C.EvaluationSummary.model_validate_json(E.summary_json(summary))
+
+
+def test_stale_or_malformed_label_files_cannot_add_matches(db, tmp_path):
+    cfg = fixture_config()
+    cand = candidates_for(db)
+    # a "related" label for a pair that is not a current candidate is ignored
+    stale = pd.DataFrame([{"family_id": "F-PE18102", "group_id": "g_000000000000", "start_month": "2018-03", "label": "related", "reviewer": "A"}])
+    stale.to_csv(tmp_path / "match_labels_dev.csv", index=False)
+    summary, _ = E.evaluate(db, cfg, "development", "full", review_dir=tmp_path)
+    assert {c.family_id: c.status for c in summary.cases}["F-PE18102"] == "missed"
+
+    write_labels(tmp_path, cand, {"F-PE18104": "definitely"})
+    with pytest.raises(ValueError, match="unknown labels"):
+        E.evaluate(db, cfg, "development", "full", review_dir=tmp_path)
+    twice = pd.concat([cand[K.KEY].head(1)] * 2).assign(label="related")
+    twice.to_csv(tmp_path / "match_labels_dev.csv", index=False)
+    with pytest.raises(ValueError, match="labeled twice"):
+        E.evaluate(db, cfg, "development", "full", review_dir=tmp_path)
+
+
+def test_candidate_file_round_trip(db, tmp_path):
+    cand = K.add_subjects(db, candidates_for(db))
+    K.write_candidates(cand, tmp_path / "candidates_dev.csv")
+    back = pd.read_csv(tmp_path / "candidates_dev.csv", dtype=str, keep_default_na=False)
+    assert list(back.columns) == K.CANDIDATE_COLS and len(back) == 4
+    assert set(back["label"]) == {""} and "episode_id" not in back.columns

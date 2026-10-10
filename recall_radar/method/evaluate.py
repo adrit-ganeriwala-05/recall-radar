@@ -26,6 +26,7 @@ import numpy as np
 import pandas as pd
 
 from recall_radar import contracts as C
+from recall_radar.method import candidates as K
 from recall_radar.method import match as M
 from recall_radar.method.config import config_hash as hash_config_file
 from recall_radar.method.config import load_config
@@ -59,8 +60,15 @@ def wilson_interval(k: int, n: int, z: float = Z_95) -> tuple[float, float]:
     return max(0.0, centre - half), min(1.0, centre + half)
 
 
+FROZEN_REVIEW_FILES = ("review/system_map.csv", "review/keywords.txt")
+
+
 def check_freeze(config_path: Path | str, repo: Path | str = REPO_ROOT, tag: str = FREEZE_TAG) -> str:
-    """Return the tag name if it exists and froze exactly the working config; else raise."""
+    """Return the tag name if it exists and froze exactly the working config and matching files.
+
+    The tag covers config.yaml (compared by config hash, so comments do not matter) and the
+    tier-2 review files (compared byte for byte). Any difference seals the held-out period.
+    """
     if git("rev-parse", "-q", "--verify", f"refs/tags/{tag}", cwd=repo) is None:
         raise FreezeError(f"held_out is sealed: tag {tag} does not exist")
     frozen = git("show", f"{tag}:config.yaml", cwd=repo)
@@ -75,6 +83,13 @@ def check_freeze(config_path: Path | str, repo: Path | str = REPO_ROOT, tag: str
         raise FreezeError(
             f"held_out is sealed: working config hash {working} differs from {tag} ({frozen_hash})"
         )
+    root = Path(config_path).resolve().parent
+    for rel in FROZEN_REVIEW_FILES:
+        at_tag = git("show", f"{tag}:{rel}", cwd=repo)
+        path = root / rel
+        now = path.read_text().strip() if path.is_file() else None
+        if at_tag != now:
+            raise FreezeError(f"held_out is sealed: {rel} differs from {tag}")
     return tag
 
 
@@ -368,13 +383,46 @@ def rq_aq_only_note(con: duckdb.DuckDBPyConnection) -> str:
 
 
 def retained_share(con: duckdb.DuckDBPyConnection) -> C.Metric:
+    """Rows retained / rows read inside the configured received-date range.
+
+    The loaded files also hold years outside the range (they are read and set aside on
+    purpose); those rows are left out of the denominator and counted in the note.
+    """
     name = "ingestion_retained_share"
     if not table_exists(con, "ingest_report"):
         return metric(name, status=C.MetricStatus.pending, note="ingest_report not available")
     rows = dict(con.execute("SELECT lower(stage), sum(n) FROM ingest_report GROUP BY 1").fetchall())
     if not rows.get("read") or "retained" not in rows:
         return metric(name, status=C.MetricStatus.pending, note="ingest_report has no read/retained stages")
-    return metric(name, rows["retained"] / rows["read"], k=int(rows["retained"]), n=int(rows["read"]), note="rows retained / rows read")
+    out_of_range = con.execute(
+        "SELECT coalesce(sum(n), 0) FROM ingest_report WHERE lower(stage) = 'excluded' AND lower(reason) = 'ldate_out_of_scope'"
+    ).fetchone()[0]
+    in_range = int(rows["read"]) - int(out_of_range)
+    return metric(
+        name, rows["retained"] / in_range, k=int(rows["retained"]), n=in_range,
+        note=f"rows retained / rows read inside the configured received-date range; {int(out_of_range)} rows outside the range are not counted",
+    )  # fmt: skip
+
+
+def evaluation_inputs(con: duckdb.DuckDBPyConnection, cfg: dict[str, Any], period: str, scope: str) -> dict[str, Any]:
+    """Families, episodes, tier 1-2 pairs and cases for a period, plus the tier-3 candidate rows."""
+    lo, hi = period_bounds(cfg, period, scope)
+    baseline_end = date.fromisoformat(str(cfg["periods"]["baseline_only"][1]))
+    all_families = M.load_families(con)
+    all_vehicles = M.load_family_vehicles(con, all_families)
+    in_window = all_families[(all_families["odate_min"] >= lo) & (all_families["odate_min"] <= hi)]
+    families = eligibility(in_window, all_vehicles, cfg)
+    vehicles = all_vehicles[all_vehicles["family_id"].isin(set(families["family_id"]))]
+    episodes = M.load_episodes(con, cfg["config_hash"])
+    # alerts raised while a group only had baseline-period data are never counted
+    episodes = episodes[episodes["alert_date"] > baseline_end + timedelta(days=1)]
+    pairs = M.all_pairs(con, episodes, vehicles, families, cfg)
+    cases = build_cases(families, vehicles, pairs, cfg)
+    return {
+        "lo": lo, "hi": hi, "all_families": all_families, "all_vehicles": all_vehicles, "families": families,
+        "vehicles": vehicles, "episodes": episodes, "pairs": pairs, "cases": cases,
+        "candidates": K.sample_candidates(cases, episodes, pairs, cfg),
+    }  # fmt: skip
 
 
 def evaluate(
@@ -385,8 +433,13 @@ def evaluate(
     *,
     config_path: Path | str = "config.yaml",
     repo: Path | str = REPO_ROOT,
+    review_dir: Path | str | None = None,
 ) -> tuple[C.EvaluationSummary, pd.DataFrame]:
-    """Compute the summary for one period. Returns it with the control table (for review)."""
+    """Compute the summary for one period. Returns it with the control table (for review).
+
+    Every metric uses tiers 1-2 only, except `early_coverage_sample`, which adds A's manual
+    labels (tier 3) for the seeded sample. `cases` shows the tier 1-3 view of each family.
+    """
     freeze_tag = check_freeze(config_path, repo) if period == C.Period.held_out.value else None
     if freeze_tag is None and git("rev-parse", "-q", "--verify", f"refs/tags/{FREEZE_TAG}", cwd=repo) is not None:
         try:
@@ -396,23 +449,47 @@ def evaluate(
     reviewed = freeze_tag is not None
     tag_note = None if reviewed else PRELIMINARY
     early = tuple(cfg["evaluation"]["early_window_days"])
-    lo, hi = period_bounds(cfg, period, scope)
-    baseline_end = date.fromisoformat(str(cfg["periods"]["baseline_only"][1]))
-
-    all_families = M.load_families(con)
-    all_vehicles = M.load_family_vehicles(con, all_families)
-    in_window = all_families[(all_families["odate_min"] >= lo) & (all_families["odate_min"] <= hi)]
-    families = eligibility(in_window, all_vehicles, cfg)
-    vehicles = all_vehicles[all_vehicles["family_id"].isin(set(families["family_id"]))]
-
-    episodes = M.load_episodes(con, cfg["config_hash"])
-    # alerts raised while a group only had baseline-period data are never counted
-    episodes = episodes[episodes["alert_date"] > baseline_end + timedelta(days=1)]
-    pairs = M.all_pairs(con, episodes, vehicles, families, cfg)
+    inp = evaluation_inputs(con, cfg, period, scope)
+    lo, hi = inp["lo"], inp["hi"]
+    all_families, all_vehicles = inp["all_families"], inp["all_vehicles"]
+    families, vehicles, episodes, pairs, cases = inp["families"], inp["vehicles"], inp["episodes"], inp["pairs"], inp["cases"]
     use_tier2 = bool((pairs["tier"] == C.MatchTier.rule_based.value).any()) if len(pairs) else False
-    cases = build_cases(families, vehicles, pairs, cfg)
     tier1_only = build_cases(families, vehicles, pairs[pairs["tier"] == C.MatchTier.direct.value], cfg)
     n_early_tier1 = sum(c.eligible and c.status == C.OutcomeStatus.early.value for c in tier1_only)
+
+    # tier 3: A's labels for the sample's candidate rows
+    candidates = inp["candidates"]
+    labels = K.load_labels(period, review_dir)
+    family_label, n_labeled, n_candidates = K.review_state(labels, candidates)
+    t3 = K.tier3_pairs(labels, candidates, families)
+    shown = build_cases(families, vehicles, pd.concat([pairs, t3], ignore_index=True), cfg) if len(t3) else cases
+    shown = [
+        C.EvalCase(  # rebuilt, not copied, so the contract validates the changed fields
+            **{
+                **c.model_dump(),
+                "review_label": family_label.get(c.family_id),
+                # unresolved after review = ambiguous, never a hit
+                "status": C.OutcomeStatus.ambiguous.value
+                if family_label.get(c.family_id) == "unsure" and c.status == "missed"
+                else c.status,
+            }
+        )
+        for c in shown
+    ]
+    sample = [c for c in shown if c.in_sample]
+    if n_labeled < n_candidates:
+        sample_metric = metric(
+            "early_coverage_sample", status=C.MetricStatus.pending,
+            note=f"{n_labeled} of {n_candidates} candidate pairs of the seeded sample are labeled ({K.labels_path(period, review_dir).name})",
+        )  # fmt: skip
+    else:
+        sample_metric = proportion(
+            "early_coverage_sample", sum(c.status == C.OutcomeStatus.early.value for c in sample), len(sample),
+            "; ".join(x for x in (
+                tag_note, f"tiers 1-3 on the seeded sample; {n_candidates} candidate pairs reviewed by hand",
+                "manual matches have no chance comparison",
+            ) if x),
+        )  # fmt: skip
 
     eligible = [c for c in cases if c.eligible]
     early_cases = [c for c in eligible if c.status == C.OutcomeStatus.early.value]
@@ -456,7 +533,7 @@ def evaluate(
         metric("excluded_families", len(cases) - len(eligible), k=len(cases) - len(eligible), n=len(cases),
                note="see exclusions" + rq_aq_only_note(con)),
         proportion("early_coverage_all", len(early_cases), len(eligible), f"{note}; {inv_note}"),
-        metric("early_coverage_sample", status=C.MetricStatus.pending, note="needs tier-3 review labels for the seeded sample"),
+        sample_metric,
         proportion("chance_coverage", int(controls["covered"].sum()), len(controls),
                    "; ".join(x for x in (
                        tag_note, f"{controls['family_id'].nunique()} cases have at least one control",
@@ -508,7 +585,7 @@ def evaluate(
         seed=int(cfg["seed"]),
         freeze_tag=freeze_tag,
         metrics=metrics,
-        cases=cases,
+        cases=shown,
         audit=audit,
         exclusions=[C.ExclusionCount(reason=r, n=int(n)) for r, n in sorted(reasons.items())],
     )

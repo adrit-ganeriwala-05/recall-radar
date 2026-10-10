@@ -85,11 +85,16 @@ def test_metrics_from_hand_counts(result):
     # 6 episodes in total, all starting inside 2016-01..2019-12 (48 months)
     assert (m["episodes_per_month"].numerator, m["episodes_per_month"].denominator) == (6, 48)
     assert m["ingestion_retained_share"].value == 0.75  # 150 retained / 200 read; the investigations stage is not a complaint stage
+    assert "0 rows outside the range" in m["ingestion_retained_share"].note
     assert m["excluded_families"].note == (
         "see exclusions; not cases at all: 3 RQ/AQ-only families in the whole investigations file (any year)"
     )
-    for name in ("early_coverage_sample", "pipeline_runtime_s"):
-        assert m[name].status == C.MetricStatus.pending and m[name].value is None
+    assert m["pipeline_runtime_s"].status == C.MetricStatus.pending and m["pipeline_runtime_s"].value is None
+    # the sample is all 5 eligible families; none of the three without an early alert has another
+    # alert of its make and model in its early window, so there is nothing to label: 2 of 5
+    sample = m["early_coverage_sample"]
+    assert (sample.status, sample.numerator, sample.denominator) == (C.MetricStatus.measured, 2, 5)
+    assert "0 candidate pairs reviewed by hand" in sample.note
     for name in ("top25_matched", "top25_unmatched", "top25_ambiguous"):
         assert m[name].status == C.MetricStatus.not_applicable
 
@@ -230,6 +235,23 @@ def test_held_out_refuses_when_config_differs_from_the_tag(repo):
     # comments and spacing are not part of the hash; values are
     (repo / "config.yaml").write_text(text + "\n# a comment\n")
     assert E.check_freeze(repo / "config.yaml", repo) == "freeze-v1"
+
+
+def test_freeze_also_covers_the_tier2_review_files(repo):
+    (repo / "review").mkdir()
+    (repo / "review" / "system_map.csv").write_text("inv_system,complaint_system,why\nA,B,test\n")
+    (repo / "review" / "keywords.txt").write_text("STALL\n")
+    run_git(repo, "add", "review")
+    run_git(repo, "commit", "-q", "-m", "review files")
+    run_git(repo, "tag", "-a", "freeze-v1", "-m", "frozen")
+    assert E.check_freeze(repo / "config.yaml", repo) == "freeze-v1"
+    (repo / "review" / "keywords.txt").write_text("STALL\nFIRE\n")
+    with pytest.raises(E.FreezeError, match="review/keywords.txt differs"):
+        E.check_freeze(repo / "config.yaml", repo)
+    (repo / "review" / "keywords.txt").write_text("STALL\n")
+    (repo / "review" / "system_map.csv").unlink()
+    with pytest.raises(E.FreezeError, match="review/system_map.csv differs"):
+        E.check_freeze(repo / "config.yaml", repo)
 
 
 def test_held_out_runs_with_the_tag_and_audits_top_episodes(repo, tmp_path_factory, rows):
