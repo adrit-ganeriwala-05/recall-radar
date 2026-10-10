@@ -17,6 +17,8 @@ on_vm() {
   local rel=$app/releases/$sha prev
   [ -d "$rel" ] || { echo "ERROR: $rel was not uploaded" >&2; exit 1; }
   chown -R rr:rr "$rel"
+  # Caddy (user caddy) serves web/dist itself; the upload keeps mktemp's 0700 on the release root.
+  chmod -R go+rX "$rel"
   echo "==> uv sync --locked --no-dev (user rr)"
   (cd "$rel" && runuser -u rr -- env HOME=/home/rr /usr/local/bin/uv sync --locked --no-dev --quiet)
   if [ "$mode" = cached ] && [ ! -s "$app/data/recall_radar.duckdb" ]; then
@@ -110,8 +112,9 @@ printf '%s\n' "$SHA" >"$BUILD/REVISION"
 printf 'RR_MODE=%s\nRR_GIT_SHA=%s\n' "$MODE" "$SHA" >"$BUILD/.deploy.env"
 if [ -f "$BUILD/web/package-lock.json" ]; then
   info "building web/dist (npm ci + build, VITE_API_MODE=live)"
-  npm --prefix "$BUILD/web" ci --no-audit --no-fund --loglevel=error
-  VITE_API_MODE=live npm --prefix "$BUILD/web" run build
+  # run npm inside web/: `npm --prefix <export dir>/web ci` fails there with EUSAGE
+  # ("Missing: web@0.1.0 from lock file") although the lock file is in sync.
+  (cd "$BUILD/web" && npm ci --no-audit --no-fund --loglevel=error && VITE_API_MODE=live npm run build)
   rm -rf -- "$BUILD/web/node_modules"
   [ -f "$BUILD/web/dist/index.html" ] || die "web build produced no web/dist/index.html"
   if grep -rEln "AIza[0-9A-Za-z_-]{35}|sk-ant-|GEMINI_API_KEY|RR_VM_" "$BUILD/web/dist"; then

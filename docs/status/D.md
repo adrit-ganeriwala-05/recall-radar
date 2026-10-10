@@ -4,7 +4,7 @@ Restart memory for session rr-D. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 18:10 ET
+- Updated: 2026-10-10 18:45 ET
 - Branch / HEAD: d/delivery @ (see `git log -1`; this commit) — checkout `~/recall-radar`; integration checkout `~/rr-int`
 - Last origin/main merged: 5dca3a3
 - Contract version: 1.0.0 (tag `contract-v1` → 5dca3a3)
@@ -23,6 +23,9 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 
 - D2 VM setup → 64.177.53.230 → `bash deploy/vm_setup.sh --site :80 --yes` exit 0 (Caddy 2.6.2, uv 0.13.0, user rr, ufw 22/80/443)
 - D4 review of PR #5 (C) → Reviewed 981ae41: ok; D's smoke 2/2 on C's real build (fixture + cached stub)
+
+- D4 merged PR #6 (A4-A6) at reviewed head fdcb05c → main 8ef4d3f
+- D2 trial deploy d19a570 (fixture) → http://64.177.53.230 → integration 11 passed/10 skipped, Playwright 2/2, outage check 0 FAIL
 
 ## In progress
 - D1: humans must pick main track, get video length and Zero Data answer

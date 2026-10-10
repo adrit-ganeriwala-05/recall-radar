@@ -15,7 +15,8 @@ on_vm() {
   [ -d "$app/current" ] || { echo "ERROR: no current release" >&2; exit 1; }
   # shellcheck disable=SC1091
   [ ! -f "$app/current/.deploy.env" ] || . "$app/current/.deploy.env"
-  cleanup() { systemctl stop "$unit" 2>/dev/null || true; systemctl reset-failed "$unit" 2>/dev/null || true; }
+  # literal unit name: the EXIT trap runs after on_vm's locals are gone
+  cleanup() { systemctl stop rr-outage-check 2>/dev/null || true; systemctl reset-failed rr-outage-check 2>/dev/null || true; }
   trap cleanup EXIT
   cleanup
 
@@ -41,12 +42,20 @@ on_vm() {
 
   BODY=""
   # check <path> <required: 1|0> — 200 passes; 503 "unavailable" is a WARN unless required.
+  # A .json/.csv path answered with HTML is the SPA fallback (file missing), not a pass.
   check() {
-    local path=$1 required=$2 code
-    code=$(curl -sS -m 15 -o /tmp/rr-outage-body -w '%{http_code}' "$base$path" || echo 000)
+    local path=$1 required=$2 code ctype
+    read -r code ctype < <(curl -sS -m 15 -o /tmp/rr-outage-body -w '%{http_code} %{content_type}\n' "$base$path" || echo "000 none")
     BODY=$(cat /tmp/rr-outage-body 2>/dev/null || true)
+    if [ "$code" = 200 ] && [[ $path =~ \.(json|csv)$ ]] && [[ $ctype == text/html* ]]; then
+      code="200-html"
+    fi
     if [ "$code" = 200 ]; then
       echo "PASS 200 $path"
+    elif [ "$code" = 200-html ] && [ "$required" = 0 ]; then
+      echo "WARN missing file (SPA fallback HTML) $path"
+      warns=$((warns + 1))
+      BODY=""
     elif [ "$code" = 503 ] && [ "$required" = 0 ] && [ "$(jq -r '.error.code? // empty' <<<"$BODY" 2>/dev/null)" = unavailable ]; then
       echo "WARN 503 unavailable $path"
       warns=$((warns + 1))
