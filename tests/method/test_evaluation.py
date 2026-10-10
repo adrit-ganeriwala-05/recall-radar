@@ -256,6 +256,82 @@ def test_freeze_also_covers_the_tier2_review_files(repo):
         E.check_freeze(repo / "config.yaml", repo)
 
 
+def test_freeze_covers_the_method_code_and_a_newer_tag_reopens(repo):
+    code = repo / "recall_radar" / "method"
+    code.mkdir(parents=True)
+    (code / "match.py").write_text("RULE = 1\n")
+    run_git(repo, "add", "recall_radar")
+    run_git(repo, "commit", "-q", "-m", "method code")
+    run_git(repo, "tag", "-a", "freeze-v1", "-m", "frozen")
+    assert E.check_freeze(repo / "config.yaml", repo) == "freeze-v1"
+
+    (code / "match.py").write_text("RULE = 2\n")  # not even committed yet
+    with pytest.raises(E.FreezeError, match="recall_radar/method differs from freeze-v1"):
+        E.check_freeze(repo / "config.yaml", repo)
+    run_git(repo, "commit", "-q", "-am", "rule change after the freeze")
+    with pytest.raises(E.FreezeError, match="recall_radar/method differs from freeze-v1"):
+        E.check_freeze(repo / "config.yaml", repo)
+
+    # the reviewed change gets the next tag; the newest freeze tag is the one that counts
+    run_git(repo, "tag", "-a", "freeze-v2", "-m", "frozen again")
+    assert E.latest_freeze_tag(repo) == "freeze-v2"
+    assert E.check_freeze(repo / "config.yaml", repo) == "freeze-v2"
+    (code / "new_rule.py").write_text("X = 1\n")  # untracked file in the frozen folder
+    with pytest.raises(E.FreezeError, match="untracked files"):
+        E.check_freeze(repo / "config.yaml", repo)
+
+
+def head(repo) -> str:
+    return subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True).stdout.strip()
+
+
+def test_pipeline_revision_ignores_unrelated_commits_and_sees_uncommitted_changes(repo):
+    first = head(repo)
+    assert E.pipeline_revision(repo)[::2] == (first, False)
+    (repo / "README.md").write_text("docs\n")
+    run_git(repo, "add", "README.md")
+    run_git(repo, "commit", "-q", "-m", "docs only")
+    sha, stamp, dirty = E.pipeline_revision(repo)
+    assert (sha, dirty) == (first, False) and head(repo) != first  # HEAD moved, the revision did not
+
+    text = (repo / "config.yaml").read_text()
+    (repo / "config.yaml").write_text(text + "\n# edited\n")
+    assert E.pipeline_revision(repo)[2] is True  # uncommitted change to a pipeline input
+    run_git(repo, "commit", "-q", "-am", "config comment")
+    sha2, stamp2, dirty2 = E.pipeline_revision(repo)
+    assert (sha2, dirty2) == (head(repo), False) and sha2 != first and stamp2 >= stamp
+
+    (repo / "review").mkdir()
+    (repo / "review" / "match_labels_dev.csv").write_text("family_id,group_id,start_month,label\n")
+    assert E.pipeline_revision(repo)[2] is True  # a labels file that is not committed yet
+
+
+def test_real_data_results_must_come_from_committed_code(repo, tmp_path, rows, monkeypatch):
+    run_git(repo, "tag", "-a", "freeze-v1", "-m", "frozen")
+    con = build_db(tmp_path / "real.duckdb", rows)
+    con.execute("UPDATE source_snapshot SET snapshot_id = 'abc123def456'")  # looks like a real snapshot
+    cfg = fixture_config()
+    cfg["periods"] = {**cfg["periods"], "held_out": ["2018-01-01", "2018-12-31"]}
+    M.run(con, cfg)
+    clean = E.provenance(con, cfg, repo)
+    assert clean.data_label == C.DataLabel.measured_evaluation and clean.git_sha == head(repo)
+
+    # a comment does not change the config hash, so the freeze still holds, but the tree is dirty
+    (repo / "config.yaml").write_text((repo / "config.yaml").read_text() + "\n# edited\n")
+    with pytest.raises(RuntimeError, match="uncommitted changes in pipeline inputs"):
+        E.provenance(con, cfg, repo)
+    with pytest.raises(RuntimeError, match="uncommitted changes in pipeline inputs"):
+        E.evaluate(con, cfg, "development", "full", config_path=repo / "config.yaml", repo=repo)
+
+    # the override is for a development-only look and marks the result; held_out never accepts it
+    monkeypatch.setenv("RR_ALLOW_DIRTY", "1")
+    dev, _ = E.evaluate(con, cfg, "development", "full", config_path=repo / "config.yaml", repo=repo)
+    assert dev.provenance.git_sha == head(repo) + "-dirty"
+    with pytest.raises(RuntimeError, match="uncommitted changes in pipeline inputs"):
+        E.evaluate(con, cfg, "held_out", "full", config_path=repo / "config.yaml", repo=repo)
+    con.close()
+
+
 def test_held_out_runs_with_the_tag_and_audits_top_episodes(repo, tmp_path_factory, rows):
     run_git(repo, "tag", "-a", "freeze-v1", "-m", "frozen")
     con = build_db(tmp_path_factory.mktemp("held") / "h.duckdb", rows)
