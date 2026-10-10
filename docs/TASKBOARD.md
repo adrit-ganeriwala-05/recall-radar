@@ -8,42 +8,42 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | D0 | Bootstrap main, CI green, task board, `contract-v1` tag | D | C | bundle | 2:15 PM | done@5dca3a3 (contract-v1 tag 16:2x; main CI green) |
 | A0 | Source check + `snapshots/SNAPSHOT.lock.json` + `make verify-snapshot` | A | B | downloads | 2:30 PM | done@5dca3a3 (PR #4) |
 | B0 | Review `config.yaml`, `method/config.py`, CONTRACTS §3–5 | B | A | D0 | 2:15 PM | done@d5efab0 (A replied e7ff01c; B ACK 4ed08e1) |
-| C0 | Web scaffold, generated types, fixture client, routes, synthetic banner | C | D | D0 | 2:30 PM | todo |
+| C0 | Web scaffold, generated types, fixture client, routes, synthetic banner | C | D | D0 | 2:30 PM | review (PR #5 @ 981ae41, Reviewed by D) |
 | A1 | Parse + filter + normalize + drop personal fields (bounded) | A | B | A0 | 2:45 PM | done@5dca3a3 (PR #4) |
 | A2 | Dedup, availability, dup_text, redaction, `ingest_report`, complaint tables | A | B | A1 | 2:55 PM PR | done@5dca3a3 (PR #4, redaction fix c015403) |
-| B1 | Hand-calculated method fixtures | B | A | B0 | 2:40 PM | review (PR #2 @ b66915d) |
-| B2 | Groups, monthly counts, Poisson score, alerts, episodes, cooldown, explanation | B | A | B1 | 2:55 PM PR | review (PR #2 @ b66915d) |
+| B1 | Hand-calculated method fixtures | B | A | B0 | 2:40 PM | review (PR #2 @ 461fccc; A reviewed up to f53b396) |
+| B2 | Groups, monthly counts, Poisson score, alerts, episodes, cooldown, explanation | B | A | B1 | 2:55 PM PR | review (PR #2 @ 461fccc) |
 | D1 | Track/rules/judging/video-length answers → SOURCES.md | D | C | — | 3:30 PM | doing (facts in SOURCES.md 15:30; track/video/Zero Data need humans) |
-| D2 | VM + Caddy + systemd + deploy/rollback scripts; fixture build live | D | C | C0, human VM | 3:30 PM | doing (scripts @ 47ce44e; waits on VM from human) |
-| C1 | Landing + make→model→year selector | C | D | C0 | 2:45 PM | todo |
-| C2 | Vehicle page + issue/evidence page | C | D | C1 | 3:30 PM | todo |
+| D2 | VM + Caddy + systemd + deploy/rollback scripts; fixture build live | D | C | C0, human VM | 3:30 PM | doing (VM 64.177.53.230 set up 18:00: Caddy :80, uv, rr, ufw; fixture deploy waits on A5) |
+| C1 | Landing + make→model→year selector | C | D | C0 | 2:45 PM | review (PR #5) |
+| C2 | Vehicle page + issue/evidence page | C | D | C1 | 3:30 PM | review (PR #5) |
 | A3 | INV/RCL parse, families, recall campaigns, prefix check, DATEA lag | A | B | A2 | 3:25 PM | done@5dca3a3 (PR #4; availability LDATE_PLUS_7) |
-| B4 | Tier-1 matching + OutcomeMatch statuses | B | A | A3, B2 | 3:25 PM | review (PR #2, tier 1; synthetic only) |
-| B5 | Dev evaluation: eligibility, coverage, Wilson CI, chance controls; Gate 1 report | B | A, D | B4 | 3:30 PM | review (PR #2; synthetic only) |
-| C3 | Replay screen | C | D | C2 | 4:30 PM | todo |
-| D3 | Integration tests + Playwright smoke | D | C | A5 (live), C0 | 4:30 PM | review (tests @ 7073176, smoke @ 0ea628e; need A5 live + C's hooks) |
-| A4 | Full ingest 2014–2023 | A | B | Gate 1 | 4:30 PM | todo |
-| B3 | Replay engine (as-of frames, outcome markers) | B | A | B2 | 4:30 PM | review (PR #2 @ b66915d) |
+| B4 | Tier-1 matching + OutcomeMatch statuses | B | A | A3, B2 | 3:25 PM | review (PR #2, tiers 1-2) |
+| B5 | Dev evaluation: eligibility, coverage, Wilson CI, chance controls; Gate 1 report | B | A, D | B4 | 3:30 PM | done (Gate 1 report 1740) |
+| C3 | Replay screen | C | D | C2 | 4:30 PM | review (PR #5) |
+| D3 | Integration tests + Playwright smoke | D | C | A5 (live), C0 | 4:30 PM | doing (smoke passes on C's real build 981ae41, fixture + cached; live API tests wait on A5) |
+| A4 | Full ingest 2014–2023 | A | B | Gate 1 | 4:30 PM | review (PR #6 @ 94210e5; DB 344 MB; needs B's review) |
+| B3 | Replay engine (as-of frames, outcome markers) | B | A | B2 | 4:30 PM | review (PR #2 @ 461fccc) |
 | B6 | Temporal invariance + isolation tests; full-data run | B | A | A4, B3 | 5:30 PM | doing (synthetic part in PR #2; real-data part needs A4) |
-| A5 | FastAPI: all endpoints, fixture mode, static mount, errors | A | B (+C ack) | A4, contract-v1 | 5:30 PM | todo |
+| A5 | FastAPI: all endpoints, fixture mode, static mount, errors | A | B (+C ack) | A4, contract-v1 | 5:30 PM | doing (no recall_radar/api on any branch at 18:01) |
 | A6 | API tests incl. timing | A | B | A5 | 5:30 PM | todo |
-| C4 | Results page | C | D | C0 | 5:00 PM | todo |
-| C5 | States + accessibility | C | D | C2–C4 | 5:30 PM | todo |
-| D5 | Real-data deploy path (size/upload strategy) | D | C | A5 | 5:30 PM | doing (decision: rsync path, gate1 DB 317 MB; recheck full DB at A4) |
-| C6 | Vitest suite (agreement, states, boundaries, banned words, VIN) | C | D | C2–C5 | 6:00 PM | todo |
-| B7 | Development grid search within alert budget | B | A | B6 | 6:00 PM | doing (code in PR #2, no real run) |
+| C4 | Results page | C | D | C0 | 5:00 PM | review (PR #5) |
+| C5 | States + accessibility | C | D | C2–C4 | 5:30 PM | review (PR #5) |
+| D5 | Real-data deploy path (size/upload strategy) | D | C | A5 | 5:30 PM | doing (full DB 344 MB → make sync-data) |
+| C6 | Vitest suite (agreement, states, boundaries, banned words, VIN) | C | D | C2–C5 | 6:00 PM | review (PR #5: 61 Vitest) |
+| B7 | Development grid search within alert budget | B | A | B6 | 6:00 PM | doing (dev grid in Gate 1 report; c_min 5 / s_star 4.0 within budget) |
 | A7 | Tier-3 labels, development sample of 20 | A | — | B5 | 7:00 PM | todo |
 | B8 | Final matcher, misses list, hero rule, freeze PR | B | A | B7, A7 | 6:40 PM | todo |
 | A8 | Tier-3 labels held-out sample; real-data redaction test | A | B | B9 | 8:30 PM | todo |
 | B9 | Held-out run, top-25 audit, `exports/demo/` | B | A | freeze-v1 | 8:30 PM | todo (export code in PR #2; no held-out run) |
-| C7 | Real API wiring, offline `/demo/` bundle, displayed=exported test | C | D | B9, A5 | 8:30 PM | todo |
+| C7 | Real API wiring, offline `/demo/` bundle, displayed=exported test | C | D | B9, A5 | 8:30 PM | review (PR #5; needs B9 exports) |
 | D6 | Deploy main on real data; outage check; e2e on URL | D | C | B9, C7 | 8:30 PM | todo |
 | D7 | `submission/` DEVPOST, PITCH, VIDEO_SHOTLIST, QA (numbers from CSV only) | D | C | B9 | 10:00 PM | doing (drafts + fill/claims guards @ 3670062; numbers wait on B9) |
 | D8 | P1-2 evidence-grounded summaries (stretch, 90 min) | D | C | Gate 3 pass | 11:30 PM | todo |
 | C8 | Real-data polish + hallway test | C | D | Gate 3 | 12:45 AM | todo |
 | A9 | Displayed-vs-exported field check; 1,000-excerpt redaction run | A | D | rc1 | 2:45 AM | todo |
 | B10 | `make repro` on clean clone; hash | B | A | rc1 | 2:45 AM | doing (repro tests in PR #2) |
-| C9 | Screen captures | C | D | rc1 | 2:15 AM | todo |
+| C9 | Screen captures | C | D | rc1 | 2:15 AM | doing (capture script ready, handoff 1745) |
 | D9 | Video edit, voiceover, upload | D | C | C9 | 2:50 AM | todo |
 | D10 | Final release verification + submit | D | C | all | 7:30 AM | todo |
 
@@ -61,13 +61,16 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | 16:05 | .gitignore `data/` `logs/` → `/data/` `/logs/` (A's request: they ignored recall_radar/data and tests/data) | D |
 | 16:20 | B: "Reviewed 2f7ca0a: ok" → D merged PR #4 (--match-head-commit) → main 5dca3a3; tree = reviewed tree; make test 99 passed; contracts-check clean | D |
 | 16:22 | tag `contract-v1` (annotated) → 5dca3a3, pushed. A5 may start. PR #2 and PR #3 must merge origin/main again (CI re-runs; PR #2 then needs B's head re-reviewed by A) | D |
+| 18:00 | VM 64.177.53.230 (Vultr ATL, Ubuntu 24.04, 2 vCPU/3.8 GiB): `make vm-setup` ok | D |
+| 18:10 | Reviewed PR #5 (C) at 981ae41: ok. Caddy now serves web/dist itself, proxies /api + /healthz (C's note) | D |
+| 18:10 | Merge queue (EXECUTION_PLAN §5): #6 A4 needs B review · #2 head 461fccc needs A re-review · A5 not yet a PR · #5 ready after them · #3 head needs C re-review | D |
 
 ## Gate log
 | Gate | Time | Main SHA | Result | Decision |
 | --- | --- | --- | --- | --- |
 | G0 | 16:25 (due 2:15) | 5dca3a3 | PARTIAL: main CI green; `contract-v1` → 5dca3a3; A and B building + testing on main; C not started (c/web = init) and session model checks not reported to D | no lkg-g0 tag until C reports `make setup && make test` green on c/web; C is the critical path |
-| G1 | | | | |
-| G2 | | | | |
+| G1 | 17:40 (due 3:30) | b/method 4c4a4b8 (contains main 5dca3a3) | DATA PASS (rejected 0%, availability LDATE_PLUS_7, reconciled); METHOD FAIL: tiers 1-2 early coverage 12.4% (22/177) vs chance 9.7% (60/620), gap 2.8 pp < 10 pp needed; PRELIMINARY, development only (B handoff 20261010-1740) | unsupported claim → keep pipeline + schedule; product = full complaint history + what was public before each investigation; results page reports the weak result plainly; no held-out tuning; freeze still happens before held-out |
+| G2 | 18:05 (due 6:00) | 5dca3a3 | NOT RUN: no API on any branch (A5); C's UI and D's smoke ready (smoke 2/2 on C's build vs stub) | pipeline: owner A finishes A5; Gate 2 may slip ≤ 45 min (6:45); if it slips further, all P1 is cancelled |
 | Freeze | | | | |
 | G3 | | | | |
 | G4 | | | | |
