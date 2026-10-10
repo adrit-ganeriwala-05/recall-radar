@@ -4,12 +4,12 @@ Restart memory for session rr-C. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 17:50 ET
-- Branch / HEAD: c/web @ 68952cc (+ this status commit) · PR #5
-- Last origin/main merged: 5dca3a3 (PR #4, contract-v1)
+- Updated: 2026-10-10 19:15 ET (by a stand-in session on Person A's Mac while C's session was out of quota; C resumes 22:30)
+- Branch / HEAD: c/web @ see `git log -1` (stand-in commits: ca03073 merge main, 738e88a fixes, then this status) · PR #5
+- Last origin/main merged: c70db51 (PR #2 B method; A's PR #6 API already in main)
 - Contract version: 1.0.0
-- Snapshot id / config hash / availability basis: n/a / n/a / LDATE_PLUS_7 announced by A3 (UI shows "received-date experiment")
-- Mode: waiting(A5 "API live"; B9 exports/demo; deployed rc1 for C8/C9) since 17:50
+- Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a (main) / LDATE_PLUS_7
+- Mode: waiting(freeze-v1 → B9 exports/demo + hero; rc1 deploy for C8/C9) since 19:15
 
 ## Done (task id → commit → evidence)
 - Contract review §6–7 → 295e435 → `docs/handoffs/20261010-1610-C-to-A-contract-review-ack.md` (no change requested; B item 12 acked)
@@ -27,23 +27,24 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - D's e2e request (Playwright dep, `e2e` script, 5 hooks) → 446e4a5 → D's smoke 2 passed
 - PR #3 review → `Reviewed 93c9789: ok` + 3 non-blocking notes (posted on GitHub; 295e435 handoff)
 
+- Stand-in 19:10 → 738e88a: Gate 1 reframe (results verdict from JSON coverage vs chance + 10-point margin; PRELIMINARY note on development until freeze-v1; landing reframe line linking Results); hero note no longer matches D's `SYNTHETIC TEST DATA` locator; live build ships no fixture JSON (D's note); "Try again" only for 503/500; rates read "n over d". New `web/src/reframe.test.tsx` (hand-derived strings). `npm --prefix web run test` → 72 passed.
+- Real-data check by the stand-in (scratch, nothing committed): main's API (c70db51) on the full 2014–2023 DB with B's detect/match at config 0c26e23e0a3a + B's real development export (20 replays): C's agreement tests 93 passed (real results + 20 replays); browser check 18/18 PASS (2011 HYUNDAI SONATA vehicle with 6 episode markers, episode evidence 13 == window_count 13, replay ▲@12 before ◆@35, verdict "8.9% vs 8.9% … same as chance … do not show …", PRELIMINARY note, config hash, held-out not-run, no Try again on 404). D's smoke: "2 skipped" (its replay step skips the whole test while /api/hero is 503 — expected until freeze).
+
 ## In progress
 - none
 
 ## Next (in order)
-1. When A posts "API live" (A5): `make serve-fixture`, then `make serve` (cached) + `VITE_API_MODE=live npm --prefix web run dev`; run D's smoke (`make e2e`); fix anything the real API returns that fixtures did not.
-2. When B commits `exports/demo/` (B9): merge origin/main, `npm --prefix web run test` (agreement tests pick the files up), `npm --prefix web run build`, handoff C→D "offline bundle + agreement test".
-3. C8 on the deployed real-data build: run `web/HALLWAY_TEST.md` with 2 non-team people; fix what they trip on.
-4. C9: `BASE_URL=<rc1> npm --prefix web run capture` (shots 1–7); shot 8 by hand.
+1. On C's Windows machine: `git fetch origin && git switch c/web && git pull --ff-only` (local c/web 981ae41 fast-forwards; it had no uncommitted work). Read `docs/handoffs/20261010-1915-C-standin-takeover.md`.
+2. C's background audit (workflow wf_b4213359-e12 on Windows) — compare its confirmed findings with 738e88a; fix what remains.
+3. After freeze-v1 + B9 (`exports/demo/` with hero on main): merge origin/main, `npm --prefix web run test` (agreement picks up the files), build, rerun D's smoke (`make e2e`; hero step then runs), handoff C→D.
+4. C8 on the deployed real-data build: `web/HALLWAY_TEST.md` with 2 non-team people.
+5. C9: `BASE_URL=<rc1> npm --prefix web run capture` (shots 1–7); shot 8 by hand.
 
 ## Last passing commands (exact)
-- `npm --prefix web run typecheck` → exit 0 @ 68952cc
-- `npm --prefix web run test` → `Test Files 5 passed (5) · Tests 61 passed (61)` @ 68952cc (65 with the B-shaped exports/demo present)
-- `npm --prefix web run build` → built @ 68952cc
-- `uv run ruff check .` → All checks passed · `uv run pytest` → 99 passed, 2 deselected · `uv run python scripts/check_secrets.py` → 0 problems @ 68952cc
-- `python scripts/check_ownership.py` → 36 paths, 0 violations @ 68952cc
-- D's smoke @ 93c9789 vs live-mode build on the fixture stub → 2 passed (desktop + phone) @ 446e4a5
-- `npm --prefix web run capture -- --allow-synthetic` vs the fixture stub → 7 shots recorded; without the flag it refuses @ 68952cc
+- `npm --prefix web run test` → `Test Files 6 passed (6) · Tests 72 passed (72)` @ 738e88a (93 with real exports/demo present)
+- `npm --prefix web run typecheck` → exit 0 @ 738e88a
+- `VITE_API_MODE=live npm --prefix web run build` → built; `dist/assets` = index.js + index.css only (no fixture chunks) @ 738e88a
+- `npm --prefix web run gen:contracts` → no drift · `uv run python scripts/check_ownership.py --branch c/web` → 36 paths, 0 violations @ 738e88a
 
 ## Blockers, requests sent, requests received
 - A's API (A5) not written yet → live mode verified only against a scratch stub of CONTRACTS §6.
@@ -59,6 +60,7 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - Marker labels: the UI adds "Investigation opened" / "(later reveal)" only when the producer's label lacks them. C.
 
 ## Notes for a replacement session
+- Stand-in commits are authored by Person A's git identity and carry no Claude co-author line (team request: no Claude attribution in the repo).
 - All API paths live in `ENDPOINTS` / `OFFLINE` in `web/src/api/client.ts`.
 - `VITE_API_MODE=fixture` bundles `contracts/fixtures/api/*.json` lazily; anything else = live.
 - An earlier session ran in a scrambled bundle copy at `~/Documents/Development/recall-radar` (not a repo); ignore it.
