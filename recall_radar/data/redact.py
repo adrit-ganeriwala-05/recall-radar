@@ -12,13 +12,14 @@ import re
 _EMAIL = re.compile(r"[^\s@]*@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b")
 # VIN alphabet excludes I, O, Q; must contain a digit so long plain words are left alone.
 _VIN = re.compile(r"\b(?=[A-HJ-NPR-Z0-9]*\d)[A-HJ-NPR-Z0-9]{17}\b", re.IGNORECASE)
-# Phone: 10 digits (or 11 starting with 1) in any grouping, at most three separator characters
+# Phone: 10 digits (or 11 starting with 1) in any grouping, at most four separator characters
 # between digits, not touching other digits. Catches "4045550134", "404- 555-0134",
 # "(404) 555- 0134" and "40455 50134"; 10-digit part numbers in 5-5 form are redacted too.
-_SEPS = r"(?:\s+|[().+-]){0,3}"  # a whitespace run counts as one separator
+_SEPS = r"(?:\s+|[().+-]){0,4}"  # a whitespace run counts as one separator
 _PHONE = re.compile(
     rf"(?<!\d)(?:\+?1{_SEPS})?\(?(?:\d{_SEPS}){{9}}\d(?!\d)"
     r"|\(\d{3}\),\s*\d{3}[\s.-]{0,3}\d{4}(?!\d)"  # "(404), 555-0134"
+    r"|(?<![\d.,/:-])\(?\d{3}\)?(?:\s+|[().-]){1,3}\d{4}(?![\d.,/:-]?\d)"  # local number: "555-0134", "555 (0134"
 )
 _SUFFIX = (
     r"STREET|ST|AVENUE|AVE|ROAD|RD|BOULEVARD|BLVD|DRIVE|DR|LANE|LN|COURT|CT|PLACE|PL|"

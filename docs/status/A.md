@@ -4,12 +4,12 @@ Restart memory for session rr-A. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 17:00 ET
+- Updated: 2026-10-10 18:06 ET
 - Branch / HEAD: a/data-api @ see `git log -1` (PR #4 to main)
-- Last origin/main merged: 61c0c8c
+- Last origin/main merged: 5dca3a3 (PR #4 merge; contract-v1 tagged)
 - Contract version: 1.0.0 (doc-only clarifications dffb361; ready to tag contract-v1 at dffb361)
-- Snapshot id / config hash / availability basis: e808281f001a / 59931d27c785 (B changes it) / LDATE_PLUS_7 (decided A3)
-- Mode: implementing (A4 next)
+- Snapshot id / config hash / availability basis: e808281f001a / 419a39bbf60b (b/method f53b396) / LDATE_PLUS_7 (decided A3)
+- Mode: waiting(B's tier-3 candidate CSVs for A7; reviews) since 18:06
 
 ## Done (task id → commit → evidence)
 - Contract review → e7ff01c, dffb361 → B0 answered; no shape change; C sent no comments
@@ -17,18 +17,25 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - A1/A2 → b806130 → `make test` → 78 passed; real gate1 ingest reconciled (489,809 read)
 - Review of B's PR #2 → `Reviewed b66915d: ok`, re-review `Reviewed 6fbffa8: ok`
 - PR #4 follow-ups → 40b8ddb (pyc untracked), c015403 (redaction: 1,444 → 0 leaks by independent check)
-- A3 → see git log → `uv run pytest tests/data` → 99 passed; real build 6 s; handoff 20261010-1700
+- A5 → 73ab9a3 → API for every CONTRACTS §6 endpoint; D's conformance test passes locally (cached + fixture)
+- A6 → 4e285a0 → `uv run pytest tests/api` → 62 passed; real_data → 4 passed on full DB + B pipeline copy
+- A4 → 5b1b641 → full ingest 1,301,663 read reconciled; 344 MB; `pytest -m real_data tests/data` → 3 passed
+- PR #2 re-review → `Reviewed f53b396: ok`
+- A3 → 2f7ca0a → `uv run pytest tests/data` → 99 passed; real build 6 s; handoff 20261010-1700
 
 ## In progress
 - none
 
 ## Next (in order)
-1. A4 full ingest 2014–2023 (+ top-200 alias table; 63 punctuation-only pairs from B's review)
-2. A5 API (D's healthz request: RR_GIT_SHA, REVISION, RR_MODE, no network)
-3. A6 API tests
+1. A7 tier-3 labels, dev sample of 20 (needs B's candidate CSV)
+2. Review B's freeze PR (6:55–7:00 with schedule shift)
+3. A8 held-out labels (after B9), A9 displayed-vs-exported check overnight
 
 ## Last passing commands (exact)
-- `make test` → 78 passed @ da3b521
+- `make test` → 146 passed, ruff clean, secrets 0 (A6)
+- `uv run pytest -m real_data tests/api` → 4 passed (full DB + B's detect/match/evaluate/export run)
+- `uv run pytest tests/data tests/api` → 108 passed (A4)
+- `uv run pytest -m real_data tests/data` → 3 passed on full DB (3 min)
 - `RR_RAW_DIR=~/rr-raw make verify-snapshot` → snapshot ok e808281f001a
 - `python -m recall_radar.data.ingest --config config.yaml --db data/recall_radar.duckdb --scope gate1` → reconciled, 17 s
 
@@ -41,7 +48,8 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - RQ/AQ-only families not written to inv_family; counted in ingest_report.
 - Availability LDATE_PLUS_7: DATEA = LDATE for 99.94% (docs/DATA_NOTES.md); B agreed in PR #4 review.
 - family_id collision suffix = sha1(make|model|system)[:6].
-- A5: episode evidence must exclude dup_text rows (B's detector excludes them from counts).
+- API reads detector rows for the config hash of the config.yaml it is given (RR_CONFIG): build the DB with the deployed config.
+- Episode evidence excludes dup_text rows (matches B's window_count; verified on 2,532 episodes).
 - .gitignore `data/` also matches recall_radar/data and tests/data: use `git add -f` for new files there (asked D to anchor it).
 
 ## Notes for a replacement session
