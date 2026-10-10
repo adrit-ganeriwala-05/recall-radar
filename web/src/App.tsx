@@ -2,6 +2,7 @@
 import { NavLink, Route, Routes } from "react-router-dom";
 import { getMeta } from "./api/client";
 import { useApi } from "./api/useApi";
+import { ReceivedDateNote } from "./components/Provenance";
 import { DATA_LABEL_TEXT, dateText } from "./format";
 import IssuePage from "./pages/IssuePage";
 import ReplayPage from "./pages/ReplayPage";
@@ -32,7 +33,8 @@ function Header() {
               </span>{" "}
               Data as of{" "}
               {meta.data.provenance.data_as_of ? dateText(meta.data.provenance.data_as_of) : "not applicable (test data)"}
-              {meta.source === "offline" && <span className="badge badge-offline">Offline demo data</span>}
+              {meta.source === "offline" && <span className="badge badge-offline">Offline demo data</span>}{" "}
+              <ReceivedDateNote provenance={meta.data.provenance} />
             </>
           )}
           {meta.state === "done" && !meta.ok && "Data as of: see each page (data service offline)"}

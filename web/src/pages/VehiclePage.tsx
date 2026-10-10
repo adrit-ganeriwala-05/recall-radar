@@ -2,7 +2,7 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { getVehicle } from "../api/client";
 import { useApi } from "../api/useApi";
-import { BarChart, type BarPoint } from "../components/BarChart";
+import { BarChart, type BarPoint, type ChartMarker } from "../components/BarChart";
 import { ProvenanceBar } from "../components/Provenance";
 import { Empty, ErrorState, Loading } from "../components/States";
 import { VinBox } from "../components/VinBox";
@@ -16,6 +16,21 @@ export function monthlyPoints(series: MonthlyPoint[]): BarPoint[] {
     value: p.n_distinct,
     tone: p.partial ? "partial" : p.alert ? "alert" : "normal",
   }));
+}
+
+/** One ▲ per alert episode, on its first alert month (the alert date is the day after it ends). */
+export function episodeMarkers(data: VehicleResponse): ChartMarker[] {
+  const months = new Set(data.monthly.map((p) => p.month));
+  return data.components
+    .flatMap(({ group, episodes }) => episodes.map((e) => ({ e, system: group.comp_system })))
+    .filter(({ e }) => months.has(e.start_month))
+    .map(({ e, system }) => ({
+      key: e.start_month,
+      symbol: "▲" as const,
+      text: `Alert: ${system} · ${dateText(e.alert_date)}`,
+      outcome: false,
+      testId: "marker-alert" as const,
+    }));
 }
 
 function Vehicle({ data }: { data: VehicleResponse }) {
@@ -35,6 +50,7 @@ function Vehicle({ data }: { data: VehicleResponse }) {
           title={`Distinct complaints per month, ${vehicleText(data.vehicle)}`}
           valueLabel="Distinct complaints"
           points={monthlyPoints(data.monthly)}
+          markers={episodeMarkers(data)}
         />
       )}
 

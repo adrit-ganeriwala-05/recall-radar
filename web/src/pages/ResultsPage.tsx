@@ -121,6 +121,49 @@ function AuditTable({ rows }: { rows: AuditRow[] }) {
   );
 }
 
+// Lead-time bins follow the outcome statuses (PROJECT_SPEC §7): early = 60 to 730 days.
+export const LEAD_BINS: { label: string; test: (d: number) => boolean }[] = [
+  { label: "Alert after official action (< 0 days)", test: (d) => d < 0 },
+  { label: "0 to 59 days (late)", test: (d) => d >= 0 && d < 60 },
+  { label: "60 to 179 days", test: (d) => d >= 60 && d < 180 },
+  { label: "180 to 364 days", test: (d) => d >= 180 && d < 365 },
+  { label: "365 to 730 days", test: (d) => d >= 365 && d <= 730 },
+  { label: "More than 730 days (outside window)", test: (d) => d > 730 },
+];
+
+/** Histogram of lead_days over the cases in the JSON; counts are rows of `cases`, nothing else. */
+export function LeadTimeHistogram({ cases }: { cases: EvalCase[] }) {
+  const leads = cases.map((c) => c.lead_days).filter((d): d is number => d !== null);
+  if (leads.length === 0) return <Empty>No matched investigations with a lead time yet.</Empty>;
+  const counts = LEAD_BINS.map((b) => leads.filter(b.test).length);
+  const max = Math.max(...counts);
+  return (
+    <div className="table-scroll">
+      <table className="histogram" data-testid="lead-histogram">
+        <caption className="visually-hidden">Days from alert date to investigation opening</caption>
+        <thead>
+          <tr>
+            <th scope="col">Days from alert to investigation</th>
+            <th scope="col">Investigations</th>
+            <th scope="col" aria-hidden="true"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {LEAD_BINS.map((b, i) => (
+            <tr key={b.label}>
+              <th scope="row">{b.label}</th>
+              <td>{counts[i]}</td>
+              <td aria-hidden="true" className="hist-cell">
+                <span className="hist-bar" style={{ width: `${max ? (counts[i] / max) * 100 : 0}%` }} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function Group({ title, n, open, children, testId }: { title: string; n: number; open: boolean; children: ReactNode; testId: string }) {
   return (
     <details open={open} className="case-group" data-testid={testId}>
@@ -182,6 +225,9 @@ export function Results({ data, source }: { data: EvaluationSummary; source?: So
           <MetricCard key={m.name} m={m} />
         ))}
       </div>
+
+      <h2>Lead time</h2>
+      <LeadTimeHistogram cases={data.cases} />
 
       <h2>Cases</h2>
       <p className="small">

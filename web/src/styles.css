@@ -167,3 +167,6 @@ blockquote { margin: 0.4rem 0; padding-left: 0.75rem; border-left: 3px solid var
 .metric-help, .metric-note, .metric-detail { font-size: 0.85rem; }
 .case-group { margin: 0.75rem 0; }
 .case-group summary { font-weight: 600; cursor: pointer; padding: 0.3rem 0; }
+.histogram { max-width: 40rem; }
+.hist-cell { width: 40%; }
+.hist-bar { display: block; height: 0.9rem; background: var(--bar); border-radius: 2px; min-width: 1px; }

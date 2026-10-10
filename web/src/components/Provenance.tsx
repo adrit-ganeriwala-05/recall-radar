@@ -12,6 +12,16 @@ export function SyntheticBanner({ provenance }: { provenance: Provenance }) {
   );
 }
 
+/** PROJECT_SPEC §5: when availability falls back to LDATE+7, every screen says "received-date experiment". */
+export function ReceivedDateNote({ provenance }: { provenance: Provenance }) {
+  if (provenance.availability_basis !== "LDATE_PLUS_7") return null;
+  return (
+    <span className="badge badge-offline" data-testid="received-date-note">
+      Received-date experiment: a complaint counts as public 7 days after NHTSA received it
+    </span>
+  );
+}
+
 export function ProvenanceBar({ provenance, source }: { provenance: Provenance; source?: Source }) {
   return (
     <>
@@ -22,9 +32,7 @@ export function ProvenanceBar({ provenance, source }: { provenance: Provenance; 
           Data as of {provenance.data_as_of ? dateText(provenance.data_as_of) : "not applicable (test data)"}
         </span>
         {source === "offline" && <span className="badge badge-offline">Offline demo data</span>}
-        {provenance.availability_basis === "LDATE_PLUS_7" && (
-          <span className="badge badge-offline">Received-date experiment: availability = received date + 7 days</span>
-        )}
+        <ReceivedDateNote provenance={provenance} />
       </p>
     </>
   );
