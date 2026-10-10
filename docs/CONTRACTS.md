@@ -16,7 +16,7 @@ Version 1 is frozen at tag `contract-v1` after the 2:00–2:15 PM review.
 - IDs: `group_id = "g_" + sha1("MAKE|MODEL|YEAR|SYSTEM|SUB_ISSUE")[:12]` (empty sub-issue in
   P0); `episode_id = "E-" + base36 counter ordered by (alert_date, group_id)`; `family_id =
   "F-" + earliest action number` (when that action heads more than one family, each gets
-  `"~" + comp_system` with spaces as `_` appended); `run_id = <period>-<config_hash>-<git_sha7>`.
+  `"~" + sha1("MAKE|MODEL|SYSTEM")[:6]` appended); `run_id = <period>-<config_hash>-<git_sha7>`.
 - Every top-level payload carries `provenance` with `data_label`:
   `synthetic_fixture` (tests/UI dev only) · `cached_real` (real records, not an evaluation) ·
   `measured_evaluation` (written by `evaluate`). Real labels require snapshot_id, data_as_of,
@@ -133,3 +133,5 @@ defect in the producer or a change request, never a reason to edit the contract 
 - 1.0.0 (2026-10-10): initial contract from the bootstrap bundle.
 - 1.0.0 (2026-10-10, review): doc-only clarifications from B's B0 review (family_id
   collision suffix, §5 storage notes). No shape change; C sent no comments.
+- 1.0.0 (2026-10-10, A3): family_id suffix is a 6-hex hash of make|model|system (a system
+  name alone still collides when one action covers two models). Doc only.
