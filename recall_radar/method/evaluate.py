@@ -109,19 +109,24 @@ def eligibility(families: pd.DataFrame, family_vehicles: pd.DataFrame, cfg: dict
 # ----------------------------------------------------------------------------- cases
 
 
-def best_pair(pairs: pd.DataFrame | None, early: tuple[int, int]) -> tuple[str, str | None, int | None]:
-    """(status, episode_id, lead_days) of the strongest pair for one family, or missed."""
+def best_pair(
+    pairs: pd.DataFrame | None, early: tuple[int, int]
+) -> tuple[str, str | None, int | None, C.MatchTier]:
+    """(status, episode_id, lead_days, tier) of the strongest pair for one family, or missed.
+
+    Strongest status first; within a status tier 1 before tier 2; then the largest lead
+    (earliest alert), except outside_window where the smallest lead is taken.
+    """
     if pairs is None or pairs.empty:
-        return "missed", None, None
+        return "missed", None, None, C.MatchTier.none
     pairs = pairs.assign(status=[M.status_for_lead(int(d), early).value for d in pairs["lead_days"]])
     for status in STATUS_ORDER:
         sub = pairs[pairs["status"] == status.value]
         if sub.empty:
             continue
-        # early / late / after: the largest lead (earliest alert); outside window: the smallest
         ascending = status == C.OutcomeStatus.outside_window
-        top = sub.sort_values(["lead_days", "episode_id"], ascending=[ascending, True]).iloc[0]
-        return status.value, top["episode_id"], int(top["lead_days"])
+        top = sub.sort_values(["tier", "lead_days", "episode_id"], ascending=[True, ascending, True]).iloc[0]
+        return status.value, top["episode_id"], int(top["lead_days"]), C.MatchTier(top["tier"])
     raise AssertionError("unreachable")
 
 
@@ -147,9 +152,9 @@ def build_cases(
             }
         )
         if f.eligible:
-            status, episode_id, lead = best_pair(by_family.get(f.family_id), early)
+            status, episode_id, lead, tier = best_pair(by_family.get(f.family_id), early)
         else:
-            status, episode_id, lead = "excluded", None, None
+            status, episode_id, lead, tier = "excluded", None, None, C.MatchTier.none
         cases.append(
             C.EvalCase(
                 family_id=f.family_id,
@@ -164,7 +169,7 @@ def build_cases(
                 best_episode_id=episode_id,
                 status=status,
                 lead_days=lead,
-                match_tier=C.MatchTier.direct if episode_id else C.MatchTier.none,
+                match_tier=tier,
                 review_label=None,
             )
         )
@@ -181,6 +186,7 @@ def select_controls(
     all_families: pd.DataFrame,
     group_month: pd.DataFrame,
     cfg: dict[str, Any],
+    use_tier2: bool = False,
 ) -> pd.DataFrame:
     """Up to `controls_per_case` comparison vehicles for each eligible family with complaints.
 
@@ -206,13 +212,15 @@ def select_controls(
         k: sorted(set(df["odate_min"]))
         for k, df in investigated.groupby(["make", "model", "comp_system"])
     }
-    gm_by_system = {s: df for s, df in group_month.groupby("comp_system")}
+    system_map = M.load_system_map(cfg) if use_tier2 else {}
     vehicles = {f: df for f, df in family_vehicles.groupby("family_id")}
 
     out = []
     for f in families[families["eligible"]].sort_values("family_id").itertuples():
-        gm = gm_by_system.get(f.comp_system)
-        if gm is None or f.family_id not in vehicles:
+        # tier 2 treats paired system names as one system; cases and controls get the same set
+        systems = sorted(M.systems_for(f.comp_system, system_map))
+        gm = group_month[group_month["comp_system"].isin(systems)]
+        if gm.empty or f.family_id not in vehicles:
             continue
         fv = vehicles[f.family_id]
         years = sorted(set(fv["model_year"].astype(int)))
@@ -235,7 +243,7 @@ def select_controls(
             for key, value in v.items():
                 if key in own:
                     continue
-                opened = investigated.get((key[0], key[1], f.comp_system), [])
+                opened = [d for sysname in systems for d in investigated.get((key[0], key[1], sysname), [])]
                 if any(abs((d - f.odate_min).days) <= quiet_days for d in opened):
                     continue
                 gap = abs(int(value) - case_vol)
@@ -248,25 +256,36 @@ def select_controls(
             out.append(
                 {
                     "family_id": f.family_id, "make": make, "model": model, "comp_system": f.comp_system,
-                    "years": [y + shift for y in years], "year_shift": shift, "pseudo_open_date": f.odate_min,
+                    "systems": systems, "years": [y + shift for y in years], "year_shift": shift,
+                    "pseudo_open_date": f.odate_min,
                     "case_volume": case_vol, "control_volume": value,
                 }  # fmt: skip
             )
     return pd.DataFrame(
         out,
-        columns=["family_id", "make", "model", "comp_system", "years", "year_shift", "pseudo_open_date", "case_volume", "control_volume"],
+        columns=["family_id", "make", "model", "comp_system", "systems", "years", "year_shift", "pseudo_open_date",
+                 "case_volume", "control_volume"],
     )
 
 
-def control_covered(controls: pd.DataFrame, episodes: pd.DataFrame, early: tuple[int, int]) -> list[bool]:
-    """A control is covered if one of its groups has an alert 60-730 days before the pseudo date."""
-    by_key = {k: df for k, df in episodes.groupby(["make", "model", "comp_system"])}
+def control_covered(
+    controls: pd.DataFrame, episodes: pd.DataFrame, early: tuple[int, int], year_slack: int = 0
+) -> list[bool]:
+    """A control is covered if one of its groups has an alert 60-730 days before the pseudo date.
+
+    With tier 2 in use, a control's groups are widened the same way a case's are: model years
+    within `year_slack` of its years, and any of the paired system names. No keyword is asked of
+    a control (it has no investigation text), so controls are held to the looser test.
+    """
+    by_key = {k: df for k, df in episodes.groupby(["make", "model"])}
     covered = []
     for c in controls.itertuples():
-        eps = by_key.get((c.make, c.model, c.comp_system))
+        eps = by_key.get((c.make, c.model))
         hit = False
         if eps is not None:
-            eps = eps[eps["model_year"].isin(c.years)]
+            systems = set(getattr(c, "systems", None) or [c.comp_system])
+            years = {y + d for y in c.years for d in range(-year_slack, year_slack + 1)}
+            eps = eps[eps["model_year"].isin(years) & eps["comp_system"].isin(systems)]
             leads = [(c.pseudo_open_date - a).days for a in eps["alert_date"]]
             hit = any(early[0] <= d <= early[1] for d in leads)
         covered.append(hit)
@@ -389,8 +408,11 @@ def evaluate(
     episodes = M.load_episodes(con, cfg["config_hash"])
     # alerts raised while a group only had baseline-period data are never counted
     episodes = episodes[episodes["alert_date"] > baseline_end + timedelta(days=1)]
-    pairs = M.tier1_pairs(episodes, vehicles, families)
+    pairs = M.all_pairs(con, episodes, vehicles, families, cfg)
+    use_tier2 = bool((pairs["tier"] == C.MatchTier.rule_based.value).any()) if len(pairs) else False
     cases = build_cases(families, vehicles, pairs, cfg)
+    tier1_only = build_cases(families, vehicles, pairs[pairs["tier"] == C.MatchTier.direct.value], cfg)
+    n_early_tier1 = sum(c.eligible and c.status == C.OutcomeStatus.early.value for c in tier1_only)
 
     eligible = [c for c in cases if c.eligible]
     early_cases = [c for c in eligible if c.status == C.OutcomeStatus.early.value]
@@ -403,15 +425,20 @@ def evaluate(
            FROM group_month m JOIN vehicle_group g USING (group_id)"""
     ).df()
     gm["mi"] = [month_index_from_str(m) for m in gm["month"]]
-    controls = select_controls(families, vehicles, all_vehicles, all_families, gm, cfg)
-    controls["covered"] = control_covered(controls, episodes, early)
+    controls = select_controls(families, vehicles, all_vehicles, all_families, gm, cfg, use_tier2=use_tier2)
+    slack = int(cfg["matching"]["tier2_model_year_slack"]) if use_tier2 else 0
+    controls["covered"] = control_covered(controls, episodes, early, year_slack=slack)
 
     leads = sorted(c.lead_days for c in early_cases)
     in_period = episodes[
         [lo <= date(int(m[:4]), int(m[5:7]), 1) <= hi for m in episodes["start_month"]]
     ]
     monthly = monthly_episode_counts(in_period, lo, hi)
-    tier_note = "tier 1 (exact vehicle and component system) only"
+    tier_note = (
+        f"tiers 1-2; tier 1 alone (exact vehicle and component system): {n_early_tier1} early"
+        if use_tier2
+        else "tier 1 (exact vehicle and component system) only"
+    )
     # A family is one make + model + system, so one investigation is often several families.
     # Families of one investigation are not independent; the note gives the count by investigation.
     by_action: dict[str, bool] = {}
@@ -431,7 +458,10 @@ def evaluate(
         proportion("early_coverage_all", len(early_cases), len(eligible), f"{note}; {inv_note}"),
         metric("early_coverage_sample", status=C.MetricStatus.pending, note="needs tier-3 review labels for the seeded sample"),
         proportion("chance_coverage", int(controls["covered"].sum()), len(controls),
-                   "; ".join(x for x in (tag_note, f"{controls['family_id'].nunique()} cases have at least one control") if x)),
+                   "; ".join(x for x in (
+                       tag_note, f"{controls['family_id'].nunique()} cases have at least one control",
+                       "controls use the same paired systems and model-year range as tier 2, with no keyword test" if use_tier2 else None,
+                   ) if x)),
     ]  # fmt: skip
     if leads:
         q1, med, q3 = (float(np.percentile(leads, q)) for q in (25, 50, 75))

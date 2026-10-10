@@ -1,7 +1,7 @@
 """Development-only grid over detector thresholds (PROJECT_SPEC §6, config `tuning:`). Owner: B.
 
 For each grid setting: re-run the detector in memory, count eligible development families with
-an early tier-1 alert, and count episodes per month. The alert budget is
+an early alert (tiers 1-2 when the review files exist), and count episodes per month. The alert budget is
 `alert_budget_multiplier` x the median monthly episode count of the config's own setting.
 The choice rule (written before any run): most early families within the budget; ties go to
 fewer episodes, then higher s_star, then higher c_min. Held-out families are never loaded:
@@ -51,7 +51,8 @@ def grid_search(con: duckdb.DuckDBPyConnection, cfg: dict[str, Any], scope: str)
     for c_min, s_star in settings:
         eps = detect(rows, cutoff, replace(base, c_min=c_min, s_star=s_star), "tuning").alert_episode
         eps = eps[[d > baseline_end + pd.Timedelta(days=1).to_pytimedelta() for d in eps["alert_date"]]]
-        cases = E.build_cases(families, vehicles, M.tier1_pairs(eps, vehicles, families), cfg)
+        eps = eps.assign(episode_id=eps["episode_id"].astype(str))
+        cases = E.build_cases(families, vehicles, M.all_pairs(con, eps, vehicles, families, cfg), cfg)
         eligible = [c for c in cases if c.eligible]
         early = sum(c.status == C.OutcomeStatus.early.value for c in eligible)
         in_period = eps[[lo <= pd.Timestamp(m + "-01").date() <= hi for m in eps["start_month"]]]
