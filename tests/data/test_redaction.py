@@ -16,6 +16,8 @@ def independent_leaks(text: str) -> list[str]:
     """Leak finder that shares no code or patterns with redact.py (tokens, not regexes)."""
     tokens = [t.strip(_EDGE) for t in text.split()]
     leaks = [t for t in tokens if "@" in t and "." in t.split("@")[-1]
+             and t.split("@")[-1].split(".")[0] != ""
+             and all(c.isalnum() or c == "-" for c in t.split("@")[-1].rstrip(".").replace(".", ""))
              and t.rstrip(".").rsplit(".", 1)[-1].isalpha() and len(t.rstrip(".").rsplit(".", 1)[-1]) >= 2]
     vin_chars = set(string.ascii_uppercase + string.digits) - set("IOQ")
     leaks += [t for t in tokens if len(t.rstrip(".")) == 17 and set(t.rstrip(".").upper()) <= vin_chars
@@ -31,6 +33,9 @@ def independent_leaks(text: str) -> list[str]:
             digits = "".join(c for w in window for c in w if c.isdigit())
             if len(digits) == 10 or (len(digits) == 11 and digits[0] == "1"):
                 leaks.append(" ".join(window))
+            elif len(digits) == 7 and [sum(c.isdigit() for c in g) for g in
+                                       "".join(c if c.isdigit() else " " for c in " ".join(window)).split()] == [3, 4]:
+                leaks.append(" ".join(window))  # local number: 555-0134, 555 0134
     return leaks
 
 
@@ -49,6 +54,9 @@ def independent_leaks(text: str) -> list[str]:
         ("CALL 404 555 - 0134.", "0134", "[PHONE]"),
         ("CALL (404), 555-0134 NOW", "555-0134", "[PHONE]"),
         ("ID: 40455    50134 - END", "50134", "[PHONE]"),
+        ("CALL 555-0134 AFTER 5", "555-0134", "[PHONE]"),
+        ("CALL 555 0134.", "555 0134", "[PHONE]"),
+        ("CALL 555 - 0134 OR 555 (0134 OR 555    0134", "0134", "[PHONE]"),
         ("MY VIN IS 1FTFW1ET5DFC10312 PLEASE CHECK", "1FTFW1ET5DFC10312", "[VIN]"),
         ("vin 1ftfw1et5dfc10312.", "1ftfw1et5dfc10312", "[VIN]"),
         ("I LIVE AT 4521 NORTH OAK AVE IN TOWN", "4521 NORTH OAK", "[ADDRESS]"),
@@ -75,6 +83,8 @@ def test_redacts_personal_details(text, gone, token):
         "MODEL YEARS 2017 2018 2019 AT 65000 MILES",
         "IT FAILED @9:30PM AND COST @$100.00",
         "ODINO 11234567 AND RECALL 19V-123",
+        "BETWEEN 2017-2018 AT 100 MPH",
+        "ON 10/12/2017 AND 1.5 2017",
     ],
 )
 def test_keeps_vehicle_facts(text):
@@ -86,6 +96,8 @@ def test_independent_checker_catches_raw_details():
     assert len(independent_leaks(raw)) >= 4
     assert independent_leaks("MODEL YEARS 2017 2018 2019 AT 65000 MILES") == []
     assert independent_leaks("IT FAILED @9:30PM AND COST @$100.00") == []
+    assert independent_leaks("THE (@#$%).AA CAR") == []
+    assert independent_leaks("AT 2017 @9:30.AM TODAY") == []
 
 
 def test_none_passes_through():

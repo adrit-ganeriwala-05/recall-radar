@@ -38,6 +38,10 @@ markers = [
   "real_data: needs the local NHTSA snapshot under data/ (run with: uv run pytest -m real_data)",
   "slow: takes more than ~30 s",
 ]
+filterwarnings = [
+  # third-party: starlette's TestClient still wraps httpx; not our code
+  "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]
 
 [tool.ruff]
 line-length = 110
