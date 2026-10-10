@@ -10,6 +10,9 @@ exports/demo/*.duckdb
 *.parquet
 *.zip
 
+# filled submission copy (regenerate with `make submission`; never hand-edit numbers)
+submission/out/
+
 # secrets
 .env
 .env.*
