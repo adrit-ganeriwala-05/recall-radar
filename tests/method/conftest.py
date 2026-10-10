@@ -83,6 +83,77 @@ def offset_of(month: str, first: int) -> int:
     return month_index_from_str(month) - first
 
 
+FAMILIES = [
+    # family_id, action_nos, first_type, odate_min, model, year_min, year_max, comp_system, campnos
+    ("F-PE18001", ["PE18001", "EA19002"], "PE", "2018-06-15", "WORKED", 2016, 2016, "ENGINE", ["19V200", "18V100", "18V100"]),
+    ("F-PE18002", ["PE18002"], "PE", "2018-02-20", "RUN3", 2016, 2016, "ENGINE", []),
+    ("F-PE18003", ["PE18003"], "PE", "2018-01-10", "COOLDOWN", 2015, 2015, "ENGINE", []),
+    ("F-DP18004", ["DP18004"], "DP", "2018-10-01", "PARTIAL", 2016, 2016, "ENGINE", []),
+    ("F-PE18005", ["PE18005"], "PE", "2018-05-01", "T-150", 2016, 2016, "SERVICE BRAKES", []),
+    ("F-RQ18006", ["RQ18006"], "RQ", "2018-09-01", "WARM", 2017, 2017, "ENGINE", []),
+    ("F-PE18007", ["PE18007"], "PE", "2018-03-01", "MYSTERY", None, None, "ENGINE", []),
+    ("F-PE20008", ["PE20008"], "PE", "2020-12-01", "WARM", 2017, 2017, "ENGINE", []),
+]
+RECALLS = [  # campno, model, model_year, component, comp_system, report_date
+    ("17V555", "RUN3", 2016, "ENGINE:COOLING", "ENGINE", "2017-12-01"),
+    ("19V777", "WARM", 2017, "ENGINE:COOLING", "ENGINE", "2019-02-01"),
+]
+INV_RETRIEVED = "2020-12-31 12:00:00"
+
+
+def build_db(path, rows: pd.DataFrame, config_hash: str = FIXTURE_HASH, cutoff: date = FIXTURE_CUTOFF):
+    """A synthetic DuckDB file with A's tables (CONTRACTS §4) and the detector's output."""
+    import duckdb
+
+    from recall_radar.method.detect import detect, write_output
+
+    con = duckdb.connect(str(path))
+    con.register("_rows", rows)
+    con.execute("CREATE TABLE complaint_system AS SELECT * FROM _rows")
+    con.execute(
+        """CREATE TABLE inv_family (family_id VARCHAR, action_nos VARCHAR[], earliest_action_no VARCHAR,
+           first_type VARCHAR, odate_min DATE, make VARCHAR, model VARCHAR, year_min INTEGER, year_max INTEGER,
+           comp_system VARCHAR, campnos VARCHAR[])"""
+    )
+    con.execute("CREATE TABLE inv_vehicle (action_no VARCHAR, make VARCHAR, model VARCHAR, model_year INTEGER, comp_system VARCHAR)")
+    for fid, actions, ftype, odate, model, y0, y1, system, campnos in FAMILIES:
+        con.execute(
+            "INSERT INTO inv_family VALUES (?, ?, ?, ?, ?, 'SYNTHCO', ?, ?, ?, ?, ?)",
+            [fid, actions, actions[0], ftype, odate, model, y0, y1, system, campnos],
+        )
+        if y0 is not None:
+            con.execute("INSERT INTO inv_vehicle VALUES (?, 'SYNTHCO', ?, ?, ?)", [actions[0], model, y0, system])
+    con.execute(
+        """CREATE TABLE recall_campaign (campno VARCHAR, make VARCHAR, model VARCHAR, model_year INTEGER,
+           component VARCHAR, comp_system VARCHAR, report_date DATE)"""
+    )
+    for campno, model, year, component, system, reported in RECALLS:
+        con.execute("INSERT INTO recall_campaign VALUES (?, 'SYNTHCO', ?, ?, ?, ?, ?)", [campno, model, year, component, system, reported])
+    con.execute(
+        """CREATE TABLE source_snapshot AS SELECT 'synthetic-fixture' AS snapshot_id, 'FLAT_INV.zip' AS file_name,
+           'n/a' AS url, TIMESTAMP '2020-12-30 00:00:00' AS nhtsa_updated, CAST(? AS TIMESTAMP) AS retrieved_at,
+           'n/a' AS sha256, 0 AS bytes, 0 AS rows_read""",
+        [INV_RETRIEVED],
+    )
+    con.execute(
+        """CREATE TABLE ingest_report AS SELECT * FROM (VALUES ('synthetic-fixture', 'read', 'all', 200),
+           ('synthetic-fixture', 'retained', 'kept', 150), ('synthetic-fixture', 'excluded', 'type', 30),
+           ('synthetic-fixture', 'rejected', 'fields', 5), ('synthetic-fixture', 'deduplicated', 'exact', 15))
+           t(snapshot_id, stage, reason, n)"""
+    )
+    write_output(con, detect(rows, cutoff, FIXTURE_PARAMS, config_hash), config_hash)
+    return con
+
+
+def fixture_config() -> dict:
+    """config.yaml with the fixture's hash; evaluation and matching settings come from the file."""
+    from recall_radar.method.config import load_config
+
+    cfg = load_config()
+    cfg["config_hash"] = FIXTURE_HASH
+    return cfg
+
+
 @pytest.fixture(scope="session")
 def rows() -> pd.DataFrame:
     return spec_rows()
