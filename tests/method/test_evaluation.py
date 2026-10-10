@@ -78,6 +78,8 @@ def test_metrics_from_hand_counts(result):
     assert (cov.numerator, cov.denominator, cov.value) == (2, 5, 0.4)
     assert (cov.ci_low, cov.ci_high) == (pytest.approx(want.low), pytest.approx(want.high))
     assert "PRELIMINARY, UNREVIEWED" in cov.note
+    # each fixture family is its own investigation: F-PE18001 and F-PE18003 are early
+    assert "by investigation: 2 of 5 have at least one early family" in cov.note
     # early leads are 106 and 343 days: median 224.5, quartiles 165.25 and 283.75 (linear interpolation)
     assert (m["lead_days_q1"].value, m["median_lead_days"].value, m["lead_days_q3"].value) == (165.25, 224.5, 283.75)
     # 6 episodes in total, all starting inside 2016-01..2019-12 (48 months)

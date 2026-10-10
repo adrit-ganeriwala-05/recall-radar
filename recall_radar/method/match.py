@@ -74,19 +74,22 @@ def load_families(con: duckdb.DuckDBPyConnection) -> pd.DataFrame:
 def load_family_vehicles(con: duckdb.DuckDBPyConnection, families: pd.DataFrame) -> pd.DataFrame:
     """(family_id, make, model, model_year, comp_system): every vehicle + system a family names.
 
-    Two sources, unioned: `inv_vehicle` rows of the family's actions in the family's system,
-    and the family's own make / model / year range / system.
+    A family is one make + model + component system (A's `inv_family`), but its actions often
+    cover other makes and models too. Only `inv_vehicle` rows of the family's actions with the
+    family's own make, model and system belong to it. A family with no such row with a known
+    model year falls back to its `year_min..year_max` range.
     """
     listed = con.execute(
         """SELECT DISTINCT f.family_id, v.make, v.model, v.model_year, v.comp_system
-           FROM (SELECT family_id, comp_system, unnest(action_nos) AS action_no FROM inv_family) f
+           FROM (SELECT family_id, make, model, comp_system, unnest(action_nos) AS action_no FROM inv_family) f
            JOIN inv_vehicle v ON CAST(v.action_no AS VARCHAR) = CAST(f.action_no AS VARCHAR)
            WHERE v.model_year IS NOT NULL AND v.comp_system IS NOT NULL
-             AND (f.comp_system IS NULL OR v.comp_system = f.comp_system)"""
+             AND v.make = f.make AND v.model = f.model AND v.comp_system = f.comp_system"""
     ).df()
+    have = set(listed["family_id"])
     ranged = []
     for f in families.itertuples():
-        if any(pd.isna(v) for v in (f.make, f.model, f.year_min, f.year_max, f.comp_system)):
+        if f.family_id in have or any(pd.isna(v) for v in (f.make, f.model, f.year_min, f.year_max, f.comp_system)):
             continue
         for year in range(int(f.year_min), int(f.year_max) + 1):
             ranged.append((f.family_id, f.make, f.model, year, f.comp_system))

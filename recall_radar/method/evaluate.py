@@ -412,6 +412,15 @@ def evaluate(
     ]
     monthly = monthly_episode_counts(in_period, lo, hi)
     tier_note = "tier 1 (exact vehicle and component system) only"
+    # A family is one make + model + system, so one investigation is often several families.
+    # Families of one investigation are not independent; the note gives the count by investigation.
+    by_action: dict[str, bool] = {}
+    for c in eligible:
+        by_action[c.earliest_action_no] = by_action.get(c.earliest_action_no, False) or c.status == C.OutcomeStatus.early.value
+    inv_note = (
+        f"by investigation: {sum(by_action.values())} of {len(by_action)} have at least one early family; "
+        "the interval treats families as independent, which they are not"
+    )
     note = "; ".join(x for x in (tag_note, tier_note) if x)
 
     metrics = [
@@ -419,7 +428,7 @@ def evaluate(
                note=f"families opened {lo}..{hi}; {n_linked} of {len(eligible)} eligible families name a vehicle group with complaints"),
         metric("excluded_families", len(cases) - len(eligible), k=len(cases) - len(eligible), n=len(cases),
                note="see exclusions" + rq_aq_only_note(con)),
-        proportion("early_coverage_all", len(early_cases), len(eligible), note),
+        proportion("early_coverage_all", len(early_cases), len(eligible), f"{note}; {inv_note}"),
         metric("early_coverage_sample", status=C.MetricStatus.pending, note="needs tier-3 review labels for the seeded sample"),
         proportion("chance_coverage", int(controls["covered"].sum()), len(controls),
                    "; ".join(x for x in (tag_note, f"{controls['family_id'].nunique()} cases have at least one control") if x)),

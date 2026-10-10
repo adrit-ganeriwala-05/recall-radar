@@ -144,3 +144,15 @@ def test_horizon_is_the_investigation_files_nhtsa_updated_date(db):
     finally:
         db.execute("DELETE FROM source_snapshot")
         db.execute("INSERT INTO source_snapshot SELECT * FROM keep")
+
+
+def test_family_owns_only_its_own_make_and_model(db):
+    # PE18001 names WORKED and RUN3; F-PE18001 is the WORKED family
+    families = M.load_families(db)
+    fv = M.load_family_vehicles(db, families)
+    assert fv[fv["family_id"] == "F-PE18001"][["model", "model_year"]].values.tolist() == [["WORKED", 2016]]
+    # a family with no inv_vehicle row of its own falls back to its year range
+    lonely = families[families["family_id"] == "F-PE18002"].assign(family_id="F-RANGE", model="NOWHERE", year_min=2014, year_max=2016)
+    fv = M.load_family_vehicles(db, lonely)
+    fv = fv[fv["family_id"] == "F-RANGE"]
+    assert fv[["model", "model_year"]].values.tolist() == [["NOWHERE", 2014], ["NOWHERE", 2015], ["NOWHERE", 2016]]

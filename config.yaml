@@ -30,7 +30,7 @@ bounded_gate1:   # Gate 1 runs on this subset only
   families_opened: ["2017-01-01", "2019-12-31"]
 
 availability:
-  primary: DATEA            # DATEA | LDATE_PLUS_7 ; A records the Gate 1 decision in docs/status/A.md
+  primary: LDATE_PLUS_7     # DATEA | LDATE_PLUS_7 ; A's Gate 1 decision (docs/DATA_NOTES.md): DATEA = LDATE for 99.94%
   datea_max_lag_days: 365
   fallback_lag_days: 7
 

@@ -124,6 +124,9 @@ def build_db(path, rows: pd.DataFrame, config_hash: str = FIXTURE_HASH, cutoff: 
         )
         if y0 is not None:
             con.execute("INSERT INTO inv_vehicle VALUES (?, 'SYNTHCO', ?, ?, ?)", [actions[0], model, y0, system])
+    # PE18001 also names another model in the same system. That vehicle belongs to its own family
+    # (none here), never to F-PE18001, which is the WORKED family.
+    con.execute("INSERT INTO inv_vehicle VALUES ('PE18001', 'SYNTHCO', 'RUN3', 2016, 'ENGINE')")
     con.execute(
         """CREATE TABLE recall_campaign (campno VARCHAR, make VARCHAR, model VARCHAR, model_year INTEGER,
            component VARCHAR, comp_system VARCHAR, report_date DATE)"""
