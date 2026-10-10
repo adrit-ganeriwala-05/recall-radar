@@ -306,7 +306,12 @@ def period_bounds(cfg: dict[str, Any], period: str, scope: str) -> tuple[date, d
     return lo, hi
 
 
-def provenance(con: duckdb.DuckDBPyConnection, cfg: dict[str, Any], repo: Path | str) -> C.Provenance:
+def provenance(
+    con: duckdb.DuckDBPyConnection,
+    cfg: dict[str, Any],
+    repo: Path | str = REPO_ROOT,
+    real_label: C.DataLabel = C.DataLabel.measured_evaluation,
+) -> C.Provenance:
     """Real-data provenance from the snapshot table; synthetic snapshots stay labeled synthetic.
 
     `generated_at` is the committer time of HEAD, not the wall clock, so that the same
@@ -321,7 +326,7 @@ def provenance(con: duckdb.DuckDBPyConnection, cfg: dict[str, Any], repo: Path |
     generated = datetime.fromisoformat(stamp).astimezone(UTC) if stamp else datetime(1970, 1, 1, tzinfo=UTC)
     synthetic = snapshot_id is None or str(snapshot_id).startswith("synthetic")
     return C.Provenance(
-        data_label=C.DataLabel.synthetic_fixture if synthetic else C.DataLabel.measured_evaluation,
+        data_label=C.DataLabel.synthetic_fixture if synthetic else real_label,
         snapshot_id=snapshot_id,
         data_as_of=as_of,
         config_hash=cfg["config_hash"],

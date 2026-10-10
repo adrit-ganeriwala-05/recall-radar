@@ -97,6 +97,7 @@ FAMILIES = [
 RECALLS = [  # campno, model, model_year, component, comp_system, report_date
     ("17V555", "RUN3", 2016, "ENGINE:COOLING", "ENGINE", "2017-12-01"),
     ("19V777", "WARM", 2017, "ENGINE:COOLING", "ENGINE", "2019-02-01"),
+    ("18V100", "WORKED", 2016, "ENGINE:COOLING", "ENGINE", "2018-09-01"),
 ]
 INV_RETRIEVED = "2020-12-31 12:00:00"
 
