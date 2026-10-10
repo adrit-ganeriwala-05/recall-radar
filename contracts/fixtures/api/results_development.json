@@ -1,0 +1,249 @@
+{
+  "provenance": {
+    "contract_version": "1.0.0",
+    "data_label": "synthetic_fixture",
+    "snapshot_id": null,
+    "data_as_of": null,
+    "config_hash": null,
+    "git_sha": null,
+    "availability_basis": null,
+    "generated_at": "2026-10-10T16:00:00Z"
+  },
+  "run_id": "fixture-dev",
+  "period": "development",
+  "seed": 20261010,
+  "freeze_tag": null,
+  "metrics": [
+    {
+      "name": "eligible_families",
+      "status": "measured",
+      "value": 3,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": 3,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "excluded_families",
+      "status": "measured",
+      "value": 1,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": 1,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "early_coverage_all",
+      "status": "measured",
+      "value": 0.3333333333333333,
+      "ci_low": 0.0615,
+      "ci_high": 0.7923,
+      "numerator": 1,
+      "denominator": 3,
+      "note": null
+    },
+    {
+      "name": "early_coverage_sample",
+      "status": "pending",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "chance_coverage",
+      "status": "measured",
+      "value": 0.1,
+      "ci_low": 0.0179,
+      "ci_high": 0.4042,
+      "numerator": 1,
+      "denominator": 10,
+      "note": null
+    },
+    {
+      "name": "median_lead_days",
+      "status": "measured",
+      "value": 167,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "lead_days_q1",
+      "status": "measured",
+      "value": 167,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "lead_days_q3",
+      "status": "measured",
+      "value": 167,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "episodes_per_month",
+      "status": "measured",
+      "value": 0.5,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "top25_matched",
+      "status": "not_applicable",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": "held-out audit only"
+    },
+    {
+      "name": "top25_unmatched",
+      "status": "not_applicable",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": "held-out audit only"
+    },
+    {
+      "name": "top25_ambiguous",
+      "status": "not_applicable",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": "held-out audit only"
+    },
+    {
+      "name": "ingestion_retained_share",
+      "status": "pending",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    },
+    {
+      "name": "pipeline_runtime_s",
+      "status": "pending",
+      "value": null,
+      "ci_low": null,
+      "ci_high": null,
+      "numerator": null,
+      "denominator": null,
+      "note": null
+    }
+  ],
+  "cases": [
+    {
+      "family_id": "F-118",
+      "earliest_action_no": "PE18-000",
+      "inv_type": "PE",
+      "vehicles": [
+        {
+          "make": "EXAMPLE MOTORS",
+          "model": "ROADSTER",
+          "model_year": 2017
+        }
+      ],
+      "comp_system": "STEERING",
+      "investigation_open_date": "2018-10-15",
+      "eligible": true,
+      "exclusion_reason": null,
+      "in_sample": true,
+      "best_episode_id": "E-0412",
+      "status": "early",
+      "lead_days": 167,
+      "match_tier": "1",
+      "review_label": "related"
+    },
+    {
+      "family_id": "F-121",
+      "earliest_action_no": "PE18-001",
+      "inv_type": "PE",
+      "vehicles": [
+        {
+          "make": "SAMPLE AUTO",
+          "model": "HATCH",
+          "model_year": 2016
+        }
+      ],
+      "comp_system": "AIR BAGS",
+      "investigation_open_date": "2018-11-02",
+      "eligible": true,
+      "exclusion_reason": null,
+      "in_sample": true,
+      "best_episode_id": null,
+      "status": "missed",
+      "lead_days": null,
+      "match_tier": "none",
+      "review_label": null
+    },
+    {
+      "family_id": "F-130",
+      "earliest_action_no": "DP19-000",
+      "inv_type": "DP",
+      "vehicles": [
+        {
+          "make": "SAMPLE AUTO",
+          "model": "HATCH",
+          "model_year": 2016
+        }
+      ],
+      "comp_system": "ELECTRICAL SYSTEM",
+      "investigation_open_date": "2019-03-12",
+      "eligible": true,
+      "exclusion_reason": null,
+      "in_sample": false,
+      "best_episode_id": null,
+      "status": "missed",
+      "lead_days": null,
+      "match_tier": "none",
+      "review_label": null
+    },
+    {
+      "family_id": "F-140",
+      "earliest_action_no": "PE19-002",
+      "inv_type": "PE",
+      "vehicles": [],
+      "comp_system": "EQUIPMENT",
+      "investigation_open_date": "2019-06-01",
+      "eligible": false,
+      "exclusion_reason": "multi-make equipment",
+      "in_sample": false,
+      "best_episode_id": null,
+      "status": "excluded",
+      "lead_days": null,
+      "match_tier": "none",
+      "review_label": null
+    }
+  ],
+  "audit": [],
+  "exclusions": [
+    {
+      "reason": "multi-make equipment",
+      "n": 1
+    }
+  ]
+}

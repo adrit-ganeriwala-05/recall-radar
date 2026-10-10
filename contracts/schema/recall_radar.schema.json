@@ -1,0 +1,1793 @@
+{
+  "$defs": {
+    "AlertEpisode": {
+      "additionalProperties": false,
+      "properties": {
+        "after_official_action": {
+          "description": "A related investigation/recall was already public before alert_date",
+          "title": "After Official Action",
+          "type": "boolean"
+        },
+        "alert_date": {
+          "description": "First day after the first alert month ends",
+          "format": "date",
+          "title": "Alert Date",
+          "type": "string"
+        },
+        "avail_fallback_share": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Avail Fallback Share",
+          "type": "number"
+        },
+        "baseline_lambda": {
+          "description": "Expected count for that same window",
+          "exclusiveMinimum": 0,
+          "title": "Baseline Lambda",
+          "type": "number"
+        },
+        "comp_system": {
+          "title": "Comp System",
+          "type": "string"
+        },
+        "config_hash": {
+          "title": "Config Hash",
+          "type": "string"
+        },
+        "described_share": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Described Share",
+          "type": "number"
+        },
+        "dup_text_share": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Dup Text Share",
+          "type": "number"
+        },
+        "end_month": {
+          "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+          "title": "End Month",
+          "type": "string"
+        },
+        "episode_id": {
+          "pattern": "^E-[0-9A-Za-z]+$",
+          "title": "Episode Id",
+          "type": "string"
+        },
+        "evidence_n": {
+          "minimum": 0,
+          "title": "Evidence N",
+          "type": "integer"
+        },
+        "explanation": {
+          "description": "One plain sentence built from the numbers above",
+          "title": "Explanation",
+          "type": "string"
+        },
+        "group_id": {
+          "pattern": "^g_[0-9a-f]{12}$",
+          "title": "Group Id",
+          "type": "string"
+        },
+        "peak_score": {
+          "description": "Max S over the episode's alert months",
+          "minimum": 0,
+          "title": "Peak Score",
+          "type": "number"
+        },
+        "ratio": {
+          "description": "window_count / baseline_lambda",
+          "minimum": 0,
+          "title": "Ratio",
+          "type": "number"
+        },
+        "severity_share": {
+          "description": "Owner-reported crash/fire/injury/death share",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Severity Share",
+          "type": "number"
+        },
+        "start_month": {
+          "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+          "title": "Start Month",
+          "type": "string"
+        },
+        "sub_issue": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Sub Issue"
+        },
+        "vehicle": {
+          "$ref": "#/$defs/VehicleKey"
+        },
+        "window_count": {
+          "description": "c of the FIRST alert month's 2-month window",
+          "minimum": 0,
+          "title": "Window Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "episode_id",
+        "group_id",
+        "vehicle",
+        "comp_system",
+        "sub_issue",
+        "start_month",
+        "end_month",
+        "alert_date",
+        "peak_score",
+        "window_count",
+        "baseline_lambda",
+        "ratio",
+        "severity_share",
+        "evidence_n",
+        "described_share",
+        "dup_text_share",
+        "avail_fallback_share",
+        "after_official_action",
+        "explanation",
+        "config_hash"
+      ],
+      "title": "AlertEpisode",
+      "type": "object"
+    },
+    "AuditRow": {
+      "additionalProperties": false,
+      "properties": {
+        "alert_date": {
+          "format": "date",
+          "title": "Alert Date",
+          "type": "string"
+        },
+        "comp_system": {
+          "title": "Comp System",
+          "type": "string"
+        },
+        "episode_id": {
+          "title": "Episode Id",
+          "type": "string"
+        },
+        "outcome": {
+          "$ref": "#/$defs/OutcomeMatch"
+        },
+        "peak_score": {
+          "title": "Peak Score",
+          "type": "number"
+        },
+        "rank": {
+          "minimum": 1,
+          "title": "Rank",
+          "type": "integer"
+        },
+        "vehicle": {
+          "$ref": "#/$defs/VehicleKey"
+        }
+      },
+      "required": [
+        "rank",
+        "episode_id",
+        "vehicle",
+        "comp_system",
+        "peak_score",
+        "alert_date",
+        "outcome"
+      ],
+      "title": "AuditRow",
+      "type": "object"
+    },
+    "AvailabilityBasis": {
+      "enum": [
+        "DATEA",
+        "LDATE_PLUS_7"
+      ],
+      "title": "AvailabilityBasis",
+      "type": "string"
+    },
+    "Complaint": {
+      "additionalProperties": false,
+      "description": "One distinct complaint (ODINO) as shown in the evidence list. Never one per component row.",
+      "properties": {
+        "avail_date": {
+          "description": "Availability proxy used everywhere (see CONTRACTS.md)",
+          "format": "date",
+          "title": "Avail Date",
+          "type": "string"
+        },
+        "avail_fallback": {
+          "description": "True when avail_date = LDATE + 7 days",
+          "title": "Avail Fallback",
+          "type": "boolean"
+        },
+        "comp_descs": {
+          "description": "Distinct full COMPDESC values, sorted ascending",
+          "items": {
+            "type": "string"
+          },
+          "title": "Comp Descs",
+          "type": "array"
+        },
+        "comp_systems": {
+          "description": "Distinct top-level systems, sorted ascending",
+          "items": {
+            "type": "string"
+          },
+          "title": "Comp Systems",
+          "type": "array"
+        },
+        "crash": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Crash"
+        },
+        "datea": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Added to file (DATEA) as parsed; null if invalid",
+          "title": "Datea"
+        },
+        "deaths": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Deaths"
+        },
+        "dup_text": {
+          "description": "Probable repeat submission; counted once in its group",
+          "title": "Dup Text",
+          "type": "boolean"
+        },
+        "excerpt": {
+          "description": "Redacted CDESCR, at most 400 characters",
+          "maxLength": 400,
+          "title": "Excerpt",
+          "type": "string"
+        },
+        "faildate": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Incident date; display only; null if missing/invalid",
+          "title": "Faildate"
+        },
+        "fire": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Fire"
+        },
+        "injured": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Injured"
+        },
+        "ldate": {
+          "description": "Received by NHTSA (LDATE)",
+          "format": "date",
+          "title": "Ldate",
+          "type": "string"
+        },
+        "nhtsa_url": {
+          "description": "https://api.nhtsa.gov/complaints/odinumber?odinumber=<ODINO>",
+          "title": "Nhtsa Url",
+          "type": "string"
+        },
+        "odino": {
+          "pattern": "^\\d+$",
+          "title": "Odino",
+          "type": "string"
+        },
+        "vehicle": {
+          "$ref": "#/$defs/VehicleKey"
+        }
+      },
+      "required": [
+        "odino",
+        "vehicle",
+        "comp_systems",
+        "comp_descs",
+        "ldate",
+        "datea",
+        "avail_date",
+        "avail_fallback",
+        "faildate",
+        "crash",
+        "fire",
+        "injured",
+        "deaths",
+        "dup_text",
+        "excerpt",
+        "nhtsa_url"
+      ],
+      "title": "Complaint",
+      "type": "object"
+    },
+    "Confidence": {
+      "enum": [
+        "high",
+        "medium",
+        "low",
+        "none"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "DataLabel": {
+      "description": "Every payload says what kind of data it carries. The UI must show this label.",
+      "enum": [
+        "synthetic_fixture",
+        "cached_real",
+        "measured_evaluation"
+      ],
+      "title": "DataLabel",
+      "type": "string"
+    },
+    "ErrorBody": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/ErrorCode"
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Detail"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "detail"
+      ],
+      "title": "ErrorBody",
+      "type": "object"
+    },
+    "ErrorCode": {
+      "enum": [
+        "invalid_parameter",
+        "not_found",
+        "unavailable",
+        "internal"
+      ],
+      "title": "ErrorCode",
+      "type": "string"
+    },
+    "ErrorResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "error": {
+          "$ref": "#/$defs/ErrorBody"
+        }
+      },
+      "required": [
+        "error"
+      ],
+      "title": "ErrorResponse",
+      "type": "object"
+    },
+    "EvalCase": {
+      "additionalProperties": false,
+      "properties": {
+        "best_episode_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Best Episode Id"
+        },
+        "comp_system": {
+          "title": "Comp System",
+          "type": "string"
+        },
+        "earliest_action_no": {
+          "title": "Earliest Action No",
+          "type": "string"
+        },
+        "eligible": {
+          "title": "Eligible",
+          "type": "boolean"
+        },
+        "exclusion_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Exclusion Reason"
+        },
+        "family_id": {
+          "title": "Family Id",
+          "type": "string"
+        },
+        "in_sample": {
+          "title": "In Sample",
+          "type": "boolean"
+        },
+        "inv_type": {
+          "$ref": "#/$defs/InvType"
+        },
+        "investigation_open_date": {
+          "format": "date",
+          "title": "Investigation Open Date",
+          "type": "string"
+        },
+        "lead_days": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Lead Days"
+        },
+        "match_tier": {
+          "$ref": "#/$defs/MatchTier"
+        },
+        "review_label": {
+          "anyOf": [
+            {
+              "enum": [
+                "related",
+                "not_related",
+                "unsure"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Review Label"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OutcomeStatus"
+            },
+            {
+              "enum": [
+                "missed",
+                "excluded"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Status"
+        },
+        "vehicles": {
+          "items": {
+            "$ref": "#/$defs/VehicleKey"
+          },
+          "title": "Vehicles",
+          "type": "array"
+        }
+      },
+      "required": [
+        "family_id",
+        "earliest_action_no",
+        "inv_type",
+        "vehicles",
+        "comp_system",
+        "investigation_open_date",
+        "eligible",
+        "exclusion_reason",
+        "in_sample",
+        "best_episode_id",
+        "status",
+        "lead_days",
+        "match_tier",
+        "review_label"
+      ],
+      "title": "EvalCase",
+      "type": "object"
+    },
+    "EvaluationSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "audit": {
+          "description": "held_out only: top-K alerts by peak score; else empty",
+          "items": {
+            "$ref": "#/$defs/AuditRow"
+          },
+          "title": "Audit",
+          "type": "array"
+        },
+        "cases": {
+          "description": "Every eligible and excluded family, sorted by family_id",
+          "items": {
+            "$ref": "#/$defs/EvalCase"
+          },
+          "title": "Cases",
+          "type": "array"
+        },
+        "exclusions": {
+          "items": {
+            "$ref": "#/$defs/ExclusionCount"
+          },
+          "title": "Exclusions",
+          "type": "array"
+        },
+        "freeze_tag": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Git tag of the frozen config; required for held_out",
+          "title": "Freeze Tag"
+        },
+        "metrics": {
+          "items": {
+            "$ref": "#/$defs/Metric"
+          },
+          "title": "Metrics",
+          "type": "array"
+        },
+        "period": {
+          "$ref": "#/$defs/Period"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "seed": {
+          "title": "Seed",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "provenance",
+        "run_id",
+        "period",
+        "seed",
+        "freeze_tag",
+        "metrics",
+        "cases",
+        "audit",
+        "exclusions"
+      ],
+      "title": "EvaluationSummary",
+      "type": "object"
+    },
+    "ExclusionCount": {
+      "additionalProperties": false,
+      "properties": {
+        "n": {
+          "minimum": 0,
+          "title": "N",
+          "type": "integer"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason",
+        "n"
+      ],
+      "title": "ExclusionCount",
+      "type": "object"
+    },
+    "HeroPointer": {
+      "additionalProperties": false,
+      "description": "exports/demo/hero.json \u2014 which replay the pitch uses and why.",
+      "properties": {
+        "episode_id": {
+          "title": "Episode Id",
+          "type": "string"
+        },
+        "period": {
+          "$ref": "#/$defs/Period"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "rule": {
+          "title": "Rule",
+          "type": "string"
+        },
+        "rule_commit": {
+          "description": "Commit that froze the rule; must predate the held-out run",
+          "title": "Rule Commit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provenance",
+        "episode_id",
+        "period",
+        "rule",
+        "rule_commit"
+      ],
+      "title": "HeroPointer",
+      "type": "object"
+    },
+    "InvType": {
+      "enum": [
+        "PE",
+        "EA",
+        "DP",
+        "RQ",
+        "AQ",
+        "OTHER"
+      ],
+      "title": "InvType",
+      "type": "string"
+    },
+    "IssueGroup": {
+      "additionalProperties": false,
+      "properties": {
+        "comp_system": {
+          "title": "Comp System",
+          "type": "string"
+        },
+        "distinct_complaints": {
+          "minimum": 0,
+          "title": "Distinct Complaints",
+          "type": "integer"
+        },
+        "first_month": {
+          "anyOf": [
+            {
+              "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "First Month"
+        },
+        "group_id": {
+          "pattern": "^g_[0-9a-f]{12}$",
+          "title": "Group Id",
+          "type": "string"
+        },
+        "last_month": {
+          "anyOf": [
+            {
+              "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Last Month"
+        },
+        "sub_issue": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Always null in P0; P1 semantic sub-issue label",
+          "title": "Sub Issue"
+        },
+        "vehicle": {
+          "$ref": "#/$defs/VehicleKey"
+        }
+      },
+      "required": [
+        "group_id",
+        "vehicle",
+        "comp_system",
+        "sub_issue",
+        "distinct_complaints",
+        "first_month",
+        "last_month"
+      ],
+      "title": "IssueGroup",
+      "type": "object"
+    },
+    "IssueResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "episodes": {
+          "items": {
+            "$ref": "#/$defs/AlertEpisode"
+          },
+          "title": "Episodes",
+          "type": "array"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Page_Complaint_",
+          "description": "Ordered by avail_date asc, then odino asc"
+        },
+        "group": {
+          "$ref": "#/$defs/IssueGroup"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "series": {
+          "items": {
+            "$ref": "#/$defs/MonthlyPoint"
+          },
+          "title": "Series",
+          "type": "array"
+        },
+        "summary": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IssueSummary"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "P1-2; null unless a validated summary exists"
+        }
+      },
+      "required": [
+        "provenance",
+        "group",
+        "series",
+        "episodes",
+        "evidence",
+        "summary"
+      ],
+      "title": "IssueResponse",
+      "type": "object"
+    },
+    "IssueSummary": {
+      "additionalProperties": false,
+      "description": "P1-2 only. Always null in P0. Shown under the label below, above the raw excerpts.",
+      "properties": {
+        "label": {
+          "const": "AI summary of owner descriptions; read the complaints below",
+          "title": "Label",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        },
+        "prompt_version": {
+          "title": "Prompt Version",
+          "type": "string"
+        },
+        "statements": {
+          "items": {
+            "$ref": "#/$defs/SummaryStatement"
+          },
+          "maxItems": 4,
+          "minItems": 2,
+          "title": "Statements",
+          "type": "array"
+        }
+      },
+      "required": [
+        "label",
+        "statements",
+        "model",
+        "prompt_version"
+      ],
+      "title": "IssueSummary",
+      "type": "object"
+    },
+    "ListResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Sorted ascending; years as integers",
+          "title": "Items"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        }
+      },
+      "required": [
+        "provenance",
+        "items"
+      ],
+      "title": "ListResponse",
+      "type": "object"
+    },
+    "MatchTier": {
+      "enum": [
+        "1",
+        "2",
+        "3",
+        "none"
+      ],
+      "title": "MatchTier",
+      "type": "string"
+    },
+    "MetaResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "complaint_received_range": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "format": "date",
+                  "type": "string"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Complaint Received Range"
+        },
+        "mode": {
+          "enum": [
+            "cached",
+            "fixture"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "periods": {
+          "additionalProperties": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "format": "date",
+                "type": "string"
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Periods",
+          "type": "object"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        }
+      },
+      "required": [
+        "provenance",
+        "mode",
+        "complaint_received_range",
+        "periods"
+      ],
+      "title": "MetaResponse",
+      "type": "object"
+    },
+    "Metric": {
+      "additionalProperties": false,
+      "properties": {
+        "ci_high": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Ci High"
+        },
+        "ci_low": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Ci Low"
+        },
+        "denominator": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Denominator"
+        },
+        "name": {
+          "enum": [
+            "eligible_families",
+            "excluded_families",
+            "early_coverage_all",
+            "early_coverage_sample",
+            "chance_coverage",
+            "median_lead_days",
+            "lead_days_q1",
+            "lead_days_q3",
+            "episodes_per_month",
+            "top25_matched",
+            "top25_unmatched",
+            "top25_ambiguous",
+            "ingestion_retained_share",
+            "pipeline_runtime_s"
+          ],
+          "title": "Name",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Note"
+        },
+        "numerator": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Numerator"
+        },
+        "status": {
+          "$ref": "#/$defs/MetricStatus"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "name",
+        "status",
+        "value",
+        "ci_low",
+        "ci_high",
+        "numerator",
+        "denominator",
+        "note"
+      ],
+      "title": "Metric",
+      "type": "object"
+    },
+    "MetricStatus": {
+      "enum": [
+        "measured",
+        "pending",
+        "not_applicable"
+      ],
+      "title": "MetricStatus",
+      "type": "string"
+    },
+    "MonthlyPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "alert": {
+          "title": "Alert",
+          "type": "boolean"
+        },
+        "baseline_lambda": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Expected count for the 2-month window ending this month; null if not scored",
+          "title": "Baseline Lambda"
+        },
+        "month": {
+          "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+          "title": "Month",
+          "type": "string"
+        },
+        "n_distinct": {
+          "minimum": 0,
+          "title": "N Distinct",
+          "type": "integer"
+        },
+        "partial": {
+          "description": "Month incomplete at the data cutoff; never scored",
+          "title": "Partial",
+          "type": "boolean"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "S = -log10 P(Y >= c); null if not scored",
+          "title": "Score"
+        }
+      },
+      "required": [
+        "month",
+        "n_distinct",
+        "baseline_lambda",
+        "score",
+        "alert",
+        "partial"
+      ],
+      "title": "MonthlyPoint",
+      "type": "object"
+    },
+    "OutcomeMatch": {
+      "additionalProperties": false,
+      "description": "Post-hoc link from an alert episode to a documented outcome. Never a detector input.",
+      "properties": {
+        "basis": {
+          "description": "Human-readable matching evidence",
+          "title": "Basis",
+          "type": "string"
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "earliest_action_no": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Earliest Action No"
+        },
+        "episode_id": {
+          "pattern": "^E-[0-9A-Za-z]+$",
+          "title": "Episode Id",
+          "type": "string"
+        },
+        "family_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Family Id"
+        },
+        "follow_up_complete": {
+          "title": "Follow Up Complete",
+          "type": "boolean"
+        },
+        "follow_up_end": {
+          "format": "date",
+          "title": "Follow Up End",
+          "type": "string"
+        },
+        "inv_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InvType"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "investigation_open_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Earliest ODATE in the family",
+          "title": "Investigation Open Date"
+        },
+        "lead_days": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "investigation_open_date - alert_date; + means alert first",
+          "title": "Lead Days"
+        },
+        "recall_campnos": {
+          "description": "Distinct campaign numbers, sorted; may be empty",
+          "items": {
+            "type": "string"
+          },
+          "title": "Recall Campnos",
+          "type": "array"
+        },
+        "reviewer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Worker letter for tier 3 manual labels",
+          "title": "Reviewer"
+        },
+        "status": {
+          "$ref": "#/$defs/OutcomeStatus"
+        },
+        "tier": {
+          "$ref": "#/$defs/MatchTier"
+        }
+      },
+      "required": [
+        "episode_id",
+        "family_id",
+        "earliest_action_no",
+        "inv_type",
+        "investigation_open_date",
+        "tier",
+        "basis",
+        "confidence",
+        "lead_days",
+        "status",
+        "recall_campnos",
+        "follow_up_end",
+        "follow_up_complete",
+        "reviewer"
+      ],
+      "title": "OutcomeMatch",
+      "type": "object"
+    },
+    "OutcomeStatus": {
+      "enum": [
+        "early",
+        "late",
+        "after_official_action",
+        "outside_window",
+        "unmatched",
+        "ambiguous",
+        "follow_up_incomplete"
+      ],
+      "title": "OutcomeStatus",
+      "type": "string"
+    },
+    "Page_Complaint_": {
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/$defs/Complaint"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "next_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Next Page"
+        },
+        "page": {
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "page_size": {
+          "maximum": 100,
+          "minimum": 1,
+          "title": "Page Size",
+          "type": "integer"
+        },
+        "total": {
+          "minimum": 0,
+          "title": "Total",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "items",
+        "page",
+        "page_size",
+        "total",
+        "next_page"
+      ],
+      "title": "Page[Complaint]",
+      "type": "object"
+    },
+    "Period": {
+      "enum": [
+        "development",
+        "held_out"
+      ],
+      "title": "Period",
+      "type": "string"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "availability_basis": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AvailabilityBasis"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "config_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "12-hex hash of config.yaml; null for fixtures",
+          "title": "Config Hash"
+        },
+        "contract_version": {
+          "default": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "data_as_of": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Latest NHTSA 'Updated' date among source files in the snapshot; null for fixtures",
+          "title": "Data As Of"
+        },
+        "data_label": {
+          "$ref": "#/$defs/DataLabel"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "git_sha": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Commit that produced the payload; null for fixtures",
+          "title": "Git Sha"
+        },
+        "snapshot_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "source_snapshot id (sha256 prefix of SNAPSHOT.lock.json); null only for synthetic fixtures",
+          "title": "Snapshot Id"
+        }
+      },
+      "required": [
+        "data_label",
+        "snapshot_id",
+        "data_as_of",
+        "config_hash",
+        "git_sha",
+        "availability_basis",
+        "generated_at"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "RecallCampaign": {
+      "additionalProperties": false,
+      "properties": {
+        "campno": {
+          "title": "Campno",
+          "type": "string"
+        },
+        "component": {
+          "title": "Component",
+          "type": "string"
+        },
+        "report_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Report Date"
+        }
+      },
+      "required": [
+        "campno",
+        "component",
+        "report_date"
+      ],
+      "title": "RecallCampaign",
+      "type": "object"
+    },
+    "Replay": {
+      "additionalProperties": false,
+      "properties": {
+        "banner": {
+          "title": "Banner",
+          "type": "string"
+        },
+        "comp_system": {
+          "title": "Comp System",
+          "type": "string"
+        },
+        "episode_id": {
+          "pattern": "^E-[0-9A-Za-z]+$",
+          "title": "Episode Id",
+          "type": "string"
+        },
+        "frames": {
+          "description": "Ascending by month, contiguous",
+          "items": {
+            "$ref": "#/$defs/ReplayFrame"
+          },
+          "title": "Frames",
+          "type": "array"
+        },
+        "group_id": {
+          "pattern": "^g_[0-9a-f]{12}$",
+          "title": "Group Id",
+          "type": "string"
+        },
+        "markers": {
+          "description": "Ascending by date",
+          "items": {
+            "$ref": "#/$defs/ReplayMarker"
+          },
+          "title": "Markers",
+          "type": "array"
+        },
+        "outcome": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OutcomeMatch"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "vehicle": {
+          "$ref": "#/$defs/VehicleKey"
+        }
+      },
+      "required": [
+        "provenance",
+        "episode_id",
+        "group_id",
+        "vehicle",
+        "comp_system",
+        "frames",
+        "markers",
+        "outcome",
+        "banner"
+      ],
+      "title": "Replay",
+      "type": "object"
+    },
+    "ReplayFrame": {
+      "additionalProperties": false,
+      "description": "Knowledge as of the START of `cutoff`: only complaints with avail_date < cutoff are used.\n\nMonthly frames use cutoff = first day of the month after `month`, so `month` is complete.",
+      "properties": {
+        "alert_active": {
+          "description": "`month` is an alert month of an episode whose alert_date <= cutoff (data < cutoff only)",
+          "title": "Alert Active",
+          "type": "boolean"
+        },
+        "baseline_lambda": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Baseline Lambda"
+        },
+        "cutoff": {
+          "description": "Exclusive bound: avail_date < cutoff. Monthly frame: first day of next month",
+          "format": "date",
+          "title": "Cutoff",
+          "type": "string"
+        },
+        "month": {
+          "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+          "title": "Month",
+          "type": "string"
+        },
+        "n_distinct": {
+          "minimum": 0,
+          "title": "N Distinct",
+          "type": "integer"
+        },
+        "partial": {
+          "title": "Partial",
+          "type": "boolean"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Score"
+        }
+      },
+      "required": [
+        "cutoff",
+        "month",
+        "n_distinct",
+        "baseline_lambda",
+        "score",
+        "partial",
+        "alert_active"
+      ],
+      "title": "ReplayFrame",
+      "type": "object"
+    },
+    "ReplayMarker": {
+      "additionalProperties": false,
+      "properties": {
+        "action_no": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Action No"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "is_outcome": {
+          "description": "True for investigation/recall markers: a later reveal, never detector input",
+          "title": "Is Outcome",
+          "type": "boolean"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "lead_days": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Lead Days"
+        },
+        "match_tier": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MatchTier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "type": {
+          "enum": [
+            "alert",
+            "investigation_opened",
+            "recall_reported"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "date",
+        "label",
+        "is_outcome",
+        "action_no",
+        "match_tier",
+        "lead_days"
+      ],
+      "title": "ReplayMarker",
+      "type": "object"
+    },
+    "SummaryStatement": {
+      "additionalProperties": false,
+      "properties": {
+        "odinos": {
+          "description": "Cited complaints; each must be in the evidence set",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Odinos",
+          "type": "array"
+        },
+        "text": {
+          "description": "No digits; no banned words; validated before storage",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "odinos"
+      ],
+      "title": "SummaryStatement",
+      "type": "object"
+    },
+    "VehicleComponent": {
+      "additionalProperties": false,
+      "properties": {
+        "episodes": {
+          "description": "Ascending by alert_date",
+          "items": {
+            "$ref": "#/$defs/AlertEpisode"
+          },
+          "title": "Episodes",
+          "type": "array"
+        },
+        "group": {
+          "$ref": "#/$defs/IssueGroup"
+        }
+      },
+      "required": [
+        "group",
+        "episodes"
+      ],
+      "title": "VehicleComponent",
+      "type": "object"
+    },
+    "VehicleKey": {
+      "additionalProperties": false,
+      "properties": {
+        "make": {
+          "description": "Uppercase, trimmed, single-spaced NHTSA make",
+          "minLength": 1,
+          "title": "Make",
+          "type": "string"
+        },
+        "model": {
+          "description": "Uppercase, trimmed, single-spaced; alias table applied",
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "model_year": {
+          "description": "Unknown model year (9999) never appears here",
+          "maximum": 2030,
+          "minimum": 1949,
+          "title": "Model Year",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "make",
+        "model",
+        "model_year"
+      ],
+      "title": "VehicleKey",
+      "type": "object"
+    },
+    "VehicleResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "components": {
+          "description": "Descending by distinct_complaints, then comp_system",
+          "items": {
+            "$ref": "#/$defs/VehicleComponent"
+          },
+          "title": "Components",
+          "type": "array"
+        },
+        "distinct_complaints": {
+          "description": "Distinct ODINO for the vehicle, all systems",
+          "minimum": 0,
+          "title": "Distinct Complaints",
+          "type": "integer"
+        },
+        "monthly": {
+          "description": "Vehicle-level distinct complaints per month, ascending",
+          "items": {
+            "$ref": "#/$defs/MonthlyPoint"
+          },
+          "title": "Monthly",
+          "type": "array"
+        },
+        "note": {
+          "title": "Note",
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "recall_campaigns": {
+          "description": "Model-level, deduplicated by campno",
+          "items": {
+            "$ref": "#/$defs/RecallCampaign"
+          },
+          "title": "Recall Campaigns",
+          "type": "array"
+        },
+        "vehicle": {
+          "$ref": "#/$defs/VehicleKey"
+        },
+        "vin_lookup_url": {
+          "const": "https://www.nhtsa.gov/recalls",
+          "default": "https://www.nhtsa.gov/recalls",
+          "title": "Vin Lookup Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provenance",
+        "vehicle",
+        "distinct_complaints",
+        "components",
+        "monthly",
+        "recall_campaigns",
+        "note"
+      ],
+      "title": "VehicleResponse",
+      "type": "object"
+    }
+  },
+  "$id": "recall-radar/contracts/1.0.0",
+  "description": "Recall Radar contracts v1.0.0. Generated; do not edit.",
+  "title": "RecallRadarContracts"
+}
