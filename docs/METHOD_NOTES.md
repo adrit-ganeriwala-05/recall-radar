@@ -142,7 +142,14 @@ Wilson check (`test_evaluation.py`): 8 of 20 with z = 1.959964 → centre
     that starts with it.
 - Within an episode the outcome is still the nearest opening (ties: tier 1 first). Within a
   family the best pair is picked by status, then tier 1 before tier 2, then lead.
-- Tier 3 (A's manual labels) is not implemented. `early_coverage_sample` stays `pending`.
+- **Tier 3** (manual, sample only; `candidates.py`). For each family of the seeded sample that has
+  no early tier 1–2 alert, `review/candidates_<dev|heldout>.csv` lists the alert episodes of the
+  family's make and model (any model year, any system) whose alert date is 60–730 days before the
+  opening date and that are not already paired with the family. The file has no scores. A labels
+  each row `related`, `not_related` or `unsure` in `review/match_labels_<dev|heldout>.csv`.
+  `related` adds a tier-3 pair. A family whose only labels are `unsure` and that has no other
+  match becomes `ambiguous`, never a hit. Labels for rows that are not current candidates are
+  ignored; unknown words and double labels stop the run.
 
 ## 6. Evaluation (`evaluate.py`)
 - **Cases** = families whose `odate_min` falls in the period (`gate1` scope: the
@@ -177,10 +184,18 @@ Wilson check (`test_evaluation.py`): 8 of 20 with z = 1.959964 → centre
 - Lead time: median and quartiles (linear interpolation) of `lead_days` over early families.
 - `episodes_per_month` = episodes starting in the period / months in the period; the note
   carries the median monthly count, which the alert budget uses.
-- Sample of `sample_size` eligible families: `random.Random(seed).sample(sorted ids)`;
-  `early_coverage_sample` stays `pending` until A's tier-3 labels exist.
-- **Held-out seal.** `--period held_out` exits with code 2 unless tag `freeze-v1` exists and
-  the hash of its `config.yaml` equals the working config hash.
+- Sample of `sample_size` eligible families: `random.Random(seed).sample(sorted ids)`.
+  `early_coverage_sample` = early families of the sample through tiers 1–3 / sample size. It is
+  `pending` until every candidate row of the sample has a label, and it has no chance
+  comparison (controls cannot be reviewed by hand against an investigation they do not have).
+  Every other metric uses tiers 1–2 only; `cases` shows each family's tier 1–3 view.
+- `ingestion_retained_share` = rows retained / rows read inside the configured received-date
+  range. The loaded files also contain years outside the range; those rows are counted in the
+  note and left out of the denominator.
+- **Held-out seal.** `--period held_out` exits with code 2 unless tag `freeze-v1` exists, the
+  hash of its `config.yaml` equals the working config hash, and `review/system_map.csv` and
+  `review/keywords.txt` are byte-identical to the tagged versions. The candidate list for the
+  held-out sample is sealed the same way.
 - **Evaluation B (held-out):** episodes starting in the period, not `after_official_action`,
   top `top_k_audit` by `peak_score` (ties by episode id), each with its `alert_match` outcome.
 - Results on a database whose `snapshot_id` starts with `synthetic` are labeled
@@ -206,7 +221,8 @@ families with an early tier-1 alert, and episodes per month. Budget = `alert_bud
 run: most early families within the budget; ties → fewer episodes, then higher `s_star`, then
 higher `c_min`. Only families opened inside the development period are loaded. The table is
 written to `exports/tuning_development*.csv`; the chosen setting and the table are copied here
-when B7 runs on the full data. On the bounded Gate 1 data the rule kept the config's own
+when B7 runs on the full data. **Full data, 2026-10-10:** the rule again kept the config's own
+setting (table in `docs/handoffs/20261010-1825-B-to-A-D-full-dev-run.md`). On the bounded Gate 1 data the rule kept the config's own
 setting (table in `docs/handoffs/20261010-1655-B-to-D-gate1.md`), so `config.yaml` still holds the
 bootstrap detector values. The only config change so far is `availability.primary:
 LDATE_PLUS_7`, A's Gate 1 decision (`docs/DATA_NOTES.md`): DATEA equals the received date for
@@ -222,7 +238,8 @@ rule is the `hero_rule` text of `config.yaml` and `rule_commit` is the tagged co
 `MANIFEST.json` = `{files: {name: sha256}, run_ids, git_sha}`.
 
 ## 11. Open items
-- Gate 1 (bounded data, tier 1, development only): the method did not reach the required margin
-  over chance. Numbers and verdict: `docs/handoffs/20261010-1655-B-to-D-gate1.md`.
-- Tier 3 matching is not implemented (§5). Gate 1 re-run with tier 2: `docs/handoffs/20261010-1740-B-to-D-gate1-tier2.md`.
-- Full 2014–2023 run, freeze, held-out run and export wait for A4 and for PR #2 / PR #4 on main.
+- Development period, full data, tiers 1–2: early coverage is no higher than chance. Numbers:
+  `docs/handoffs/20261010-1825-B-to-A-D-full-dev-run.md`; Gate 1 on bounded data: the two
+  `…-B-to-D-gate1*.md` records. No detection claim is supported so far.
+- Tier-3 labels for the development sample are with A (`review/candidates_dev.csv`).
+- Freeze, held-out run, export bundle and hero come after PR #2 and A's review of the freeze diff.
