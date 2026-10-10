@@ -34,7 +34,7 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 
 ## Blockers, requests sent, requests received
 - origin/main has no bootstrap files (only `init`). My checkout holds an untracked copy of the bundle so tests can run. D must land the bootstrap (START_HERE H3b) before a PR makes sense.
-- GitHub permission for SakethSagar05 on adrit-ganeriwala-05/recall-radar is READ. Cannot push until the collaborator invite is sent/accepted (START_HERE H4).
+- GitHub permission for SakethSagar05 on adrit-ganeriwala-05/recall-radar: READ at 14:35, WRITE at 15:00 (checked with `gh repo view --json viewerPermission`). Push of b/method attempted at 15:05; see the session report for the result.
 - No raw NHTSA files on this machine (`RR_RAW_DIR` unset, `~/rr-raw` not checked) and no ingest from A → no real-data run, no Gate 1 numbers yet.
 - Sent (in repo, undelivered): B→A contract review, 13 points.
 
