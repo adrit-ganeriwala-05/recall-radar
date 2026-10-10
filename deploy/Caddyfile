@@ -1,0 +1,18 @@
+# Recall Radar reverse proxy. Owner: D.
+# Installed to /etc/caddy/Caddyfile by deploy/vm_setup.sh and refreshed by deploy/deploy.sh.
+# Site address = RR_SITE (systemd drop-in written by vm_setup.sh):
+#   a domain name -> Caddy obtains and renews HTTPS certificates automatically (ports 80+443 open)
+#   :80 (default, bare IP) -> plain HTTP
+{$RR_SITE::80} {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:8000
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+		# index.html and SPA routes must not go stale after a redeploy; responses that already
+		# set Cache-Control (the API sets max-age=3600, CONTRACTS.md section 6) keep their value.
+		?Cache-Control "no-cache"
+	}
+	log
+}

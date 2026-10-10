@@ -1,0 +1,31 @@
+# Recall Radar: FastAPI + built web app, read-only on cached data. Owner: D.
+# Installed by deploy/vm_setup.sh, refreshed by deploy/deploy.sh. Each release lives in
+# /opt/recall-radar/releases/<sha>; `current` is the symlink deploy.sh / rollback.sh switch.
+[Unit]
+Description=Recall Radar (FastAPI on cached NHTSA data)
+After=network.target
+
+[Service]
+Type=simple
+User=rr
+Group=rr
+WorkingDirectory=/opt/recall-radar/current
+Environment=RR_MODE=cached
+Environment=RR_DATA_DIR=/opt/recall-radar/data
+Environment=PYTHONUNBUFFERED=1
+# Per-release values written by deploy.sh: RR_MODE (cached|fixture) and RR_GIT_SHA.
+EnvironmentFile=-/opt/recall-radar/current/.deploy.env
+ExecStart=/opt/recall-radar/current/.venv/bin/uvicorn recall_radar.api.main:app --host 127.0.0.1 --port 8000 --workers 2 --no-server-header
+Restart=on-failure
+RestartSec=2
+# Request time never uses the network (AGENTS.md section 6). Only loopback traffic is allowed,
+# so a stray outbound call fails loudly instead of quietly depending on an outside service.
+IPAddressDeny=any
+IPAddressAllow=localhost
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=read-only
+
+[Install]
+WantedBy=multi-user.target
