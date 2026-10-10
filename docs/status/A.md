@@ -4,7 +4,7 @@ Restart memory for session rr-A. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 19:45 ET
+- Updated: 2026-10-10 20:10 ET
 - Branch / HEAD: a/data-api @ see `git log -1` (PR #7 to main)
 - Last origin/main merged: a775d09 (PR #5 merge)
 - Contract version: 1.0.0 (doc-only clarifications dffb361; ready to tag contract-v1 at dffb361)
@@ -12,6 +12,9 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - Mode: waiting(freeze-v1 → B9 held-out candidates for A8) since 19:00
 
 ## Done (task id → commit → evidence)
+- D's reviewer note (PR #3): DuckDB `memory_limit` per API process, default 1GB (`RR_DUCKDB_MEMORY_LIMIT`) → local commit, pushed after PR #7 merges → `uv run pytest tests/api` all passed; real_data tests/api 3 passed 1 skipped; 2 workers on the real DB + D's integration → 0 failed
+- PR #8 (B pre-freeze) → `Reviewed f7606e1: ok`; asked PR #7 to merge before freeze-v1 (labels are a pipeline input); recommended freeze also cover recall_radar/data
+- C stand-in: PR #9 (D submission copy) `Reviewed a9fb133: ok`; TS verdict margin float bug fixed on c/web 34c212e → PR #10
 - C stand-in (C out of quota until 22:30) → PR #5 fixes 738e88a/22e781a (merged, main a775d09); PR #3 review comment `Reviewed e69d362: ok` + 5 follow-ups (real-data integration 13 passed/8 skipped; API-down browser check 16/16). C's own files only; A's checkout untouched
 - Merge of main a775d09 into a/data-api for PR #7 → `make check` exit 0 (271 + 72 passed, 0 violations)
 - Contract review → e7ff01c, dffb361 → B0 answered; no shape change; C sent no comments
@@ -32,7 +35,7 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - none
 
 ## Next (in order)
-1. A8 held-out labels (after B9), A9 displayed-vs-exported check overnight
+1. Push the memory-cap commit as a new PR once PR #7 merges. A8 held-out labels (after B9), A9 displayed-vs-exported check overnight
 
 ## Last passing commands (exact)
 - `make check` after merging main a775d09 → ruff clean, 271 passed, web 72 passed, secrets 0, claims 0, ownership 0 violations

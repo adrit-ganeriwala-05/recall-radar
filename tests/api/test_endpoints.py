@@ -268,6 +268,26 @@ def test_db_opened_read_only_without_extension_downloads(client):
         cur.close()
 
 
+def _memory_limit(app) -> str:
+    cur = app.state.store.cursor()
+    try:
+        return cur.execute("SELECT current_setting('memory_limit')").fetchone()[0]
+    finally:
+        cur.close()
+
+
+def test_duckdb_memory_is_capped_per_process(client):
+    # DuckDB's default is 80% of RAM in every process; two uvicorn workers on the 4 GB VM would
+    # each be allowed 3.2 GB. The cap is 1 GB (10^9 bytes = 953.6 MiB, as DuckDB prints it).
+    assert _memory_limit(client.app) == "953.6 MiB"
+
+
+def test_duckdb_memory_limit_from_env(env, monkeypatch):
+    monkeypatch.setenv("RR_DUCKDB_MEMORY_LIMIT", "512MiB")
+    with TestClient(api.create_app(), raise_server_exceptions=False) as c:
+        assert _memory_limit(c.app) == "512.0 MiB"
+
+
 def test_git_sha_prefers_env(monkeypatch):
     monkeypatch.setenv("RR_GIT_SHA", "feedbeef")
     assert api.git_sha() == "feedbeef"
