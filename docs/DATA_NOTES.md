@@ -41,8 +41,26 @@ the more cautious basis, as B also suggested in the PR #4 review. Every screen t
 - Recall report date field: **RCDATE** (Part 573 report received date). Only RCLTYPECD = V rows
   are kept: 108,942 rows, 13,673 campaigns; no null RCDATE.
 
+## Full scope (A4: 2014 baseline + 2015–2019 + 2020–2023), built 2026-10-10 17:04 ET
+- Config: b/method `config.yaml` @ f53b396 (config hash 419a39bbf60b, availability LDATE_PLUS_7).
+- Ledger: read 1,301,663 = retained 914,165 + excluded 387,498 (366,853 received outside
+  2014–2023, 20,633 non-vehicle products, 12 dropped types) + rejected 0 + deduplicated 0.
+- 658,677 complaints (≈ 49k–77k per received year), 831,677 complaint × system rows,
+  4,319 make/model pairs; model year unknown 0.28%.
+- DATEA = LDATE for 99.93% of all 2014–2023 complaints: LDATE_PLUS_7 holds for the full range.
+- Alias table `recall_radar/data/aliases.csv`: 150 rows, 145 groups, built from complaint,
+  investigation and recall names whose letters+digits match exactly (C 300 → C300, F150 → F-150,
+  !MX-5 → MX-5). Canonical = most complaints, then shortest, then alphabetical. Semantic
+  aliases (trims, body styles) are deliberately not merged; F-150 and F-250 stay apart.
+- Families (all years): 8,648; development-period (opened 2016–2019) PE/DP-first families: 268
+  from 67 investigations, 170 (63.4%) with a same-system complaint group.
+- Runtime: ingest 54–107 s (machine load), investigations 6 s; peak memory 4.6 GB;
+  DB 344 MB built fresh.
+
 ## Redaction
 - Independent token-based leak check (tests/data/test_redaction.py) over all 357,757 stored
   texts: 0 emails, phone-shaped numbers or VIN patterns after the fix in c015403 (was 1,444).
+- A4 adds 7-digit local numbers (555-0134, 555 (0134) and wider separators; full scope:
+  0 of 658,675 stored texts flagged by either checker (`pytest -m real_data`).
 - Over-redaction is accepted: 10-digit numbers in any grouping (including part numbers like
   12345-67890) become [PHONE]; "<number> <words> <street suffix>" becomes [ADDRESS].
