@@ -17,10 +17,11 @@ export function markerAnchor(marker: ReplayMarker, frames: ReplayFrame[]): strin
 
 export function markerText(m: ReplayMarker): string {
   if (m.type === "alert") return `Alert · ${dateText(m.date)}`;
-  const label = m.type === "investigation_opened" && !m.label.startsWith("Investigation opened")
-    ? `Investigation opened: ${m.label}`
-    : m.label;
-  return `${label} (later reveal) · ${dateText(m.date)}`;
+  // The producer's label may already say what it is and that it is a later reveal; add only what is missing.
+  let label = m.label;
+  if (m.type === "investigation_opened" && !/investigation/i.test(label)) label = `Investigation opened: ${label}`;
+  if (!/later reveal/i.test(label)) label = `${label} (later reveal)`;
+  return `${label} · ${dateText(m.date)}`;
 }
 
 export function framePoints(frames: ReplayFrame[], index: number): BarPoint[] {

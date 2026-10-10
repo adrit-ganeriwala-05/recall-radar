@@ -30,3 +30,12 @@ export function allResultsFiles(): [string, EvaluationSummary][] {
 export function exportsDemoResults(): [string, EvaluationSummary][] {
   return allResultsFiles().filter(([k]) => k.includes("/exports/demo/"));
 }
+
+/** Every replay JSON we can see: the contract fixture plus exports/demo/replays (C7). */
+export function allReplayFiles(): [string, Replay][] {
+  const fixtures = Object.entries(FIX).filter(([k]) => /\/replay_E-[0-9A-Za-z]+\.json$/.test(k));
+  const exportsDemo = Object.entries(
+    import.meta.glob("../../../exports/demo/replays/E-*.json", { eager: true, import: "default" }) as Record<string, unknown>,
+  );
+  return [...fixtures, ...exportsDemo].map(([k, v]) => [k, v as Replay]);
+}

@@ -2,7 +2,8 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import type { Replay } from "../contracts.gen";
-import { replayFixture } from "../test/fixtures";
+import { allReplayFiles, replayFixture } from "../test/fixtures";
+import { markerText } from "../replay";
 import { ReplayView } from "./ReplayPage";
 
 function renderReplay(data: Replay) {
@@ -94,5 +95,38 @@ describe("replay", () => {
     expect(bar.getAttribute("data-tone")).toBe("partial");
     expect(screen.getAllByText("partial").length).toBeGreaterThan(0);
     expect(screen.getByTestId("frame-status").textContent).toContain("(partial month)");
+  });
+});
+
+describe("agreement: cutoff rules hold for every replay we ship (fixtures + exports/demo/replays)", () => {
+  it.each(allReplayFiles())("%s", (_file, data) => {
+    renderReplay(data);
+    data.frames.forEach((frame, i) => {
+      expect(barMonths()).toEqual(data.frames.slice(0, i + 1).map((f) => f.month));
+      const shown = [
+        ...screen.queryAllByTestId("marker-alert"),
+        ...screen.queryAllByTestId("marker-investigation"),
+        ...screen.queryAllByTestId("marker-recall"),
+      ].length;
+      const due = data.markers.filter(
+        (m) => m.date <= frame.cutoff && data.frames.some((f) => f.cutoff >= m.date),
+      ).length;
+      expect(shown).toBe(due);
+      if (i < data.frames.length - 1) forward();
+    });
+  });
+});
+
+describe("marker labels", () => {
+  const base = { date: "2018-01-10", is_outcome: true, action_no: "PE18003", match_tier: "1" as const, lead_days: 343 };
+  it.each([
+    // B's exporter wording: already names the investigation and the reveal -> unchanged
+    ["Investigation PE18003 opened (shown as a later reveal)", "Investigation PE18003 opened (shown as a later reveal) · Jan 10, 2018"],
+    // fixture wording: names the investigation, reveal missing -> appended once
+    ["Investigation opened (PE18-000)", "Investigation opened (PE18-000) (later reveal) · Jan 10, 2018"],
+    // bare action number -> both added
+    ["PE18003", "Investigation opened: PE18003 (later reveal) · Jan 10, 2018"],
+  ])("%s", (label, want) => {
+    expect(markerText({ ...base, type: "investigation_opened", label })).toBe(want);
   });
 });
