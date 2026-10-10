@@ -11,29 +11,29 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | C0 | Web scaffold, generated types, fixture client, routes, synthetic banner | C | D | D0 | 2:30 PM | review (PR #5 @ 981ae41, Reviewed by D) |
 | A1 | Parse + filter + normalize + drop personal fields (bounded) | A | B | A0 | 2:45 PM | done@5dca3a3 (PR #4) |
 | A2 | Dedup, availability, dup_text, redaction, `ingest_report`, complaint tables | A | B | A1 | 2:55 PM PR | done@5dca3a3 (PR #4, redaction fix c015403) |
-| B1 | Hand-calculated method fixtures | B | A | B0 | 2:40 PM | review (PR #2 @ 461fccc; A reviewed up to f53b396) |
-| B2 | Groups, monthly counts, Poisson score, alerts, episodes, cooldown, explanation | B | A | B1 | 2:55 PM PR | review (PR #2 @ 461fccc) |
+| B1 | Hand-calculated method fixtures | B | A | B0 | 2:40 PM | done@c70db51 (PR #2) |
+| B2 | Groups, monthly counts, Poisson score, alerts, episodes, cooldown, explanation | B | A | B1 | 2:55 PM PR | done@c70db51 (PR #2) |
 | D1 | Track/rules/judging/video-length answers → SOURCES.md | D | C | — | 3:30 PM | doing (facts in SOURCES.md 15:30; track/video/Zero Data need humans) |
 | D2 | VM + Caddy + systemd + deploy/rollback scripts; fixture build live | D | C | C0, human VM | 3:30 PM | done (trial d19a570 fixture live at http://64.177.53.230; /healthz SHA ok; e2e 2/2; outage 0 FAIL) |
 | C1 | Landing + make→model→year selector | C | D | C0 | 2:45 PM | review (PR #5) |
 | C2 | Vehicle page + issue/evidence page | C | D | C1 | 3:30 PM | review (PR #5) |
 | A3 | INV/RCL parse, families, recall campaigns, prefix check, DATEA lag | A | B | A2 | 3:25 PM | done@5dca3a3 (PR #4; availability LDATE_PLUS_7) |
-| B4 | Tier-1 matching + OutcomeMatch statuses | B | A | A3, B2 | 3:25 PM | review (PR #2, tiers 1-2) |
-| B5 | Dev evaluation: eligibility, coverage, Wilson CI, chance controls; Gate 1 report | B | A, D | B4 | 3:30 PM | done (Gate 1 report 1740) |
+| B4 | Tier-1 matching + OutcomeMatch statuses | B | A | A3, B2 | 3:25 PM | done@c70db51 (PR #2) |
+| B5 | Dev evaluation: eligibility, coverage, Wilson CI, chance controls; Gate 1 report | B | A, D | B4 | 3:30 PM | done@c70db51 (PR #2) |
 | C3 | Replay screen | C | D | C2 | 4:30 PM | review (PR #5) |
 | D3 | Integration tests + Playwright smoke | D | C | A5 (live), C0 | 4:30 PM | doing (smoke passes on C's real build 981ae41, fixture + cached; live API tests wait on A5) |
 | A4 | Full ingest 2014–2023 | A | B | Gate 1 | 4:30 PM | done@8ef4d3f (PR #6; DB 344 MB) |
-| B3 | Replay engine (as-of frames, outcome markers) | B | A | B2 | 4:30 PM | review (PR #2 @ 461fccc) |
-| B6 | Temporal invariance + isolation tests; full-data run | B | A | A4, B3 | 5:30 PM | review (PR #2 @ 454d8b3; full-data dev run done) |
+| B3 | Replay engine (as-of frames, outcome markers) | B | A | B2 | 4:30 PM | done@c70db51 (PR #2) |
+| B6 | Temporal invariance + isolation tests; full-data run | B | A | A4, B3 | 5:30 PM | done@c70db51 (PR #2; full-data dev run) |
 | A5 | FastAPI: all endpoints, fixture mode, static mount, errors | A | B (+C ack) | A4, contract-v1 | 5:30 PM | done@8ef4d3f (PR #6, Reviewed fdcb05c by B) |
 | A6 | API tests incl. timing | A | B | A5 | 5:30 PM | done@8ef4d3f (PR #6: 146 passed) |
 | C4 | Results page | C | D | C0 | 5:00 PM | review (PR #5) |
 | C5 | States + accessibility | C | D | C2–C4 | 5:30 PM | review (PR #5) |
 | D5 | Real-data deploy path (size/upload strategy) | D | C | A5 | 5:30 PM | doing (full DB 344 MB → make sync-data) |
 | C6 | Vitest suite (agreement, states, boundaries, banned words, VIN) | C | D | C2–C5 | 6:00 PM | review (PR #5: 61 Vitest) |
-| B7 | Development grid search within alert budget | B | A | B6 | 6:00 PM | review (PR #2; grid keeps c_min 5 / s_star 4.0, no retune) |
+| B7 | Development grid search within alert budget | B | A | B6 | 6:00 PM | done@c70db51 (PR #2; defaults kept) |
 | A7 | Tier-3 labels, development sample of 20 | A | — | B5 | 7:00 PM | doing (16 candidate rows in review/candidates_dev.csv on b/method) |
-| B8 | Final matcher, misses list, hero rule, freeze PR | B | A | B7, A7 | 6:40 PM | review (PR #2 now carries the freeze content; config 0c26e23e0a3a) |
+| B8 | Final matcher, misses list, hero rule, freeze PR | B | A | B7, A7 | 6:40 PM | review (freeze content in main c70db51; tag freeze-v1 next, human approves push) |
 | A8 | Tier-3 labels held-out sample; real-data redaction test | A | B | B9 | 8:30 PM | todo |
 | B9 | Held-out run, top-25 audit, `exports/demo/` | B | A | freeze-v1 | 8:30 PM | todo (export code in PR #2; no held-out run) |
 | C7 | Real API wiring, offline `/demo/` bundle, displayed=exported test | C | D | B9, A5 | 8:30 PM | review (PR #5; needs B9 exports) |
@@ -72,6 +72,7 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | 18:50 | PR #2 head 454d8b3 (contains main 8ef4d3f; includes freeze content): D pre-check make test 270 passed, ownership 0 → merge on A's "Reviewed 454d8b3: ok". Delete b/freeze after merge | D |
 | 18:55 | `make test-real` runs one process per test folder (DuckDB config clash across folders, REQUEST B→A 1836); Gate 2/3 commands in EXECUTION_PLAN now `make test-real` + `make integration` | D |
 | 18:55 | Config hash will be 0c26e23e0a3a after PR #2: the deployed DB must be rebuilt (detect + match) with it, and again with the frozen config (A's note) | D |
+| 18:57 | A "Reviewed 454d8b3: ok" → D merged PR #2 → main c70db51 (tree = reviewed head; make test 270 passed; config 0c26e23e0a3a). Deleted b/freeze and d/bootstrap (both fully contained in main) | D |
 
 ## Gate log
 | Gate | Time | Main SHA | Result | Decision |
