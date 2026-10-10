@@ -17,7 +17,6 @@ import json
 import math
 import os
 import random
-import tempfile
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -30,7 +29,7 @@ from recall_radar import contracts as C
 from recall_radar.method import candidates as K
 from recall_radar.method import match as M
 from recall_radar.method.config import config_hash as hash_config_file
-from recall_radar.method.config import load_config
+from recall_radar.method.config import config_hash_text, load_config
 from recall_radar.method.util import REPO_ROOT, git, month_index, month_index_from_str, table_exists
 
 FREEZE_TAG = "freeze-v1"
@@ -91,10 +90,7 @@ def check_freeze(config_path: Path | str, repo: Path | str = REPO_ROOT, tag: str
     frozen = git("show", f"{tag}:config.yaml", cwd=repo)
     if frozen is None:
         raise FreezeError(f"held_out is sealed: tag {tag} has no config.yaml")
-    with tempfile.NamedTemporaryFile("w", suffix=".yaml") as tmp:
-        tmp.write(frozen + "\n")
-        tmp.flush()
-        frozen_hash = hash_config_file(tmp.name)
+    frozen_hash = config_hash_text(frozen)
     working = hash_config_file(config_path)
     if frozen_hash != working:
         raise FreezeError(

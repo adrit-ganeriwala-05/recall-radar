@@ -24,9 +24,14 @@ def _raw(path: Path | str = DEFAULT_PATH) -> dict[str, Any]:
         return yaml.safe_load(fh)
 
 
-def config_hash(path: Path | str = DEFAULT_PATH) -> str:
-    canonical = json.dumps(_raw(path), sort_keys=True, separators=(",", ":"), default=str)
+def config_hash_text(text: str) -> str:
+    """Hash of a config given as YAML text (used to compare a tagged config.yaml without a temp file)."""
+    canonical = json.dumps(yaml.safe_load(text), sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode()).hexdigest()[:12]
+
+
+def config_hash(path: Path | str = DEFAULT_PATH) -> str:
+    return config_hash_text(Path(path).read_text())
 
 
 def _expand(value: Any, env: dict[str, str]) -> Any:
