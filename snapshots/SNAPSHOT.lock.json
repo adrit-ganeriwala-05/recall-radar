@@ -1,0 +1,69 @@
+{
+  "files": [
+    {
+      "bytes": 9982,
+      "file": "CMPL.txt",
+      "nhtsa_updated": "2026-05-01T00:00:00-04:00",
+      "retrieved_at": "2026-10-10T17:21:24Z",
+      "sha256": "84585b4ded99b0c45abc4a5dc86f85332ba0a6969d2d7d9b1247f10fc53e8f45",
+      "url": "https://static.nhtsa.gov/odi/ffdd/cmpl/CMPL.txt"
+    },
+    {
+      "bytes": 72410158,
+      "file": "COMPLAINTS_RECEIVED_2010-2014.zip",
+      "nhtsa_updated": "2026-09-25T05:43:00-04:00",
+      "retrieved_at": "2026-10-10T17:21:30Z",
+      "sha256": "545c60a30d7f81351dfdd512828d7d8e176c12eaee067d704258cf89843ea724",
+      "url": "https://static.nhtsa.gov/odi/ffdd/cmpl/COMPLAINTS_RECEIVED_2010-2014.zip"
+    },
+    {
+      "bytes": 81302724,
+      "file": "COMPLAINTS_RECEIVED_2015-2019.zip",
+      "nhtsa_updated": "2026-09-25T05:46:00-04:00",
+      "retrieved_at": "2026-10-10T17:21:22Z",
+      "sha256": "d8d95b377ad5e40f014c83030102f5c43b4cd7c0f804d4a66d4b6f4239e94f60",
+      "url": "https://static.nhtsa.gov/odi/ffdd/cmpl/COMPLAINTS_RECEIVED_2015-2019.zip"
+    },
+    {
+      "bytes": 75874033,
+      "file": "COMPLAINTS_RECEIVED_2020-2024.zip",
+      "nhtsa_updated": "2026-10-10T05:26:00-04:00",
+      "retrieved_at": "2026-10-10T17:21:31Z",
+      "sha256": "a5a5de2d31f3a1f955201a81fcad7515b0053aeb514f150a09ef56012a310e26",
+      "url": "https://static.nhtsa.gov/odi/ffdd/cmpl/COMPLAINTS_RECEIVED_2020-2024.zip"
+    },
+    {
+      "bytes": 4300610,
+      "file": "FLAT_INV.zip",
+      "nhtsa_updated": "2026-10-10T05:12:00-04:00",
+      "retrieved_at": "2026-10-10T17:21:23Z",
+      "sha256": "7642b74a072ee74161db44c450ff2d8cc85b264b65012737214152fbba182418",
+      "url": "https://static.nhtsa.gov/odi/ffdd/inv/FLAT_INV.zip"
+    },
+    {
+      "bytes": 15006062,
+      "file": "FLAT_RCL_POST_2010.zip",
+      "nhtsa_updated": "2026-10-10T03:05:00-04:00",
+      "retrieved_at": "2026-10-10T17:21:23Z",
+      "sha256": "0b66a333adf5b7d2b69c6b5c71e1807d8b9143a04b6673e42d3241e436a2f55c",
+      "url": "https://static.nhtsa.gov/odi/ffdd/rcl/FLAT_RCL_POST_2010.zip"
+    },
+    {
+      "bytes": 2057,
+      "file": "INV.txt",
+      "nhtsa_updated": "2026-10-10T00:00:00-04:00",
+      "retrieved_at": "2026-10-10T17:21:24Z",
+      "sha256": "04d3eef957004ff6d235ffbefe1ab270be27b72c1671ca5c3e8cfa96951bf8d2",
+      "url": "https://static.nhtsa.gov/odi/ffdd/inv/INV.txt"
+    },
+    {
+      "bytes": 3053,
+      "file": "RCL.txt",
+      "nhtsa_updated": "2026-10-10T00:00:00-04:00",
+      "retrieved_at": "2026-10-10T17:21:24Z",
+      "sha256": "3438cc7e4131efa401dfe6437dbe035607e092c129155dfb411d459d58802203",
+      "url": "https://static.nhtsa.gov/odi/ffdd/rcl/RCL.txt"
+    }
+  ],
+  "lock_version": 1
+}
