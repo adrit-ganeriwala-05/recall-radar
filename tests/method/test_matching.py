@@ -6,7 +6,7 @@ from datetime import date
 
 import pandas as pd
 import pytest
-from conftest import FIXTURE_HASH, build_db, fixture_config
+from method_support import FIXTURE_HASH, build_db, fixture_config
 from pydantic import ValidationError
 
 from recall_radar import contracts as C

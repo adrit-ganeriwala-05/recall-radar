@@ -8,7 +8,7 @@ import duckdb
 import numpy as np
 import pandas as pd
 import pytest
-from conftest import FIXTURE_CUTOFF, FIXTURE_HASH, FIXTURE_PARAMS, read_csv, spec_rows
+from method_support import FIXTURE_CUTOFF, FIXTURE_HASH, FIXTURE_PARAMS, read_csv, spec_rows
 
 from recall_radar import contracts as C
 from recall_radar.method.detect import ALERT_EPISODE_COLS, build_episodes, detect, write_output

@@ -6,9 +6,9 @@ from dataclasses import replace
 
 import numpy as np
 import pytest
-from conftest import FIXTURE_PARAMS, dense_series, offset_of
 from hypothesis import given, settings
 from hypothesis import strategies as st
+from method_support import FIXTURE_PARAMS, dense_series, offset_of
 
 from recall_radar.method.detect import score_panel
 

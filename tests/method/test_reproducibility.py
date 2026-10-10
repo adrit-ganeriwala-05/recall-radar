@@ -9,7 +9,7 @@ from datetime import date
 from pathlib import Path
 
 import pytest
-from conftest import FIXTURE_CUTOFF, build_db, fixture_config
+from method_support import FIXTURE_CUTOFF, build_db, fixture_config
 
 from recall_radar import contracts as C
 from recall_radar.method import evaluate as E

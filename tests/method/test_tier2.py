@@ -7,7 +7,7 @@ from datetime import date
 import duckdb
 import pandas as pd
 import pytest
-from conftest import FIXTURE_HASH, FIXTURE_PARAMS, fixture_config
+from method_support import FIXTURE_HASH, FIXTURE_PARAMS, fixture_config
 
 from recall_radar import contracts as C
 from recall_radar.method import candidates as K

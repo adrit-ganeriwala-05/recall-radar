@@ -6,7 +6,7 @@ import math
 
 import numpy as np
 import pytest
-from conftest import FIXTURE_PARAMS, dense_series, offset_of, read_csv
+from method_support import FIXTURE_PARAMS, dense_series, offset_of, read_csv
 from scipy.stats import poisson
 
 from recall_radar.method.detect import poisson_score, score_panel

@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from conftest import build_db, fixture_config
+from method_support import build_db, fixture_config
 from scipy.stats import binomtest
 
 from recall_radar import contracts as C

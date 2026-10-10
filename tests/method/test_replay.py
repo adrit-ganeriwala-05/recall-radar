@@ -6,7 +6,7 @@ from datetime import date
 
 import pandas as pd
 import pytest
-from conftest import FIXTURE_CUTOFF, FIXTURE_HASH, FIXTURE_PARAMS, build_db, fixture_config
+from method_support import FIXTURE_CUTOFF, FIXTURE_HASH, FIXTURE_PARAMS, build_db, fixture_config
 
 from recall_radar import contracts as C
 from recall_radar.method import match as M

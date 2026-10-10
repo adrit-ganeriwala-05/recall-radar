@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 import duckdb
-from conftest import build_db
+from method_support import build_db
 
 from recall_radar.method import detect
 

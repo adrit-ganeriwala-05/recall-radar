@@ -9,9 +9,9 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from conftest import FIXTURE_HASH, FIXTURE_PARAMS
 from hypothesis import given, settings
 from hypothesis import strategies as st
+from method_support import FIXTURE_HASH, FIXTURE_PARAMS
 
 from recall_radar.method.detect import detect
 from recall_radar.method.util import last_complete_month, month_index_from_str
