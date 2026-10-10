@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import duckdb
 import pytest
-from conftest import CONFIG, ROADSTER, STEERING_GID, build_db, fixture_json
+from api_support import CONFIG, ROADSTER, STEERING_GID, build_db, fixture_json
 from fastapi.testclient import TestClient
 
 from recall_radar import contracts as C
@@ -335,3 +335,11 @@ def test_fixture_mode_health_csv_and_missing_replay(fixture_client):
 
 def test_config_fixture_is_consistent():
     assert CONFIG["detector"]["window_months"] == 2
+
+
+def test_shutdown_releases_the_database_file(env):
+    db = env / "data" / "recall_radar.duckdb"
+    with TestClient(api.create_app()) as c:
+        assert c.get("/api/makes").status_code == 200
+    # after shutdown a plain connection (other settings) can open the same file
+    duckdb.connect(str(db), read_only=True).close()

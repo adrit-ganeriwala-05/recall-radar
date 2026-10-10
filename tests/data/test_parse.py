@@ -1,6 +1,6 @@
 """A1: parsing and normalization on tests/fixtures/raw (synthetic_fixture)."""
 
-from conftest import FIXTURES
+from data_support import FIXTURES
 
 from recall_radar.data import ingest
 

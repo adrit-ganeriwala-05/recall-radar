@@ -3,7 +3,7 @@
 from datetime import date
 
 import duckdb
-from conftest import run_ingest
+from data_support import run_ingest
 
 
 def _avail(con, odino):

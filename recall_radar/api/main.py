@@ -26,6 +26,8 @@ import math
 import os
 import subprocess
 import threading
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from datetime import UTC, date, datetime
 from functools import cached_property
 from pathlib import Path
@@ -189,6 +191,13 @@ class Store:
                         config={"autoinstall_known_extensions": False, "autoload_known_extensions": False},
                     )
         return self._con.cursor()
+
+    def close(self) -> None:
+        """Release the DuckDB file (app shutdown). Lookups stay cached; a later request reopens it."""
+        with self._lock:
+            if self._con is not None:
+                self._con.close()
+                self._con = None
 
     def rows(self, sql: str, params: list | None = None) -> list[dict]:
         cur = self.cursor()
@@ -362,7 +371,14 @@ def issue_summary(store: Store, gid: str, group_odinos: set[str]) -> C.IssueSumm
 def create_app(settings: Settings | None = None) -> FastAPI:
     s = settings or Settings()
     store = Store(s)
-    app = FastAPI(title="Recall Radar API", version=C.CONTRACT_VERSION, docs_url=None, redoc_url=None, openapi_url=None)
+
+    @asynccontextmanager
+    async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+        yield
+        store.close()
+
+    app = FastAPI(title="Recall Radar API", version=C.CONTRACT_VERSION, docs_url=None, redoc_url=None,
+                  openapi_url=None, lifespan=lifespan)
     app.state.settings, app.state.store = s, store
 
     @app.exception_handler(ApiError)
