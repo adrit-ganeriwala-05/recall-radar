@@ -266,3 +266,95 @@ def test_sources_take_official_text_from_the_v2_table_and_cover_every_campaign(t
     con = duckdb.connect(str(out_db), read_only=True)
     assert con.execute("SELECT count(*), count(*) FILTER (WHERE status = 'fallback') FROM recall_explanation").fetchone() == (3, 3)
     con.close()
+
+
+# ----------------------------------------------------------------------------- F2.6: nothing is served without B's verdict
+
+
+def accepted_row(source=SRC, model="stub-model") -> X.Explanation:
+    e = X.explain(source, lambda prompt: GOOD, model)
+    assert e.status == "accepted"
+    return e
+
+
+def test_finalize_keeps_an_accepted_row_only_with_bs_accept_for_that_exact_cache_key():
+    row = accepted_row()
+    sources = {SRC.campno: SRC}
+    for verdicts, status, reason in [
+        ({}, "fallback", "not read and approved by B"),  # nobody read it
+        ({row.cache_key: "reject"}, "fallback", "B rejected it"),
+        ({"other|key": "accept"}, "fallback", "not read and approved by B"),  # an approval for something else
+        ({row.cache_key: "accept"}, "accepted", "ok"),
+    ]:
+        (got,) = X.finalize([row], sources, verdicts)
+        assert got.status == status and reason in got.reason, verdicts
+        if status == "fallback":
+            assert got.sentences == () and got.model is None and got.contract() == X.fallback(SRC, "x").contract()
+
+
+def test_finalize_downgrades_when_the_official_text_changed_or_no_longer_supports_the_sentences():
+    row = accepted_row()
+    approve = {row.cache_key: "accept"}
+    changed = X.Source(SRC.campno, SRC.summary, SRC.consequence, "Dealers will inspect the fuel pump.")
+    assert "differs from the generation run" in X.finalize([row], {SRC.campno: changed}, approve)[0].reason
+    assert "no official text" in X.finalize([row], {}, approve)[0].reason
+    assert "no official text" in X.finalize([row], {SRC.campno: X.Source(SRC.campno)}, approve)[0].reason
+    # a row whose stored sentences were edited after the run: the key still matches, the validator does not
+    tampered = X.Explanation(row.campno, "accepted", ({**S1, "text": "The fuel pump will fail and the car is safe to drive."},), row.model,
+                             row.prompt_version, row.source_sha256, row.cache_key, "ok")  # fmt: skip
+    got = X.finalize([tampered], {SRC.campno: SRC}, approve)[0]
+    assert got.status == "fallback" and "re-validation" in got.reason
+    # fallback rows pass through untouched
+    fb = X.fallback(SRC, "not generated")
+    assert X.finalize([fb], {SRC.campno: SRC}, approve) == [fb]
+
+
+def test_verdict_file_must_be_bs_and_unambiguous(tmp_path):
+    path = tmp_path / "explanation_verdicts.csv"
+    assert X.load_verdicts(path) == {}  # no file: no approvals
+    path.write_text("campno,cache_key,verdict,reviewer,note\n20V1,k1,accept,B,\n20V2,k2,reject,B,drops a detail\n")
+    assert X.load_verdicts(path) == {"k1": "accept", "k2": "reject"}
+    path.write_text("campno,cache_key,verdict,reviewer,note\n20V1,k1,accept,D,\n")
+    with pytest.raises(ValueError, match="reviewer B"):
+        X.load_verdicts(path)
+    path.write_text("campno,cache_key,verdict,reviewer,note\n20V1,k1,maybe,B,\n")
+    with pytest.raises(ValueError, match="accept or reject"):
+        X.load_verdicts(path)
+    path.write_text("campno,cache_key,verdict,reviewer,note\n20V1,k1,accept,B,\n20V1,k1,reject,B,\n")
+    with pytest.raises(ValueError, match="two different verdicts"):
+        X.load_verdicts(path)
+
+
+def test_review_sheet_and_finalize_from_the_command_line(tmp_path, capsys):
+    base = tmp_path / "v2.duckdb"
+    con = duckdb.connect(str(base))
+    con.execute("CREATE TABLE recall_campaign_v2 (campno VARCHAR, summary VARCHAR, consequence VARCHAR, remedy VARCHAR)")
+    other = X.Source("21V200000", "Certain vehicles may have a loose wheel nut.", None, None)
+    con.executemany("INSERT INTO recall_campaign_v2 VALUES (?, ?, ?, ?)", [[s.campno, s.summary, s.consequence, s.remedy] for s in (SRC, other)])
+    con.close()
+    tables = tmp_path / "t.duckdb"
+    good_other = out({"text": "Certain vehicles may have a loose wheel nut.", "source_fields": ["summary"], "source_spans": ["may have a loose wheel nut"]})
+    rows = [X.explain(SRC, lambda p: GOOD, "stub-model"), X.explain(other, lambda p: good_other, "stub-model")]
+    assert X.write_table(tables, rows) == {"accepted": 2}
+
+    sheet = tmp_path / "sheet.md"
+    assert X.main(["--campaign-db", str(base), "--out", str(tables), "--review-sheet", str(sheet)]) == 0
+    text = sheet.read_text()
+    assert "2 accepted explanations to read" in text and S1["text"] in text and SRC.remedy in text
+    assert f"`{SRC.campno},{rows[0].cache_key},,B,`" in text  # the line B completes with a verdict
+    assert X.read_table(tables) == rows  # the sheet changes nothing
+
+    verdicts = tmp_path / "verdicts.csv"
+    verdicts.write_text(f"campno,cache_key,verdict,reviewer,note\n{SRC.campno},{rows[0].cache_key},accept,B,read against all three fields\n")
+    capsys.readouterr()
+    assert X.main(["--campaign-db", str(base), "--out", str(tables), "--finalize", "--verdicts", str(verdicts)]) == 0
+    printed = capsys.readouterr().out
+    assert "finalize: 1 accepted rows downgraded to fallback" in printed and "accepted 1 of 2" in printed
+    final = {r.campno: r for r in X.read_table(tables)}
+    assert final[SRC.campno].status == "accepted" and final["21V200000"].status == "fallback"
+    assert "not read and approved by B" in final["21V200000"].reason
+    # running it again changes nothing; with no verdict file at all, nothing stays accepted
+    assert X.main(["--campaign-db", str(base), "--out", str(tables), "--finalize", "--verdicts", str(verdicts)]) == 0
+    assert "finalize: 0 accepted rows downgraded" in capsys.readouterr().out
+    assert X.main(["--campaign-db", str(base), "--out", str(tables), "--finalize", "--verdicts", str(tmp_path / "none.csv")]) == 0
+    assert "fallback only (2 campaigns)" in capsys.readouterr().out

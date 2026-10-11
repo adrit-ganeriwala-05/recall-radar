@@ -1,7 +1,14 @@
 """F2 (PRD_v2 §4): plain-language recall explanations, with `fallback` as the guaranteed result.
 
-    python -m recall_radar.b_v2.recall_explain --campaign-db <db> --out <b_v2_tables.duckdb>
-        [--generate --source-db <db whose recall_campaign has summary, consequence, remedy>]
+    python -m recall_radar.b_v2.recall_explain --campaign-db <db> --out <b_v2_tables.duckdb> [--generate [--only <file>]]
+    python -m recall_radar.b_v2.recall_explain --campaign-db <db> --out <tables> --review-sheet <file.md>
+    python -m recall_radar.b_v2.recall_explain --campaign-db <db> --out <tables> --finalize [--verdicts <csv>]
+
+`--review-sheet` writes every accepted explanation next to its official text, for B to read (PRD
+F2.6). `--finalize` is the last step before a tables file may be served: an accepted row stays
+accepted only if its cache key still matches the official text in `--campaign-db`, the full
+validator accepts it again, and review/explanation_verdicts.csv holds B's `accept` for that exact
+cache key. Everything else becomes `fallback`.
 
 The table `recall_explanation` has one row per campaign. Its default status is `fallback`: the
 site then shows the official NHTSA text only and never labels anything as AI-generated.
@@ -43,6 +50,8 @@ from pathlib import Path
 from typing import Any
 
 SOURCE_FIELDS = ("summary", "consequence", "remedy")
+REPO_ROOT = Path(__file__).resolve().parents[2]
+VERDICTS_CSV = REPO_ROOT / "review" / "explanation_verdicts.csv"  # campno, cache_key, verdict, reviewer, note
 PROMPT_VERSION = "f2-v1"
 MAX_SENTENCES, MAX_WORDS, MIN_SPAN = 2, 45, 12
 MAX_CALLS, CONCURRENCY, TIMEOUT_S, RETRIES = 300, 4, 20, 1
@@ -380,6 +389,77 @@ def load_sources(db_path: Path | str) -> list[Source]:
         con.close()
 
 
+def read_table(db_path: Path | str) -> list[Explanation]:
+    import duckdb
+
+    con = duckdb.connect(str(db_path), read_only=True)
+    try:
+        rows = con.execute(
+            "SELECT campno, status, sentences, model, prompt_version, source_sha256, cache_key, reason FROM recall_explanation ORDER BY campno"
+        ).fetchall()
+    finally:
+        con.close()
+    return [Explanation(c, st, tuple(json.loads(sen or "[]")), m, pv, sha, key, reason or "") for c, st, sen, m, pv, sha, key, reason in rows]
+
+
+def load_verdicts(path: Path | str = VERDICTS_CSV) -> dict[str, str]:
+    """cache_key -> 'accept' | 'reject', as recorded by B after reading the explanation. No file: no verdicts."""
+    import csv
+
+    path = Path(path)
+    if not path.is_file():
+        return {}
+    out: dict[str, str] = {}
+    with open(path, newline="", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            verdict, key = r["verdict"].strip(), r["cache_key"].strip()
+            if verdict not in ("accept", "reject") or r["reviewer"].strip() != "B":
+                raise ValueError(f"explanation_verdicts.csv: verdict must be accept or reject, by reviewer B: {r}")
+            if out.get(key, verdict) != verdict:
+                raise ValueError(f"explanation_verdicts.csv: two different verdicts for {r['campno']}")
+            out[key] = verdict
+    return out
+
+
+def finalize(rows: list[Explanation], sources: dict[str, Source], verdicts: dict[str, str]) -> list[Explanation]:
+    """Downgrade every accepted row that is not grounded in the current official text AND approved by B."""
+    out = []
+    for r in rows:
+        if r.status != "accepted":
+            out.append(r)
+            continue
+        src = sources.get(r.campno)
+        why = None
+        if src is None or not src.has_text:
+            why = "no official text for this campaign in the serving database"
+        elif not r.model or not r.prompt_version or cache_key(src, r.model, r.prompt_version) != r.cache_key:
+            why = "official text, model or prompt version differs from the generation run"
+        else:
+            sentences, reason = validate(json.dumps({"sentences": list(r.sentences)}), src)
+            if sentences is None:
+                why = f"re-validation: {reason}"
+            elif verdicts.get(r.cache_key) != "accept":
+                why = "B rejected it after reading" if verdicts.get(r.cache_key) == "reject" else "not read and approved by B (PRD F2.6)"
+        out.append(r if why is None else Explanation(r.campno, "fallback", (), None, None, r.source_sha256, r.cache_key, f"finalize: {why}"))
+    return out
+
+
+def review_sheet(rows: list[Explanation], sources: dict[str, Source]) -> str:
+    """Every accepted explanation with the official text it cites, and the line to copy into the verdict file."""
+    accepted = [r for r in rows if r.status == "accepted"]
+    out = [f"# F2 review sheet: {len(accepted)} accepted explanations to read (PRD F2.6)", "",
+           "Verdict file: review/explanation_verdicts.csv with the header `campno,cache_key,verdict,reviewer,note`.", ""]  # fmt: skip
+    for r in accepted:
+        src = sources.get(r.campno) or Source(r.campno)
+        out += [f"## {r.campno}  (model {r.model}, prompt {r.prompt_version})", ""]
+        for i, sen in enumerate(r.sentences, 1):
+            out += [f"{i}. **{sen['text']}**", f"   - cites {', '.join(sen['source_fields'])}: " + " | ".join(f"\"{x}\"" for x in sen["source_spans"])]
+        out += ["", "Official NHTSA text:"]
+        out += [f"- {f}: {src.field(f) or '(none)'}" for f in SOURCE_FIELDS]
+        out += ["", f"`{r.campno},{r.cache_key},,B,`", ""]
+    return "\n".join(out) + "\n"
+
+
 def status_line(counts: dict[str, int]) -> str:
     """PRD F2.8: 'accepted N of M' or 'fallback only'."""
     total, accepted = sum(counts.values()), counts.get("accepted", 0)
@@ -392,8 +472,24 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out", required=True, help="B's v2 tables file (never A's database, never the serving database)")
     ap.add_argument("--generate", action="store_true", help="call the model for campaigns with official text (bounded)")
     ap.add_argument("--only", help="file with one campno per line: the bounded set (demo replays + top vehicles)")
+    ap.add_argument("--review-sheet", help="write the accepted explanations of --out with their official text to this file; changes nothing")
+    ap.add_argument("--finalize", action="store_true", help="keep an accepted row only if it re-validates and B approved it; rewrite --out")
+    ap.add_argument("--verdicts", default=str(VERDICTS_CSV), help="B's verdict file (default: review/explanation_verdicts.csv)")
     args = ap.parse_args(argv)
     sources = load_sources(args.campaign_db)
+    if args.review_sheet or args.finalize:
+        by_campno = {s.campno: s for s in sources}
+        existing = read_table(args.out)
+        if args.review_sheet:
+            Path(args.review_sheet).write_text(review_sheet(existing, by_campno), encoding="utf-8")
+            print(f"review sheet -> {args.review_sheet}: {sum(r.status == 'accepted' for r in existing)} accepted explanations")
+        if args.finalize:
+            final = finalize(existing, by_campno, load_verdicts(args.verdicts))
+            downgraded = sum(a.status == "accepted" and b.status != "accepted" for a, b in zip(existing, final, strict=True))
+            counts = write_table(args.out, final)
+            print(f"finalize: {downgraded} accepted rows downgraded to fallback")
+            print(f"recall_explanation -> {args.out}: {status_line(counts)}")
+        return 0
     if not args.generate:
         rows = [fallback(s, "not generated") for s in sources]
     else:
