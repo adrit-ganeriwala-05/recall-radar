@@ -20,6 +20,8 @@ CLAIM_HELP = ("I can't give insurance or legal advice, but I can point you to pu
               "https://recall-radar.us), your car's own recall status by VIN at https://www.nhtsa.gov/recalls, and "
               "your repair and dealer receipts. You can also file your own complaint at "
               "https://www.nhtsa.gov/report-a-safety-problem")
+DELETE_ACK = ("Deleted the records Recall Radar kept about this chat. Copies held by Apple, Photon or your device "
+              "are outside our control.")
 GROUP_REFUSAL = "Recall Radar only works in one-to-one chats."
 PHONE_REFUSAL = "Please don't send phone numbers. To watch a vehicle, reply WATCH <year make model>."
 
