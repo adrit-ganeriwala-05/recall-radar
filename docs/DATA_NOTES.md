@@ -75,6 +75,10 @@ the more cautious basis, as B also suggested in the PR #4 review. Every screen t
   + one or two following words with [NAME], keeping common words and part names ("MRS CONTROL
   UNIT", "MR TIRE"). Stored texts keep the ingest redaction; what the site serves gets both.
   332 stored texts change. Re-scan of 1,004 served excerpts with the fix: 0 names flagged.
+- Mixed case (B's review of #15/#17): 141,602 stored texts are sentence case, and the first pattern was
+  uppercase-only, so "Ms. Jane Doe" passed. The title now matches in any case and name words need a
+  capital initial; common words are compared in uppercase. Full scan, title + period + capitalised
+  non-common word: 346 texts before, 0 after (0 in served excerpts); 388 texts change.
 - Known residual: "MS" without a period followed by a surname is not scrubbed, because "MS" is far
   more often Mississippi. Moving `scrub_names` into ingest is a post-hackathon change (needs a new
   freeze; the DB would be rebuilt).

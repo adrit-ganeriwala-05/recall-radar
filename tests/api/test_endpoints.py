@@ -302,6 +302,13 @@ def test_git_sha_prefers_env(monkeypatch):
         ("CALLED MRS. ROE AND WAITED", "CALLED [NAME] AND WAITED"),
         ("SEEN BY DR. ROE", "SEEN BY [NAME]"),
         ("SPOKE TO MR JOHN ROE CALLED BACK", "SPOKE TO [NAME] CALLED BACK"),
+        # sentence case (newer complaints): title in any case, name words with a capital
+        ("The letter from Ms. Jane Doe of Example Motors", "The letter from [NAME] of Example Motors"),
+        ("I spoke to Mr. Roe and he said", "I spoke to [NAME] and he said"),
+        ("my doctor, Dr. Roe, said", "my doctor, [NAME], said"),
+        ("then mrs. Roe called", "then [NAME] called"),
+        ("parked on Oak Dr. and then", "parked on Oak Dr. and then"),
+        ("Sent to Ms. The Service Manager", "Sent to Ms. The Service Manager"),
         # MS/DR without a period, a part name after MR/MRS, or a common word after it: not a person
         ("TOOK IT TO MR TIRE TWICE", "TOOK IT TO MR TIRE TWICE"),
         ("THE MRS CONTROL UNIT FAILED", "THE MRS CONTROL UNIT FAILED"),

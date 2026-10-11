@@ -130,7 +130,11 @@ def index_month(i: int) -> str:
 # under freeze-v1's pipeline inputs, so the extra rule runs here, on what the site serves.
 # MS and DR only with a period (without one: a state, "DR OFFICE"); MR and MRS also without one,
 # unless a part name follows ("MRS CONTROL UNIT", "MR TIRE" the shop).
-_HONORIFIC = re.compile(r"\b(?:(?:MR|MRS|MS|DR)\.|(?:MR|MRS)(?=\s))\s+([A-Z][A-Z'-]*)(?:\s+([A-Z][A-Z'-]*))?")
+# Title in any case; name words start with a capital ("Ms. Jane Doe" in newer, sentence-case
+# complaints as well as "MS. JANE DOE"); B's review of #15/#17.
+_HONORIFIC = re.compile(
+    r"\b(?:(?i:mr|mrs|ms|dr)\.|(?i:mr|mrs)(?=\s))\s+([A-Z][A-Za-z'-]*)(?:\s+([A-Z][A-Za-z'-]*))?"
+)
 _NOT_A_NAME = frozenset("""
     A AN AND ARE AS AT BE BECAUSE BUT BY CALLED CAME CAR DID FOR FROM HAD HAS HAVE HE HER HIM HIS I
     IF IN IS IT ITS ME MY NO NOT OF ON OR OUR OUT SAID SHE SO THAT THE THEIR THEM THEN THERE THEY THIS
@@ -141,9 +145,9 @@ _NOT_A_NAME = frozenset("""
 
 def _scrub_honorific(m: re.Match[str]) -> str:
     first, second = m.group(1), m.group(2)
-    if first in _NOT_A_NAME:  # "...MAIN DR. AND THEN" is a street, not a person
+    if first.upper() in _NOT_A_NAME:  # "...MAIN DR. AND THEN" is a street, not a person
         return m.group(0)
-    if second is None or second in _NOT_A_NAME:
+    if second is None or second.upper() in _NOT_A_NAME:
         return "[NAME]" if second is None else f"[NAME] {second}"
     return "[NAME]"
 
