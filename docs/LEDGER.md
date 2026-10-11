@@ -5,7 +5,7 @@ disabled · blocked(<input>) · not started. **verified** needs: PR merged befor
 criterion with a named passing test or recorded inspection at the Gate B SHA, deployed `/healthz` =
 that SHA, and a deployed browser check.
 
-Updated 05:50 ET. GATE B PASS at b963d64 + DB a0bdcbbb (docs/GATE_B.md); tag rc2. Production = ac2e70c (messaging/F6 changes after the cutoff; see RELEASE_MANIFEST.md).
+Updated 08:00 ET. GATE B PASS at b963d64 + DB a0bdcbbb (docs/GATE_B.md); tag rc2. Production = 87dae2a (messaging/F6 changes after the cutoff; see RELEASE_MANIFEST.md).
 
 | task id | source | owner | deps | paths | acceptance check | verified commit | state | blocker |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -31,7 +31,8 @@ Updated 05:50 ET. GATE B PASS at b963d64 + DB a0bdcbbb (docs/GATE_B.md); tag rc2
 | F9.6-alerts | PRD §4 F9.6 | A, D (by D) | Gate P | messaging/job.py, recall-radar-monitor.{service,timer} | 5 job tests (seed, daily diff, quiet hours, STOP, lock); first VM run seeded silently | fd6323a | implemented-unverified | no real NHTSA change observed yet; post-cutoff |
 | F6-partial | PRD §4 F6.4 | A (by D) | — | web/src/features/vin/** | live: 1FTFW1RG4KFA00412 (check digit wrong) decoded 2019 FORD F-150 but dead-ended → #63 confirm path; 2 tests; B reviewed; deployed browser check passed | da1324b | implemented-unverified | post-cutoff (PRD §9) |
 | F9.4-delete | PRD §4 F9.4, §6 | A (by D) | B's #34 finding | messaging/commands.py, outbox.py | #66: delete-ack row removed once final (legacy rows by text); DELETE also for never-subscribed chats; all-tables search tests; B reviewed | da1324b | implemented-unverified | real-tester DELETE not yet run |
-| C-redesign | C (#72) | C, D | — | web/** (not web/presentation) | D ran the checks #72 listed as open on the real API + v2 DB: e2e found F8 many-campaigns on 2 pages → #73; then 8 passed 4 skipped, integration 21, 91-load sweep no new overflow; live after deploy: same | ac2e70c | implemented-unverified | post-cutoff (PRD §9); /observatory not deployed |
+| C-redesign | C (#72) | C, D | — | web/** (not web/presentation) | D ran the checks #72 listed as open on the real API + v2 DB: e2e found F8 many-campaigns on 2 pages → #73; then 8 passed 4 skipped, integration 21, 91-load sweep no new overflow; live after deploy: same | ac2e70c | implemented-unverified | post-cutoff (PRD §9) |
+| C-observatory | C (#72), D (#76) | C, D | — | web/presentation/**, deploy/deploy.sh | static Next export built by deploy.sh into web/dist/observatory before the secret scan; live: 3D car renders, 0 console errors, 0 failed requests at desktop and phone width, "Open app" → / | 87dae2a | implemented-unverified | post-cutoff (PRD §9); "randomly timed alerts" wording (also on the results page since v1) to be corrected by C per B |
 
 ## Reproducibility
 B (B10): `git checkout baseline-v1 && make repro` → exit 0, MATCH ×4; results.csv sha256 7a469c93…c561321a unchanged.

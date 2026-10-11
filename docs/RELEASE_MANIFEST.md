@@ -22,9 +22,9 @@ on each PR (not independent).
 
 | Item | Value |
 | --- | --- |
-| Production SHA | ac2e70c4ffbd4367a73c218a8d4d1a6ee92309d8 (train #74 = #72 C frontend redesign + #73 F8 print fix; deployed after 07:40 ET; `/healthz` matches; live Playwright RR_RELEASE=1 8 passed 4 skipped; integration 21 passed; VIN flow ok; 36-load width sweep 0 JS errors, only the pre-existing /results 320 px overflow; webhook 503; `/observatory` not deployed) |
+| Production SHA | 87dae2aed15800fb6cc2a22c84051ee12859039b (#76: deploy also builds C's 3D `/observatory` presentation; on top of train #74 = #72 C redesign + #73 F8 print fix). Live checks after deploy: `/healthz` matches; Playwright RR_RELEASE=1 8 passed 4 skipped; integration 21 passed; VIN flow ok; 28-load app sweep 0 errors, only the pre-existing /results 320 px overflow; `/observatory` and `/observatory/` → `/observatory/index.html`, 3D car renders, 0 console errors and 0 failed requests at 1440×900 and 390×844, "Open app" → `/`; presentation manifest git = 87dae2a; webhook 503 |
 | DB served | unchanged: recall_radar_v2.duckdb a0bdcbbb… · snapshot e808281f001a |
-| Since rc2 | #58 echo guard · #59 dedupe per message id · #60 Gemini brain · #61 monitor job · #62 monitor timer + Gate P outbound (#58–#62 self-reviewed, not independent) · train #67 = #66 DELETE leaves no handle, #64 model-name digits, #63 F6 partial-decode confirm, #56, #57, #65 (each reviewed by B at its exact head) · train #74 = #72 (C redesign, reviewed by D with #73) + #73 (reviewed by B) |
+| Since rc2 | #58 echo guard · #59 dedupe per message id · #60 Gemini brain · #61 monitor job · #62 monitor timer + Gate P outbound (#58–#62 self-reviewed, not independent) · train #67 = #66 DELETE leaves no handle, #64 model-name digits, #63 F6 partial-decode confirm, #56, #57, #65 (each reviewed by B at its exact head) · train #74 = #72 (C redesign, reviewed by D with #73) + #73 (reviewed by B) · #76 deploy builds `/observatory` (reviewed by B) |
 | Messaging | Gate P window only (`gatep.sh on`, guarded: auto-off at the window end, kill on > 6 replies to one route in 60 s). Off = RR_MESSAGING_ENABLED=0, sidecar + monitor timer stopped, messaging loopback-only |
 | Gemini (chat) | `RR_GEMINI_MODEL=gemini-3.1-flash-lite`, free tier (not zero data retention); off with `RR_BRAIN=0` |
-| Rollback | `bash deploy/rollback.sh` → previous release (da1324b) |
+| Rollback | `bash deploy/rollback.sh` → previous release (ac2e70c, app redesign without `/observatory`) |
