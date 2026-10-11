@@ -1,0 +1,141 @@
+{
+ "provenance": {
+  "contract_version": "1.1.0",
+  "data_label": "synthetic_fixture",
+  "snapshot_id": null,
+  "data_as_of": null,
+  "config_hash": null,
+  "git_sha": null,
+  "availability_basis": null,
+  "generated_at": "2026-10-10T16:00:00Z"
+ },
+ "vehicle": {
+  "make": "EXAMPLE MOTORS",
+  "model": "ROADSTER",
+  "model_year": 2017
+ },
+ "complaint_date_range": {
+  "start": "2016-01-04",
+  "end": "2019-06-28"
+ },
+ "snapshot_date": null,
+ "distinct_complaints": 35,
+ "counting_basis": "distinct NHTSA complaint IDs",
+ "top_groups": [
+  {
+   "group": {
+    "group_id": "g_6bc38243bb0a",
+    "vehicle": {
+     "make": "EXAMPLE MOTORS",
+     "model": "ROADSTER",
+     "model_year": 2017
+    },
+    "comp_system": "STEERING",
+    "sub_issue": null,
+    "distinct_complaints": 30,
+    "first_month": "2016-03",
+    "last_month": "2018-12"
+   },
+   "distinct_complaints": 30,
+   "link": "/issue/g_6bc38243bb0a"
+  },
+  {
+   "group": {
+    "group_id": "g_bf23f78a9706",
+    "vehicle": {
+     "make": "EXAMPLE MOTORS",
+     "model": "ROADSTER",
+     "model_year": 2017
+    },
+    "comp_system": "SERVICE BRAKES",
+    "sub_issue": null,
+    "distinct_complaints": 7,
+    "first_month": "2017-01",
+    "last_month": "2018-11"
+   },
+   "distinct_complaints": 7,
+   "link": "/issue/g_bf23f78a9706"
+  }
+ ],
+ "shown_n": 2,
+ "total_groups": 2,
+ "investigations": [
+  {
+   "action_no": "PE19001",
+   "inv_type": "PE",
+   "open_date": "2019-04-02",
+   "subject": "A very long investigation subject line that keeps going A very long investigation subject line that keeps going A very long investigation subject line that keeps going A very long investigation subject line that keeps going A very long investigation subject line that keeps going A very long investigation subject line that keeps going A very long investigation subject line that keeps going A very long investigation subject line that keeps going ",
+   "link": "https://www.nhtsa.gov/recalls"
+  }
+ ],
+ "total_investigations": 1,
+ "campaigns": [
+  {
+   "campno": "18V000000",
+   "component": "STEERING",
+   "report_date": "2019-02-04",
+   "summary": "The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text.",
+   "consequence": "The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text.",
+   "remedy": "The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text.\nSecond line of the official remedy text that is not shown.",
+   "park_it": true,
+   "park_outside": false,
+   "report_date_basis": "Report received date (RCDATE)",
+   "source_url": "https://www.nhtsa.gov/recalls?nhtsaId=18V000000",
+   "snapshot_id": null,
+   "explanation": {
+    "status": "accepted",
+    "model": "synthetic-fixture",
+    "prompt_version": "fixture-1",
+    "sentences": [
+     {
+      "text": "A steering column bolt may loosen, which can reduce steering control.",
+      "source_fields": [
+       "summary",
+       "consequence"
+      ],
+      "source_spans": [
+       "The steering column <bolt> may loosen.",
+       "reduce steering control"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "campno": "19V111000",
+   "component": "ELECTRICAL SYSTEM",
+   "report_date": "2019-06-10",
+   "summary": "The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text.",
+   "consequence": "The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text.",
+   "remedy": "The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text.\nSecond line of the official remedy text that is not shown.",
+   "park_it": false,
+   "park_outside": true,
+   "report_date_basis": "Report received date (RCDATE)",
+   "source_url": "https://www.nhtsa.gov/recalls?nhtsaId=19V111000",
+   "snapshot_id": null,
+   "explanation": {
+    "status": "fallback",
+    "sentences": [],
+    "model": null,
+    "prompt_version": null
+   }
+  },
+  {
+   "campno": "20V222000",
+   "component": "SERVICE BRAKES",
+   "report_date": null,
+   "summary": "The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text.",
+   "consequence": "The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text.",
+   "remedy": "The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text. The remedy is long official text.\nSecond line of the official remedy text that is not shown.",
+   "park_it": null,
+   "park_outside": null,
+   "report_date_basis": null,
+   "source_url": null,
+   "snapshot_id": null,
+   "explanation": null
+  }
+ ],
+ "total_campaigns": 3,
+ "vin_lookup_url": "https://www.nhtsa.gov/recalls",
+ "selection_rule": "Top 5 issue groups by distinct complaints (ties by component name); up to 5 investigations, newest first; up to 6 recall campaigns, newest report date first."
+}
