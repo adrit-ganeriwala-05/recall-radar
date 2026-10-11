@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Release a git ref to the VM. Owner: D.
-# Usage: bash deploy/deploy.sh <ref> [--mode cached|fixture] [--yes] [--build-only]
+# Usage: bash deploy/deploy.sh <ref> [--mode cached|fixture] [--db-file NAME] [--yes] [--build-only]
 #        make deploy REF=<ref> MODE=<cached|fixture>
 # 1. git archive <ref> (committed files only) into a temp dir; write REVISION and .deploy.env
 #    (RR_MODE, RR_GIT_SHA). 2. npm ci + build web/dist with VITE_API_MODE=live; fail on any
@@ -21,8 +21,10 @@ on_vm() {
   chmod -R go+rX "$rel"
   echo "==> uv sync --locked --no-dev (user rr)"
   (cd "$rel" && runuser -u rr -- env HOME=/home/rr /usr/local/bin/uv sync --locked --no-dev --quiet)
-  if [ "$mode" = cached ] && [ ! -s "$app/data/recall_radar.duckdb" ]; then
-    echo "ERROR: $app/data/recall_radar.duckdb is missing: run deploy/sync_data.sh first, or deploy --mode fixture" >&2
+  local dbf
+  dbf=$(sed -n 's/^RR_DB_FILE=//p' "$rel/.deploy.env"); dbf=${dbf:-recall_radar.duckdb}
+  if [ "$mode" = cached ] && [ ! -s "$app/data/$dbf" ]; then
+    echo "ERROR: $app/data/$dbf is missing: run deploy/sync_data.sh first, or deploy --mode fixture" >&2
     exit 3
   fi
   if ! cmp -s "$rel/deploy/recall-radar.service" /etc/systemd/system/recall-radar.service; then
@@ -80,10 +82,11 @@ fi
 # ---------------------------------------------------------------- laptop side
 # shellcheck source=deploy/lib.sh
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
-REF="" MODE=${RR_DEPLOY_MODE:-cached} BUILD_ONLY=0
+REF="" MODE=${RR_DEPLOY_MODE:-cached} BUILD_ONLY=0 DB_FILE=""
 while [ $# -gt 0 ]; do
   case $1 in
     --mode) MODE=${2:?--mode needs cached or fixture}; shift 2 ;;
+    --db-file) DB_FILE=${2:?--db-file needs recall_radar.duckdb or recall_radar_v2.duckdb}; shift 2 ;;
     --yes | -y) RR_YES=1; shift ;;
     --build-only) BUILD_ONLY=1; shift ;;
     -*) die "unknown option $1 (usage: deploy/deploy.sh <ref> [--mode cached|fixture] [--yes] [--build-only])" ;;
@@ -113,6 +116,8 @@ info "packaging $SHORT into $BUILD"
 git -C "$RR_ROOT" archive --format=tar "$SHA" | tar -x -C "$BUILD"
 printf '%s\n' "$SHA" >"$BUILD/REVISION"
 printf 'RR_MODE=%s\nRR_GIT_SHA=%s\n' "$MODE" "$SHA" >"$BUILD/.deploy.env"
+# pin the database the API opens (PRD_v2: the v2 file sits beside the baseline file)
+case $DB_FILE in "") ;; recall_radar.duckdb | recall_radar_v2.duckdb) printf 'RR_DB_FILE=%s\n' "$DB_FILE" >>"$BUILD/.deploy.env" ;; *) die "--db-file must be recall_radar.duckdb or recall_radar_v2.duckdb" ;; esac
 if [ -f "$BUILD/web/package-lock.json" ]; then
   info "building web/dist (npm ci + build, VITE_API_MODE=live)"
   # run npm inside web/: `npm --prefix <export dir>/web ci` fails there with EUSAGE
