@@ -91,3 +91,29 @@ the more cautious basis, as B also suggested in the PR #4 review. Every screen t
   addresses or highway exits. Known miss: "<number> THE <name> WAY".
 - Displayed-vs-exported: `RR_RELEASE=1` integration against the live site and the browser field
   checks are recorded in docs/status/A.md.
+
+## F1 recall cards (PRD v2, 2026-10-11)
+- **Source fields** (`~/rr-raw/RCL.txt`, FLAT_RCL_POST_2010, all 245,855 rows have the 29 fields): summary =
+  field 20 `DESC_DEFECT` CHAR(6000); consequence = 21 `CONEQUENCE_DEFECT` CHAR(2000) (NHTSA's spelling); remedy =
+  22 `CORRECTIVE_ACTION` CHAR(6000); report date = 16 `RCDATE` "Part 573 Defect/Noncompliance Report Received
+  Date" (basis label "Report received date (RCDATE)"; the v1 `recall_campaign.report_date` is the same field);
+  do-not-drive = 28 `DO_NOT_DRIVE` CHAR(3); park-outside = 29 `PARK_OUTSIDE` CHAR(3). The three text fields are
+  never empty in this snapshot. Flag values are exactly "Yes" (2,129 / 1,288 rows) or "No".
+- **No API enrichment.** The flat file has every field (PRD F1.4 applies only if it lacks them), so no
+  recallsByVehicle calls were made; the build is offline (a test fails it on any socket use).
+- **Flags** (`recall_v2.normalize_flag`): true / "true" "y" "yes" (any case) → true; false / "false" "n" "no" →
+  false; anything else → unknown (null; no banner). Per card a flag is known only if every source row that states it
+  agrees.
+- **Source link.** nhtsa.gov answers scripted requests with 403 (curl -I, a browser user agent, and headless
+  Chromium: "Access Denied") for `/recalls?nhtsaId=18V332000`, `20V746000`, `21V035000` and for `/recalls` itself,
+  so per-campaign deep links cannot be verified. Cards link to https://www.nhtsa.gov/recalls.
+- **Table** `recall_campaign_v2`: one row per (campno, make, model, model_year) for RCLTYPECD 'V' with a valid
+  year; same make/model normalisation and alias table as complaints, so cards never match on component alone.
+  Real build: 219,104 vehicle rows → 93,362 cards, 13,556 campnos, identical key set to v1 `recall_campaign`;
+  1,375 do-not-drive and 648 park-outside cards; 0 unknown flags; 0 campaigns with differing text across rows.
+- **v2 DB** `$RR_DATA_DIR/recall_radar_v2.duckdb` = byte copy of the baseline DB + `recall_campaign_v2` + B's
+  `recall_explanation`, `symptom_alias`, `symptom_concept` (attached read-only from `b_v2_tables.duckdb`). Build:
+  `uv run python -m recall_radar.data.recall_v2 --baseline <recall_radar.duckdb> --out <recall_radar_v2.duckdb>
+  --raw ~/rr-raw --b-tables <b_v2_tables.duckdb>` (12 s). It fingerprints every baseline table (rows + md5 over
+  sorted row md5s) before and after and fails on any difference: 17 of 17 identical on A's build;
+  `recall_radar.b_v2.protect` → PROTECTED TABLES: IDENTICAL.
