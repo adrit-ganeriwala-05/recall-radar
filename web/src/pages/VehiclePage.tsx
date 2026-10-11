@@ -109,7 +109,7 @@ function Vehicle({ data }: { data: VehicleResponse }) {
       {features.symptomSearch && (
         <SymptomSearch
           vehicle={data.vehicle}
-          reportHref={`/report-problem?${new URLSearchParams({ make: data.vehicle.make, model: data.vehicle.model, year: String(data.vehicle.model_year) })}`}
+          reportHref={`/report?${new URLSearchParams({ make: data.vehicle.make, model: data.vehicle.model, year: String(data.vehicle.model_year) })}`}
         />
       )}
 

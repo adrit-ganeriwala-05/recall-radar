@@ -15,7 +15,7 @@ const show = () =>
   render(
     <MemoryRouter initialEntries={["/vehicle?make=EXAMPLE+MOTORS&model=ROADSTER&year=2017"]}>
       <Routes>
-        <Route path="/vehicle" element={<><SymptomSearch vehicle={V} reportHref="/report-problem" /><Where /></>} />
+        <Route path="/vehicle" element={<><SymptomSearch vehicle={V} reportHref="/report" /><Where /></>} />
       </Routes>
     </MemoryRouter>,
   );
@@ -60,7 +60,7 @@ describe("symptom search UI", () => {
     await screen.findByRole("button", { name: EXAMPLES[0] });
     await type("sunroof leaks");
     expect(screen.getByTestId("symptom-none").textContent).toContain(NO_MATCH);
-    expect(screen.getByRole("link", { name: "Report a problem" }).getAttribute("href")).toBe("/report-problem");
+    expect(screen.getByRole("link", { name: "Report a problem" }).getAttribute("href")).toBe("/report");
     fireEvent.click(screen.getByRole("button", { name: "Clear" }));
     expect((screen.getByLabelText("Describe the problem in your own words") as HTMLInputElement).value).toBe("");
     expect(screen.queryByText("Similar reported symptoms")).toBeNull();
