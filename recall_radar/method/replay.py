@@ -10,6 +10,7 @@ CLI: `uv run python -m recall_radar.method.replay --config config.yaml --db <fil
 from __future__ import annotations
 
 import argparse
+import os
 from datetime import date
 from typing import Any
 
@@ -161,7 +162,9 @@ def replay_for_episode(
         recall_dates = {c: (d.date() if hasattr(d, "date") else d) for c, d in found}
 
     return C.Replay(
-        provenance=provenance(con, cfg, repo, real_label=C.DataLabel.cached_real),
+        provenance=provenance(
+            con, cfg, repo, real_label=C.DataLabel.cached_real, allow_dirty=os.environ.get("RR_ALLOW_DIRTY") == "1"
+        ),
         episode_id=episode_id,
         group_id=ep["group_id"],
         vehicle=C.VehicleKey(make=ep["make"], model=ep["model"], model_year=int(ep["model_year"])),

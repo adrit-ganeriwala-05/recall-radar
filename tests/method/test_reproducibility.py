@@ -90,25 +90,44 @@ def test_bundle_contents_validate_and_manifest_matches(repo, tmp_path, rows, mon
     assert sum(len(b) for b in files.values()) < 5 * 1024 * 1024
 
 
-def test_hero_follows_the_frozen_rule_and_its_commit_predates_the_run(repo, tmp_path, rows, monkeypatch):
+def test_hero_follows_the_frozen_rule_and_results_name_the_pipeline_revision(repo, tmp_path, rows, monkeypatch):
     run_git(repo, "tag", "-a", "freeze-v1", "-m", "frozen")
     frozen = subprocess.run(["git", "rev-list", "-n", "1", "freeze-v1"], cwd=repo, capture_output=True, text=True).stdout.strip()
-    (repo / "later.txt").write_text("work after the freeze\n")
-    run_git(repo, "add", "later.txt")
-    run_git(repo, "commit", "-q", "-m", "after freeze")
-    files = pipeline(repo, tmp_path, rows, monkeypatch)
-    hero = C.HeroPointer.model_validate_json(files["hero.json"])
-    held = C.EvaluationSummary.model_validate_json(files["results_held_out.json"])
+    (tmp_path / "first").mkdir()
+    first = pipeline(repo, tmp_path / "first", rows, monkeypatch)
+    hero = C.HeroPointer.model_validate_json(first["hero.json"])
+    held = C.EvaluationSummary.model_validate_json(first["results_held_out.json"])
     # held-out (2018 in this fixture) early families: F-PE18001 (106 days) and F-PE18003 (343 days);
     # median 224.5, both are 118.5 away -> the tie is broken by random.Random(seed)
     early = {c.family_id: c for c in held.cases if c.status == "early"}
     assert sorted((f, c.lead_days) for f, c in early.items()) == [("F-PE18001", 106), ("F-PE18003", 343)]
     assert hero.period == C.Period.held_out and hero.episode_id in {c.best_episode_id for c in early.values()}
     assert hero.rule_commit == frozen and hero.rule.startswith("From held-out families with a tier-1 early alert whose alert did not follow")
-    assert f"replays/{hero.episode_id}.json" in files
-    # the rule's commit is an ancestor of, and different from, the commit that produced the results
-    assert held.provenance.git_sha != frozen
-    assert subprocess.run(["git", "merge-base", "--is-ancestor", frozen, held.provenance.git_sha], cwd=repo).returncode == 0
+    assert f"replays/{hero.episode_id}.json" in first
+    assert held.provenance.git_sha == frozen  # nothing in the pipeline changed since the freeze
+
+    # a later commit that touches no pipeline input (docs, web, the exports themselves) changes nothing:
+    # this is what lets a clean-clone rerun at a later commit match the committed files byte for byte
+    (repo / "later.txt").write_text("work after the freeze\n")
+    run_git(repo, "add", "later.txt")
+    run_git(repo, "commit", "-q", "-m", "after freeze, unrelated")
+    (tmp_path / "second").mkdir()
+    assert pipeline(repo, tmp_path / "second", rows, monkeypatch) == first
+
+    # a later commit that does touch a pipeline input (here: held-out labels arrive) is named in the results,
+    # and the frozen rule's commit is its ancestor
+    (repo / "review").mkdir()
+    (repo / "review" / "match_labels_heldout.csv").write_text("family_id,group_id,start_month,label,reviewer\n")
+    run_git(repo, "add", "review")
+    run_git(repo, "commit", "-q", "-m", "A: held-out labels")
+    labels_commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True).stdout.strip()
+    (tmp_path / "third").mkdir()
+    third = pipeline(repo, tmp_path / "third", rows, monkeypatch)
+    held3 = C.EvaluationSummary.model_validate_json(third["results_held_out.json"])
+    assert held3.provenance.git_sha == labels_commit != frozen
+    assert C.HeroPointer.model_validate_json(third["hero.json"]).rule_commit == frozen
+    assert subprocess.run(["git", "merge-base", "--is-ancestor", frozen, labels_commit], cwd=repo).returncode == 0
+    assert held3.run_id.endswith(labels_commit[:7]) and held.run_id.endswith(frozen[:7])
 
 
 def test_export_never_picks_a_hero_whose_alert_followed_official_action(repo, tmp_path, rows, monkeypatch):
