@@ -13,7 +13,7 @@ import { VEHICLE_NODE } from "./VehicleModel";
 const DAMPING = 3.2; // per second; higher = snappier
 const POINTER_YAW = 0.07; // radians at the viewport edge
 const POINTER_PITCH = 0.025;
-const SETTLED = 1e-4;
+const SETTLED = 1e-3; // summed residual (scene units + radians + anchor fractions); far below a pixel
 
 type Framing = { pos: Vector3; target: Vector3; fov: number; ax: number; ay: number; yaw: number; pitch: number };
 
@@ -87,7 +87,9 @@ export function SceneController({ motion, radius, onSettled, children }: Props) 
     }
 
     // Reduced motion snaps to the goal; otherwise frame-rate independent exponential damping.
-    const dt = Math.min(delta, 0.1);
+    // Bounded step (no jump after a hidden tab), but close to real time on slow devices where a frame can
+    // take a few hundred milliseconds (measured ~0.35 s per frame under software WebGL at 1440x900).
+    const dt = Math.min(delta, 0.25);
     const step = (a: number, b: number) => (still ? b : MathUtils.damp(a, b, DAMPING, dt));
     cur.pos.set(step(cur.pos.x, goalPos.current.x), step(cur.pos.y, goalPos.current.y), step(cur.pos.z, goalPos.current.z));
     cur.target.set(

@@ -46,7 +46,7 @@ export function StaticVehicleFallback({ reason, stage }: Props) {
           </g>
         ))}
       </svg>
-      <p className="mt-1 px-2 text-center text-xs text-muted">Static illustration — 3D view unavailable ({reason})</p>
+      <p className="mt-1 px-2 text-center font-display text-xs text-muted">Static illustration — 3D view unavailable ({reason})</p>
     </div>
   );
 }

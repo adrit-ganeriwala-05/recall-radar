@@ -5,6 +5,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { SceneFrame } from "./SceneFrame";
+import { setSceneKind } from "@/scene/motionStore";
 import { useSceneStage } from "@/scene/stage";
 import { StaticVehicleFallback } from "./StaticVehicleFallback";
 
@@ -26,7 +27,9 @@ export function SceneLayerLoader() {
   const stage = useSceneStage();
 
   useEffect(() => {
-    setSupport(hasWebGL() ? "webgl" : "none");
+    const webgl = hasWebGL();
+    setSupport(webgl ? "webgl" : "none");
+    if (!webgl) setSceneKind("fallback"); // no camera: the ScrollDirector keeps choreography off
   }, []);
 
   if (support === "unknown") return null;

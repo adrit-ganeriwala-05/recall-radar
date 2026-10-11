@@ -87,11 +87,11 @@ test("foldable: cover screen ↔ unfolded, scroll position kept", async ({ page 
     prev = await checkFraming(page, `${w}x${h}`, prev);
   }
   // Mid-page: the reading position survives a fold change (anchored to the section heading).
-  await page.locator("#how-title").scrollIntoViewIfNeeded();
-  const before = await page.locator("#how-title").evaluate((el) => el.getBoundingClientRect().top);
+  await page.locator("#how-it-works-title").scrollIntoViewIfNeeded();
+  const before = await page.locator("#how-it-works-title").evaluate((el) => el.getBoundingClientRect().top);
   await page.setViewportSize({ width: 653, height: 841 });
   await page.waitForTimeout(300);
-  const after = await page.locator("#how-title").evaluate((el) => el.getBoundingClientRect().top);
+  const after = await page.locator("#how-it-works-title").evaluate((el) => el.getBoundingClientRect().top);
   expect(after, "section heading still on screen after unfolding").toBeGreaterThanOrEqual(-10);
   expect(after).toBeLessThan(841);
   expect(Math.abs(after - before)).toBeLessThan(841);

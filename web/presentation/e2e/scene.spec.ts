@@ -1,7 +1,7 @@
 // Owner: C. Scene behaviour: the canvas never intercepts the page; loading, failure and recovery paths;
 // reduced motion; resize during easing; cleanup when leaving and returning. Chromium (SwiftShader).
 import { chromium, expect, test } from "@playwright/test";
-import { PAGE, boxOf, carBox, gotoSettled, nextCarBox, overlapArea, watchConsole } from "./helpers";
+import { PAGE, SCENE_CANVAS, boxOf, carBox, gotoSettled, nextCarBox, overlapArea, watchConsole } from "./helpers";
 
 test.describe("canvas does not intercept the page", () => {
   test("pointer, wheel, selection and links pass through", async ({ page }) => {
@@ -85,7 +85,7 @@ test.describe("loading and failure paths", () => {
       await page.goto(PAGE);
       await expect(page.locator("[data-scene-state]")).toHaveAttribute("data-scene-state", "fallback", { timeout: 30_000 });
       await expect(page.getByText("Static illustration — 3D view unavailable (the 3D model could not be loaded)")).toBeVisible();
-      await expect(page.locator("canvas")).toHaveCount(0);
+      await expect(page.locator(SCENE_CANVAS)).toHaveCount(0);
       await page.getByRole("link", { name: "See how it works" }).click();
       await expect(page.locator("#how-it-works")).toBeInViewport();
     });
@@ -101,7 +101,7 @@ test.describe("loading and failure paths", () => {
     await expect(page.getByText(/took too long to load/)).toBeVisible();
   });
 
-  test("WebGL unavailable → fallback without downloading three.js or the model", async () => {
+  test("WebGL unavailable → fallback without downloading three.js or the model", async ({}, info) => {
     const browser = await chromium.launch({ args: ["--disable-webgl", "--disable-webgl2", "--disable-3d-apis"] });
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
     const requested: string[] = [];
@@ -109,11 +109,15 @@ test.describe("loading and failure paths", () => {
     await page.goto(`http://127.0.0.1:4173${PAGE}`);
     await expect(page.locator("[data-scene-state]")).toHaveAttribute("data-scene-state", "fallback", { timeout: 30_000 });
     await expect(page.getByText(/WebGL is not available/)).toBeVisible();
+    await expect(page.locator("html")).toHaveAttribute("data-scene-renderer", "fallback");
+    await expect(page.locator("html")).not.toHaveAttribute("data-choreo", /.*/);
     expect(requested.some((u) => u.includes("car-concept-pearl.glb"))).toBe(false);
-    const jsBytes = await page.evaluate(() =>
-      performance.getEntriesByType("resource").filter((e) => e.name.endsWith(".js")).reduce((n, e) => n + (e as PerformanceResourceTiming).encodedBodySize, 0),
+    // No loaded script contains three.js's renderer (its warning strings survive minification).
+    const scripts = await page.evaluate(() =>
+      performance.getEntriesByType("resource").filter((e) => e.name.endsWith(".js")).map((e) => ({ url: e.name, bytes: (e as PerformanceResourceTiming).encodedBodySize })),
     );
-    expect(jsBytes, "no three.js chunk without WebGL").toBeLessThan(600_000);
+    for (const s of scripts) expect((await (await page.request.get(s.url)).text()).includes("THREE.WebGLRenderer"), `three.js in ${s.url}`).toBe(false);
+    info.annotations.push({ type: "js without WebGL", description: `${scripts.length} files, ${scripts.reduce((n, s) => n + s.bytes, 0)} bytes` });
     await browser.close();
   });
 
@@ -121,7 +125,7 @@ test.describe("loading and failure paths", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     expect(await gotoSettled(page)).toBe("ready");
     await page.evaluate(() => {
-      const canvas = document.querySelector("canvas")!;
+      const canvas = document.querySelector<HTMLCanvasElement>("[data-scene-state] canvas")!;
       const gl = (canvas.getContext("webgl2") ?? canvas.getContext("webgl")) as WebGLRenderingContext;
       gl.getExtension("WEBGL_lose_context")!.loseContext();
     });
@@ -138,7 +142,7 @@ test.describe("motion", () => {
     const page = await ctx.newPage();
     expect(await gotoSettled(page)).toBe("ready");
     expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe("auto");
-    expect(await page.locator("canvas").evaluate((c) => getComputedStyle(c.parentElement!.parentElement!).transitionDuration + "|" + getComputedStyle(c).transitionDuration)).toContain("0s");
+    expect(await page.locator(SCENE_CANVAS).evaluate((c) => getComputedStyle(c.parentElement!.parentElement!).transitionDuration + "|" + getComputedStyle(c).transitionDuration)).toContain("0s");
     await ctx.close();
   });
 
@@ -159,10 +163,18 @@ test.describe("motion", () => {
   });
 });
 
-test("cleanup: leaving and returning leaves one canvas and one pointer listener", async ({ page }) => {
+test("cleanup: leaving and returning leaves one scene canvas and no extra window listeners", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   const watch = watchConsole(page);
   expect(await gotoSettled(page)).toBe("ready");
+  const cdp = await page.context().newCDPSession(page);
+  const windowListeners = async (type: string) => {
+    const { result } = await cdp.send("Runtime.evaluate", { expression: "window" });
+    const { listeners } = await cdp.send("DOMDebugger.getEventListeners", { objectId: result.objectId! });
+    return listeners.filter((l) => l.type === type).length;
+  };
+  const resizeAtLoad = await windowListeners("resize");
+  const pointerAtLoad = await windowListeners("pointermove");
   await page.getByRole("navigation").getByRole("link", { name: "Open app" }).click();
   await expect(page).toHaveURL(/127\.0\.0\.1:4173\/$/);
   await page.goBack();
@@ -170,11 +182,16 @@ test("cleanup: leaving and returning leaves one canvas and one pointer listener"
   await page.goForward();
   await page.goBack();
   await expect(page.locator("[data-scene-state]")).toHaveAttribute("data-scene-state", "ready", { timeout: 60_000 });
-  await expect(page.locator("canvas")).toHaveCount(1);
-  const cdp = await page.context().newCDPSession(page);
-  const { result } = await cdp.send("Runtime.evaluate", { expression: "window" });
-  const { listeners } = await cdp.send("DOMDebugger.getEventListeners", { objectId: result.objectId! });
-  expect(listeners.filter((l) => l.type === "pointermove").length, "pointermove listeners on window").toBe(1);
-  expect(listeners.filter((l) => l.type === "resize").length, "resize listeners on window").toBeLessThanOrEqual(3);
+  await expect(page.locator(SCENE_CANVAS)).toHaveCount(1);
+  await expect(page.locator("canvas"), "scene canvas + atmosphere canvas").toHaveCount(2);
+  // Known window pointermove listeners: the scene's parallax and the atmosphere's light (2).
+  const pointerAfter = await windowListeners("pointermove");
+  expect(pointerAfter, "pointermove listeners after leaving and returning").toBe(pointerAtLoad);
+  expect(pointerAfter, "pointermove listeners on window").toBeLessThanOrEqual(2);
+  // Known window resize listeners: useSceneStage in the loader and in the scene (2), R3F's canvas
+  // measure (1), ScrollTrigger's single global handler (1, Phase 4), the atmosphere canvas (1).
+  const resizeAfter = await windowListeners("resize");
+  expect(resizeAfter, "resize listeners after leaving and returning").toBe(resizeAtLoad);
+  expect(resizeAfter, "resize listeners on window").toBeLessThanOrEqual(5);
   expect(watch.unexpected()).toEqual([]);
 });

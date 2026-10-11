@@ -9,8 +9,10 @@ import { Canvas, useThree } from "@react-three/fiber";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SceneFrame } from "@/components/SceneFrame";
 import { StaticVehicleFallback } from "@/components/StaticVehicleFallback";
-import { CHAPTERS, DEFAULT_MODEL_RADIUS, createMotionState, type ChapterId } from "./motionState";
+import { CHAPTERS, DEFAULT_MODEL_RADIUS, type ChapterId } from "./motionState";
+import { getSceneKind, motion, setFrameRequester, setSceneKind } from "./motionStore";
 import { detectQuality } from "./quality";
+import { isSoftwareRenderer, rendererName } from "./renderer";
 import { useSceneStage } from "./stage";
 import { SceneController, type CarBox } from "./SceneController";
 import { SceneErrorBoundary } from "./SceneErrorBoundary";
@@ -28,9 +30,12 @@ type Invalidate = () => void;
 function InvalidateBridge({ target }: { target: { current: Invalidate | null } }) {
   const invalidate = useThree((s) => s.invalidate);
   useEffect(() => {
-    target.current = () => invalidate();
+    const request = () => invalidate();
+    target.current = request;
+    setFrameRequester(request); // writers outside React (ScrollDirector) use motionStore.requestFrame()
     return () => {
       target.current = null;
+      setFrameRequester(null);
     };
   }, [invalidate, target]);
   return null;
@@ -40,7 +45,6 @@ type Inspector = { chapters: readonly ChapterId[]; compose: (chapter: ChapterId)
 type WindowWithInspector = Window & { __observatory?: Inspector };
 
 export default function SceneLayer() {
-  const motion = useMemo(createMotionState, []);
   const quality = useMemo(detectQuality, []);
   const invalidateRef = useRef<Invalidate | null>(null);
   const radiusRef = useRef(DEFAULT_MODEL_RADIUS);
@@ -50,6 +54,8 @@ export default function SceneLayer() {
     const frame = document.querySelector<HTMLElement>("[data-scene-state]");
     frame?.setAttribute("data-car-box", [box.x, box.y, box.width, box.height].map((v) => Math.round(v)).join(","));
     frame?.setAttribute("data-car-viewport", box.viewport);
+    // The scroll path this framing settled for ("none" when choreography is off), so tests can wait for it.
+    frame?.setAttribute("data-car-path", document.documentElement.dataset.chapterPath ?? "none");
   }, []);
   const [status, setStatus] = useState<Status>("loading");
   // First reason wins: unmounting the canvas after a model error destroys its context on purpose,
@@ -67,13 +73,19 @@ export default function SceneLayer() {
     invalidateRef.current?.();
   }, [motion, stage]);
 
+  // The static fallback has no camera: scroll choreography stays off (ScrollDirector reads the kind).
+  useEffect(() => {
+    if (typeof status === "object") setSceneKind("fallback");
+  }, [status]);
+
   useEffect(() => {
     if (status !== "loading") return;
     const timer = window.setTimeout(() => fail("the 3D model took too long to load"), MODEL_LOAD_TIMEOUT_MS);
     return () => window.clearTimeout(timer);
   }, [status, fail]);
 
-  // Reduced motion (live), mouse-only pointer influence, and a frame when the tab becomes visible.
+  // Reduced motion (live), mouse-only pointer influence (hardware WebGL only: under software rendering
+  // each pointer frame costs the compositor, as scroll frames do), and a frame when the tab is shown.
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const applyMotion = () => {
@@ -81,7 +93,7 @@ export default function SceneLayer() {
       invalidateRef.current?.();
     };
     const onPointer = (e: PointerEvent) => {
-      if (e.pointerType !== "mouse") return;
+      if (e.pointerType !== "mouse" || getSceneKind() !== "hardware") return;
       motion.pointer.x = Math.max(-1, Math.min(1, (e.clientX / window.innerWidth) * 2 - 1));
       motion.pointer.y = Math.max(-1, Math.min(1, (e.clientY / window.innerHeight) * 2 - 1));
       invalidateRef.current?.();
@@ -140,6 +152,7 @@ export default function SceneLayer() {
           className={`transition-opacity duration-500 motion-reduce:transition-none ${status === "ready" ? "opacity-100" : "opacity-0"}`}
           onCreated={({ gl }) => {
             gl.toneMappingExposure = 1.1;
+            setSceneKind(isSoftwareRenderer(rendererName(gl.getContext())) ? "software" : "hardware");
             gl.domElement.addEventListener(
               "webglcontextlost",
               (event) => {

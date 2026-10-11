@@ -1,10 +1,27 @@
-// Owner: C. Server-rendered root layout. Geist (SIL Open Font License, npm package `geist`) is
-// bundled at build time by next/font, so there is no remote font request; the CSS stack falls back
-// to system fonts.
+// Owner: C. Server-rendered root layout. Two typefaces, both SIL OFL variable fonts from npm
+// (@fontsource-variable/*) bundled at build time by next/font — no remote font request, preloaded, and
+// each with a metric-adjusted fallback face so the swap from fallback to web font barely moves text:
+//   Space Grotesk — headings, navigation, buttons, labels, important numbers (--font-space-grotesk)
+//   Manrope       — body copy, forms, tables, cards, longer explanations   (--font-manrope)
+// The typography tokens built on these live in globals.css (@theme).
 import type { Metadata, Viewport } from "next";
-import { GeistSans } from "geist/font/sans";
+import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import "./globals.css";
+
+const spaceGrotesk = localFont({
+  src: [{ path: "../../node_modules/@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2", weight: "300 700", style: "normal" }],
+  variable: "--font-space-grotesk",
+  display: "swap",
+  fallback: ["ui-sans-serif", "sans-serif"],
+});
+
+const manrope = localFont({
+  src: [{ path: "../../node_modules/@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2", weight: "200 800", style: "normal" }],
+  variable: "--font-manrope",
+  display: "swap",
+  fallback: ["ui-sans-serif", "sans-serif"],
+});
 
 export const metadata: Metadata = {
   title: "Recall Radar — The Automotive Observatory",
@@ -12,7 +29,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#111315",
+  themeColor: "#0c0e11",
   colorScheme: "dark",
   // Edge-to-edge on devices with display cutouts; gutters use env(safe-area-inset-*) (globals.css).
   viewportFit: "cover",
@@ -20,7 +37,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={GeistSans.variable}>
+    <html lang="en" className={`${spaceGrotesk.variable} ${manrope.variable}`}>
       <body>{children}</body>
     </html>
   );

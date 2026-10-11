@@ -2,8 +2,10 @@
 // readable and navigable without JavaScript or WebGL; the 3D scene mounts client-side behind it, and
 // the data sections load the published example from the product API in the browser. The release
 // ledger (docs/LEDGER.md) is read here at build time and decides which features may be offered.
+import { Atmosphere } from "@/components/Atmosphere";
 import { Hero } from "@/components/Hero";
 import { HowItWorks } from "@/components/HowItWorks";
+import { PointerGlow } from "@/components/PointerGlow";
 import { PresentationRoot } from "@/components/PresentationRoot";
 import { SceneLayerLoader } from "@/components/SceneLayerLoader";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -15,11 +17,20 @@ import { OfficialSection } from "@/components/sections/OfficialSection";
 import { RecordSection } from "@/components/sections/RecordSection";
 import { readLedger } from "@/content/ledger";
 import { FeaturedVehicleProvider } from "@/data/FeaturedVehicle";
+import { ScrollDirector } from "@/motion/ScrollDirector";
 
 export default function ObservatoryPage() {
   const ledger = readLedger();
   return (
-    <PresentationRoot scene={<SceneLayerLoader />} header={<SiteHeader />}>
+    <PresentationRoot
+      scene={
+        <>
+          <Atmosphere />
+          <SceneLayerLoader />
+        </>
+      }
+      header={<SiteHeader />}
+    >
       <main id="main" tabIndex={-1} className="outline-none">
         <Hero />
         <HowItWorks />
@@ -32,6 +43,8 @@ export default function ObservatoryPage() {
         <ContinueSection ledger={ledger} />
       </main>
       <SiteFooter />
+      <ScrollDirector />
+      <PointerGlow />
     </PresentationRoot>
   );
 }

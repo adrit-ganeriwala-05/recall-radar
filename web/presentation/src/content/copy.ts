@@ -7,6 +7,7 @@ export const PROMISE =
   "Recall Radar shows when owner complaints about the same vehicle and problem started growing unusually fast, and whether NHTSA later opened an investigation, using only data that was public at the time.";
 
 export const HERO = {
+  eyebrow: "The Automotive Observatory",
   titleLines: ["Your vehicle.", "The available evidence."],
   lede: "Explore reported problems, official recalls, and the records behind them.",
   primaryAction: "Explore vehicle records",

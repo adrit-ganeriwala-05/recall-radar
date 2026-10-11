@@ -21,7 +21,7 @@ for (const vp of VIEWPORTS) {
     expect(wideStageVisible).toBe(expectWide(vp.width, vp.height));
 
     // Text is not clipped horizontally.
-    for (const sel of ["#hero-title", "#hero-title + p", "#how-title"]) {
+    for (const sel of ["#hero-title", "#hero-title + p", "#how-it-works-title"]) {
       const clipped = await page.locator(sel).evaluate((el) => el.scrollWidth - el.clientWidth);
       expect(clipped, `${sel} clipped`).toBeLessThanOrEqual(1);
     }

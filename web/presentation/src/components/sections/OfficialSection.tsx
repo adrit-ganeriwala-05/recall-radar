@@ -14,7 +14,7 @@ import { SectionShell } from "./SectionShell";
 export function OfficialSection({ f1 }: { f1: LedgerEntry }) {
   const state = useFeatured();
   return (
-    <SectionShell id={SECTION_IDS.official} title="Official information">
+    <SectionShell id={SECTION_IDS.official} title="Official information" chapter="official">
       {state.status === "loading" && <Loading what="recall campaigns" />}
       {state.status === "error" && <DataError error={state.error} what="Recall information for the example vehicle" />}
       {state.status === "ready" && (() => {
@@ -30,24 +30,26 @@ export function OfficialSection({ f1 }: { f1: LedgerEntry }) {
             </p>
             <DataLabel provenance={vehicle.provenance} />
             {campaigns.length === 0 ? (
-              <p className="mt-6 max-w-3xl rounded-lg border border-line bg-surface px-4 py-3 text-muted">
+              <p className="mt-6 max-w-3xl rounded-xl border border-line bg-surface px-4 py-3 text-muted">
                 No recall campaigns for this model and model year in the cached data. This does not mean a specific car has no
                 open recall — check by VIN.
               </p>
             ) : (
               <ul className="mt-6 grid max-w-3xl grid-cols-1 gap-3" aria-label={`Recall campaigns for the ${name}`}>
                 {campaigns.map((c) => (
-                  <li key={c.campno} className="min-w-0 rounded-lg border border-line bg-surface px-4 py-3 [overflow-wrap:anywhere]">
-                    <p className="font-medium text-ink">NHTSA campaign {c.campno}</p>
+                  <li key={c.campno} className="rr-card min-w-0 px-5 py-4 [overflow-wrap:anywhere]">
+                    <p className="font-medium text-ink">
+                  NHTSA campaign <span className="font-display text-champagne">{c.campno}</span>
+                </p>
                     <p className="text-muted">{c.component}</p>
-                    <p className="text-sm text-muted">{c.report_date ? `Reported ${dateText(c.report_date)}` : "Report date not listed"}</p>
+                    <p className="font-display text-[13px] text-faint">{c.report_date ? `Reported ${dateText(c.report_date)}` : "Report date not listed"}</p>
                   </li>
                 ))}
               </ul>
             )}
             <p className="mt-6 max-w-3xl text-muted">{vehicle.note}</p>
             <p className="mt-4">
-              <SmartLink to={DESTINATIONS.nhtsaRecalls} className="inline-flex min-h-11 items-center rounded-md border border-line px-4 font-medium text-ink hover:border-cobalt">
+              <SmartLink to={DESTINATIONS.nhtsaRecalls} className="rr-btn rr-btn-ghost min-h-11 px-5">
                 Check open recalls on NHTSA
               </SmartLink>
             </p>

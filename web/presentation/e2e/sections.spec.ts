@@ -3,34 +3,12 @@
 // talks to a real API process. Covers valid data, interactions, empty/missing/long/special data,
 // malformed responses, server errors, timeouts, ledger-driven feature states, print, a11y, layout.
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page, type Route } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { PAGE, horizontalOverflow } from "./helpers";
+import { PAGE, fixture, horizontalOverflow, mockApi, type Mock } from "./helpers";
 
-const FIX = path.join(__dirname, "..", "..", "..", "contracts", "fixtures", "api");
-const fixture = (name: string) => JSON.parse(readFileSync(path.join(FIX, name), "utf8"));
 const LEDGER = readFileSync(path.join(__dirname, "..", "..", "..", "docs", "LEDGER.md"), "utf8");
-
-type Mock = { status?: number; body?: unknown; raw?: string; contentType?: string; hang?: boolean; abort?: boolean; delayMs?: number };
-
-async function mockApi(page: Page, overrides: Partial<Record<"hero" | "replay" | "vehicle", Mock>> = {}) {
-  const defaults = { hero: { body: fixture("hero.json") }, replay: { body: fixture("replay_E-0412.json") }, vehicle: { body: fixture("vehicle.json") } };
-  const handle = (key: "hero" | "replay" | "vehicle") => async (route: Route) => {
-    const m: Mock = { ...defaults[key], ...overrides[key] };
-    if (m.hang) return; // never answered
-    if (m.abort) return route.abort("connectionrefused");
-    if (m.delayMs) await new Promise((r) => setTimeout(r, m.delayMs));
-    await route.fulfill({
-      status: m.status ?? 200,
-      contentType: m.contentType ?? "application/json",
-      body: m.raw ?? JSON.stringify(m.body),
-    });
-  };
-  await page.route("**/api/hero", handle("hero"));
-  await page.route("**/api/replay/**", handle("replay"));
-  await page.route("**/api/vehicle?**", handle("vehicle"));
-}
 
 const explore = (page: Page) => page.locator("#explore");
 

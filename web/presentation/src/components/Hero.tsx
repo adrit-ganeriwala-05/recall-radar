@@ -2,6 +2,7 @@
 // or two horizontal foldable segments) the grid is ~42% copy / ~58% vehicle stage; otherwise the stage
 // sits above the copy. The car itself is drawn by the fixed background SceneLayer, which measures the
 // visible [data-scene-stage] box and frames the car inside it (scene/stage.ts).
+import type { CSSProperties } from "react";
 import { HERO } from "@/content/copy";
 import { DESTINATIONS, SECTION_IDS } from "@/content/destinations";
 import { SmartLink } from "./SmartLink";
@@ -9,7 +10,12 @@ import { SmartLink } from "./SmartLink";
 /** The 3D (or static) car is generic; this label says so wherever it is shown. */
 function IllustrativeLabel({ className }: { className: string }) {
   return (
-    <p className={"w-fit rounded-md border border-line bg-graphite/70 px-3 py-1 text-sm text-muted " + className}>
+    <p
+      className={
+        "w-fit rounded-full border border-line-strong bg-graphite/70 px-3.5 py-1 text-xs tracking-[0.06em] text-muted backdrop-blur-sm " +
+        className
+      }
+    >
       {HERO.vehicleLabel}
     </p>
   );
@@ -27,32 +33,34 @@ export function Hero() {
       <IllustrativeLabel className="-mt-2 justify-self-center wide:hidden" />
       {/* Opaque on narrow layouts so light text never scrolls over the silver bodywork. */}
       <div className="rr-hero-copy @container bg-graphite wide:bg-transparent">
-        {/* Sized from this column (cqi) so the two authored lines never break word by word; at extreme
-            text zoom, overflow-wrap lets a long word break instead of overflowing the column. */}
-        <h1
-          id="hero-title"
-          className="text-[clamp(2.25rem,9.4cqi,7rem)] font-medium leading-[1.04] tracking-[-0.03em] text-ink [overflow-wrap:anywhere]"
-        >
-          {HERO.titleLines.map((line) => (
-            <span key={line} className="block">
+        <p className="rr-eyebrow rr-rise flex items-center gap-3">
+          <span aria-hidden="true" className="h-px w-8 bg-champagne/60" />
+          {HERO.eyebrow}
+        </p>
+        {/* Sized from this column (cqi), so the line breaks are the same at every width: in Space Grotesk
+            500 "The available" is 5.81 em and the whole second line 10.37 em (measured), so at 15 cqi the
+            second line always breaks once, after "available" (a three-line stack, never word by word).
+            The second line is lighter and pearl rather than italic (Space Grotesk has no true italic).
+            At extreme text zoom, overflow-wrap lets a long word break instead of overflowing the column. */}
+        <h1 id="hero-title" className="rr-display mt-5 text-[clamp(2.25rem,15cqi,7rem)] text-ink [overflow-wrap:anywhere]">
+          {HERO.titleLines.map((line, i) => (
+            <span key={line} className={`rr-rise block ${i === 0 ? "" : "font-light text-pearl"}`} style={{ "--rr-i": i + 1 } as CSSProperties}>
               {line}
             </span>
           ))}
         </h1>
-        <p className="mt-6 max-w-md text-lg leading-relaxed text-muted sm:text-xl">{HERO.lede}</p>
-        <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 wide:mt-10">
-          <SmartLink
-            to={DESTINATIONS.vehicleSearch}
-            className="inline-flex min-h-12 items-center rounded-md bg-cobalt-strong px-6 text-base font-medium text-ink transition-colors hover:bg-cobalt-strong/85"
-          >
+        <p className="rr-rise mt-7 max-w-md text-lg leading-relaxed text-muted sm:text-xl" style={{ "--rr-i": 3 } as CSSProperties}>
+          {HERO.lede}
+        </p>
+        <div className="rr-rise mt-9 flex flex-wrap items-center gap-x-3 gap-y-3 wide:mt-11" style={{ "--rr-i": 4 } as CSSProperties}>
+          <SmartLink to={DESTINATIONS.vehicleSearch} className="rr-btn rr-btn-primary min-h-12 px-6 text-base">
             {HERO.primaryAction}
           </SmartLink>
-          <a
-            href={`#${SECTION_IDS.howItWorks}`}
-            className="inline-flex min-h-12 items-center gap-2 rounded px-1 text-base text-ink/90 transition-colors hover:text-ink"
-          >
+          <a href={`#${SECTION_IDS.howItWorks}`} className="rr-btn rr-btn-ghost min-h-12 px-6 text-base">
             {HERO.secondaryAction}
-            <span aria-hidden="true">↓</span>
+            <span aria-hidden="true" className="text-muted">
+              ↓
+            </span>
           </a>
         </div>
       </div>

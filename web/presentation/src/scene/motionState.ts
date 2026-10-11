@@ -1,9 +1,10 @@
 // Owner: C. The canvas-to-HTML contract (ARCHITECTURE.md §5).
 // One small mutable object per page, never React state: writers set targets, and SceneController is
-// the only code that turns them into camera/model transforms. Phase 2 writers: the pointer tracker
-// and the development composition inspector. Phase 4 adds the scroll director as the chapter writer.
+// the only code that turns them into camera/model transforms. Writers: the pointer tracker, the
+// development composition inspector, SceneController itself (hero stage), and the ScrollDirector
+// (scroll path + chapter stages, Phase 4).
 
-export type ChapterId = "intro" | "explore" | "record" | "official" | "report" | "closing";
+export type ChapterId = "intro" | "overview" | "explore" | "record" | "official" | "report" | "closing";
 
 export type Vec3 = readonly [number, number, number];
 
@@ -22,6 +23,10 @@ export type Composition = {
   fill: number;
   /** Base yaw of the car in radians (0 = as authored). */
   yaw: number;
+  /** Size relative to the chapter stage (1 = as large as the stage allows); lower = less prominent. */
+  size: number;
+  /** Opacity of the whole scene layer in this chapter (the ScrollDirector applies it). */
+  opacity: number;
 };
 
 export type ResponsiveComposition = { wide: Composition; narrow: Composition };
@@ -37,6 +42,13 @@ export type MotionState = {
   stage: { anchor: { x: number; y: number }; fill: number } | null;
   /** Set when the DOM stage may have changed (fonts, layout); SceneController re-measures and clears it. */
   stageDirty: boolean;
+  /**
+   * Scroll-driven blend between two chapters (ScrollDirector, Phase 4): t = 0 → `from`, 1 → `to`.
+   * null when choreography is off (narrow layouts, reduced motion): the chapter field applies.
+   */
+  path: { from: ChapterId; to: ChapterId; t: number } | null;
+  /** Per-chapter framing measured from each section's right-hand stage column (ScrollDirector). */
+  chapterStages: Partial<Record<ChapterId, { anchor: { x: number; y: number }; fill: number }>>;
   /** -1..1 mouse position over the viewport; touch never writes it. */
   pointer: { x: number; y: number };
   reducedMotion: boolean;
@@ -48,29 +60,41 @@ export type MotionState = {
  * screen-left. Wide layouts put the car in the right ~58% column; narrow layouts put it above the copy.
  */
 export const COMPOSITIONS: Record<ChapterId, ResponsiveComposition> = {
+  // Hero and "How it works": front three-quarter, nose toward screen-left.
   intro: {
-    wide: { direction: [4.6, 1.55, 5.9], target: [0, 0.48, 0], fov: 30, anchor: { x: 0.71, y: 0.56 }, fill: 0.6, yaw: 0 },
-    narrow: { direction: [4.6, 1.7, 5.9], target: [0, 0.48, 0], fov: 30, anchor: { x: 0.5, y: 0.25 }, fill: 0.95, yaw: 0 },
+    wide: { direction: [4.6, 1.55, 5.9], target: [0, 0.48, 0], fov: 30, anchor: { x: 0.71, y: 0.56 }, fill: 0.6, yaw: 0, size: 1, opacity: 1 },
+    narrow: { direction: [4.6, 1.7, 5.9], target: [0, 0.48, 0], fov: 30, anchor: { x: 0.5, y: 0.25 }, fill: 0.95, yaw: 0, size: 1, opacity: 1 },
   },
+  // How it works: the same front three-quarter, framed in this section's own stage column (its text
+  // column is wider than the hero's copy, so keeping the hero framing would put the car behind text).
+  overview: {
+    wide: { direction: [4.6, 1.55, 5.9], target: [0, 0.48, 0], fov: 30, anchor: { x: 0.74, y: 0.5 }, fill: 0.5, yaw: 0, size: 0.95, opacity: 1 },
+    narrow: { direction: [4.6, 1.7, 5.9], target: [0, 0.48, 0], fov: 30, anchor: { x: 0.5, y: 0.25 }, fill: 0.95, yaw: 0, size: 1, opacity: 1 },
+  },
+  // Explore: turned toward a side view, beside the evidence panel.
   explore: {
-    wide: { direction: [8.2, 1.25, 0.6], target: [0, 0.5, 0], fov: 30, anchor: { x: 0.72, y: 0.52 }, fill: 0.5, yaw: 0 },
-    narrow: { direction: [8.2, 1.4, 0.6], target: [0, 0.5, 0], fov: 30, anchor: { x: 0.5, y: 0.3 }, fill: 0.95, yaw: 0 },
+    wide: { direction: [8.2, 1.25, 0.6], target: [0, 0.5, 0], fov: 30, anchor: { x: 0.72, y: 0.52 }, fill: 0.5, yaw: 0, size: 0.95, opacity: 1 },
+    narrow: { direction: [8.2, 1.4, 0.6], target: [0, 0.5, 0], fov: 30, anchor: { x: 0.5, y: 0.3 }, fill: 0.95, yaw: 0, size: 1, opacity: 1 },
   },
+  // Follow the record: higher, smaller — the timeline text is the focus.
   record: {
-    wide: { direction: [7.2, 2.9, 7.4], target: [0, 0.4, 0], fov: 30, anchor: { x: 0.8, y: 0.36 }, fill: 0.42, yaw: 0.35 },
-    narrow: { direction: [7.2, 3.2, 7.4], target: [0, 0.4, 0], fov: 30, anchor: { x: 0.5, y: 0.22 }, fill: 0.8, yaw: 0.35 },
+    wide: { direction: [7.2, 2.9, 7.4], target: [0, 0.4, 0], fov: 30, anchor: { x: 0.8, y: 0.36 }, fill: 0.42, yaw: 0.35, size: 0.7, opacity: 0.85 },
+    narrow: { direction: [7.2, 3.2, 7.4], target: [0, 0.4, 0], fov: 30, anchor: { x: 0.5, y: 0.22 }, fill: 0.8, yaw: 0.35, size: 1, opacity: 1 },
   },
+  // Official information: calm rear three-quarter from the same side (a small swing, nothing dramatic).
   official: {
-    wide: { direction: [-5.8, 1.7, 4.9], target: [0, 0.5, 0], fov: 30, anchor: { x: 0.78, y: 0.5 }, fill: 0.5, yaw: 0 },
-    narrow: { direction: [-5.8, 1.9, 4.9], target: [0, 0.5, 0], fov: 30, anchor: { x: 0.5, y: 0.26 }, fill: 0.9, yaw: 0 },
+    wide: { direction: [6.5, 2.0, -3.5], target: [0, 0.5, 0], fov: 30, anchor: { x: 0.78, y: 0.5 }, fill: 0.5, yaw: 0, size: 0.8, opacity: 0.85 },
+    narrow: { direction: [6.5, 2.2, -3.5], target: [0, 0.5, 0], fov: 30, anchor: { x: 0.5, y: 0.26 }, fill: 0.9, yaw: 0, size: 1, opacity: 1 },
   },
+  // Evidence: farther and softer so the document cards lead.
   report: {
-    wide: { direction: [8.6, 3.4, 8.8], target: [0, 0.4, 0], fov: 30, anchor: { x: 0.86, y: 0.4 }, fill: 0.34, yaw: 0.5 },
-    narrow: { direction: [8.6, 3.8, 8.8], target: [0, 0.4, 0], fov: 30, anchor: { x: 0.5, y: 0.2 }, fill: 0.7, yaw: 0.5 },
+    wide: { direction: [8.6, 3.4, 8.8], target: [0, 0.4, 0], fov: 30, anchor: { x: 0.86, y: 0.4 }, fill: 0.34, yaw: 0.5, size: 0.55, opacity: 0.4 },
+    narrow: { direction: [8.6, 3.8, 8.8], target: [0, 0.4, 0], fov: 30, anchor: { x: 0.5, y: 0.2 }, fill: 0.7, yaw: 0.5, size: 1, opacity: 1 },
   },
+  // Continue: a composed final front three-quarter; it settles and stops.
   closing: {
-    wide: { direction: [4.9, 1.35, 5.3], target: [0, 0.5, 0], fov: 30, anchor: { x: 0.69, y: 0.55 }, fill: 0.62, yaw: -0.15 },
-    narrow: { direction: [4.9, 1.6, 5.3], target: [0, 0.5, 0], fov: 30, anchor: { x: 0.5, y: 0.3 }, fill: 0.95, yaw: -0.15 },
+    wide: { direction: [4.9, 1.35, 5.3], target: [0, 0.5, 0], fov: 30, anchor: { x: 0.69, y: 0.55 }, fill: 0.62, yaw: -0.15, size: 0.95, opacity: 1 },
+    narrow: { direction: [4.9, 1.6, 5.3], target: [0, 0.5, 0], fov: 30, anchor: { x: 0.5, y: 0.3 }, fill: 0.95, yaw: -0.15, size: 1, opacity: 1 },
   },
 };
 
@@ -84,11 +108,44 @@ export function compositionFor(chapter: ChapterId, viewportWidth: number): Compo
   return viewportWidth >= WIDE_MIN_WIDTH ? c.wide : c.narrow;
 }
 
-/** The composition actually used: the hero takes its anchor and fill from the measured stage. */
+/** One chapter's composition with its measured stage applied (hero stage for intro, else chapter stage). */
+export function resolvedComposition(motion: MotionState, chapter: ChapterId, viewportWidth: number): Composition {
+  const base = compositionFor(chapter, viewportWidth);
+  const stage = chapter === "intro" ? motion.stage : motion.chapterStages[chapter];
+  if (!stage) return base;
+  return { ...base, anchor: stage.anchor, fill: stage.fill * base.size };
+}
+
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+const lerp3 = (a: Vec3, b: Vec3, t: number): Vec3 => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
+/** Gentle in/out over each scrubbed transition, so the car never starts or stops abruptly. */
+export const smoothstep = (t: number) => {
+  const x = Math.min(1, Math.max(0, t));
+  return x * x * (3 - 2 * x);
+};
+
+export function blendCompositions(a: Composition, b: Composition, t: number): Composition {
+  const s = smoothstep(t);
+  return {
+    direction: lerp3(a.direction, b.direction, s),
+    target: lerp3(a.target, b.target, s),
+    fov: lerp(a.fov, b.fov, s),
+    anchor: { x: lerp(a.anchor.x, b.anchor.x, s), y: lerp(a.anchor.y, b.anchor.y, s) },
+    fill: lerp(a.fill, b.fill, s),
+    yaw: lerp(a.yaw, b.yaw, s),
+    size: lerp(a.size, b.size, s),
+    opacity: lerp(a.opacity, b.opacity, s),
+  };
+}
+
+/** The composition actually used: the scroll path when choreography runs, otherwise the chapter. */
 export function activeComposition(motion: MotionState, viewportWidth: number): Composition {
-  const base = compositionFor(motion.chapter, viewportWidth);
-  if (motion.chapter === "intro" && motion.stage) return { ...base, anchor: motion.stage.anchor, fill: motion.stage.fill };
-  return base;
+  if (motion.path) {
+    const a = resolvedComposition(motion, motion.path.from, viewportWidth);
+    if (motion.path.from === motion.path.to) return a;
+    return blendCompositions(a, resolvedComposition(motion, motion.path.to, viewportWidth), motion.path.t);
+  }
+  return resolvedComposition(motion, motion.chapter, viewportWidth);
 }
 
 /** Normalized-space bounding-sphere radius used until the model reports its measured one. */
@@ -105,5 +162,5 @@ export function fitDistance(radius: number, fill: number, fovDeg: number, aspect
 }
 
 export function createMotionState(): MotionState {
-  return { chapter: "intro", progress: 0, stage: null, stageDirty: true, pointer: { x: 0, y: 0 }, reducedMotion: false };
+  return { chapter: "intro", progress: 0, stage: null, stageDirty: true, path: null, chapterStages: {}, pointer: { x: 0, y: 0 }, reducedMotion: false };
 }

@@ -31,12 +31,12 @@ export function DataLabel({ provenance }: { provenance: Provenance }) {
   return (
     <div className="mt-4 space-y-2">
       {synthetic && (
-        <p role="note" className="rounded-md bg-[#b3261e] px-3 py-1.5 text-sm font-semibold text-white">
+        <p role="note" className="rounded-lg bg-[#b3261e] px-3 py-1.5 text-sm font-semibold text-white">
           SYNTHETIC TEST DATA — hand-made examples, not NHTSA records
         </p>
       )}
       <p className="text-sm text-muted">
-        <span className="mr-2 rounded-full border border-line px-2 py-0.5 text-ink">{LABEL_TEXT[provenance.data_label] ?? provenance.data_label}</span>
+        <span className="mr-2 rounded-full border border-line-strong px-2.5 py-0.5 font-display text-xs tracking-wide text-ink">{LABEL_TEXT[provenance.data_label] ?? provenance.data_label}</span>
         Data as of {provenance.data_as_of ? dateText(provenance.data_as_of) : "not applicable (test data)"}
       </p>
     </div>
@@ -45,7 +45,7 @@ export function DataLabel({ provenance }: { provenance: Provenance }) {
 
 export function Loading({ what }: { what: string }) {
   return (
-    <p role="status" aria-live="polite" className="mt-6 rounded-lg border border-line bg-surface px-4 py-3 text-muted">
+    <p role="status" aria-live="polite" className="mt-6 rounded-xl border border-line bg-surface px-4 py-3 text-muted">
       Loading {what}…
     </p>
   );
@@ -63,11 +63,11 @@ const HINT: Record<ApiFailure["kind"], string> = {
 
 export function DataError({ error, what }: { error: ApiFailure; what: string }) {
   return (
-    <div role="alert" className="mt-6 rounded-lg border border-line border-l-4 border-l-[#b3261e] bg-surface px-4 py-3">
+    <div role="alert" className="mt-6 rounded-xl border border-line border-l-4 border-l-[#b3261e] bg-surface px-4 py-3">
       <p className="font-medium text-ink">{what} is not available.</p>
       <p className="mt-1 text-muted">{HINT[error.kind]}</p>
       <p className="mt-3">
-        <SmartLink to={DESTINATIONS.vehicleSearch} className="inline-flex min-h-11 items-center text-cobalt underline underline-offset-4 hover:text-ink">
+        <SmartLink to={DESTINATIONS.vehicleSearch} className="inline-flex min-h-11 items-center rr-link">
           Search the vehicle records in the app instead
         </SmartLink>
       </p>

@@ -1,7 +1,12 @@
 // Owner: C. Shared helpers for the presentation acceptance tests.
-import { expect, type Page } from "@playwright/test";
+import { expect, type Page, type Route } from "@playwright/test";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
 export const PAGE = "/observatory/index.html";
+
+/** The 3D scene's canvas (the page also has a separate background atmosphere canvas). */
+export const SCENE_CANVAS = "[data-scene-state] canvas";
 
 export type Viewport = { width: number; height: number; note: string };
 
@@ -109,4 +114,28 @@ export async function boxOf(page: Page, selector: string): Promise<Box | null> {
 
 export async function horizontalOverflow(page: Page): Promise<number> {
   return page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+}
+
+const FIX = path.join(__dirname, "..", "..", "..", "contracts", "fixtures", "api");
+export const fixture = (name: string) => JSON.parse(readFileSync(path.join(FIX, name), "utf8"));
+
+export type Mock = { status?: number; body?: unknown; raw?: string; contentType?: string; hang?: boolean; abort?: boolean; delayMs?: number };
+
+/** Serves the repo's contract fixtures (labelled synthetic_fixture) for the three API calls, with per-call overrides. */
+export async function mockApi(page: Page, overrides: Partial<Record<"hero" | "replay" | "vehicle", Mock>> = {}) {
+  const defaults = { hero: { body: fixture("hero.json") }, replay: { body: fixture("replay_E-0412.json") }, vehicle: { body: fixture("vehicle.json") } };
+  const handle = (key: "hero" | "replay" | "vehicle") => async (route: Route) => {
+    const m: Mock = { ...defaults[key], ...overrides[key] };
+    if (m.hang) return; // never answered
+    if (m.abort) return route.abort("connectionrefused");
+    if (m.delayMs) await new Promise((r) => setTimeout(r, m.delayMs));
+    await route.fulfill({
+      status: m.status ?? 200,
+      contentType: m.contentType ?? "application/json",
+      body: m.raw ?? JSON.stringify(m.body),
+    });
+  };
+  await page.route("**/api/hero", handle("hero"));
+  await page.route("**/api/replay/**", handle("replay"));
+  await page.route("**/api/vehicle?**", handle("vehicle"));
 }

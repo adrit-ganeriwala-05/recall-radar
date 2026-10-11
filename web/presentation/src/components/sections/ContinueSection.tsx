@@ -7,15 +7,15 @@ import { FEATURE_IDS, type Ledger } from "@/content/ledger";
 import { FEATURE_NAMES, describeState } from "@/content/features";
 import { SectionShell } from "./SectionShell";
 
-const action = "inline-flex min-h-11 items-center rounded-md border border-line px-4 font-medium text-ink hover:border-cobalt";
+const action = "rr-btn rr-btn-ghost min-h-11 px-5";
 
 export function ContinueSection({ ledger }: { ledger: Ledger }) {
   const e = ledger.entries;
   return (
-    <SectionShell id={SECTION_IDS.continue} title="Continue with your vehicle">
+    <SectionShell id={SECTION_IDS.continue} title="Continue with your vehicle" chapter="closing">
       <ul className="mt-8 flex flex-wrap gap-3">
         <li>
-          <SmartLink to={DESTINATIONS.vehicleSearch} className="inline-flex min-h-11 items-center rounded-md bg-cobalt-strong px-4 font-medium text-ink hover:bg-cobalt-strong/85">
+          <SmartLink to={DESTINATIONS.vehicleSearch} className="rr-btn rr-btn-primary min-h-11 px-5">
             Open app
           </SmartLink>
         </li>
@@ -40,28 +40,30 @@ export function ContinueSection({ ledger }: { ledger: Ledger }) {
         )}
       </ul>
       <div className="mt-12 max-w-3xl">
-        <h3 className="text-xl font-medium">What this build includes</h3>
-        <p className="mt-2 text-sm text-muted">
+        <h3 className="rr-display text-3xl text-ink sm:text-4xl">What this build includes</h3>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
           {ledger.readable
             ? `From the release ledger${ledger.updated ? ` (updated ${ledger.updated})` : ""}, read when this page was built. Only features marked verified are offered on this page.`
             : "The release ledger could not be read when this page was built, so no feature is offered as verified."}
         </p>
-        <div className="mt-4 overflow-x-auto">
+        {/* Scrolls sideways on very narrow screens, so it is a labelled, focusable region (keyboard users
+            can scroll it with the arrow keys). */}
+        <div className="rr-card mt-6 overflow-x-auto px-5 py-2 sm:px-6" data-lenis-prevent role="region" aria-label="Feature status table" tabIndex={0}>
           <table className="w-full border-collapse text-left text-[15px]" data-testid="feature-status">
             <caption className="sr-only">PRD v2 deliverables and their ledger status</caption>
             <thead>
-              <tr className="border-b border-line text-muted">
-                <th scope="col" className="py-2 pr-4 font-medium">Feature</th>
-                <th scope="col" className="py-2 font-medium">Status</th>
+              <tr className="border-b border-line font-display text-[11px] uppercase tracking-[0.16em] text-faint">
+                <th scope="col" className="py-3 pr-4 font-normal">Feature</th>
+                <th scope="col" className="py-3 font-normal">Status</th>
               </tr>
             </thead>
             <tbody>
               {FEATURE_IDS.map((id) => (
-                <tr key={id} className="border-b border-line align-top">
-                  <th scope="row" className="py-2 pr-4 font-normal text-ink">
-                    {id} · {FEATURE_NAMES[id]}
+                <tr key={id} className="border-b border-line align-top last:border-b-0">
+                  <th scope="row" className="py-3 pr-4 font-normal text-ink">
+                    <span className="font-display text-[13px] text-champagne">{id}</span> · {FEATURE_NAMES[id]}
                   </th>
-                  <td className="py-2 text-muted [overflow-wrap:anywhere]" data-state={e[id].state}>
+                  <td className="py-3 text-muted [overflow-wrap:anywhere]" data-state={e[id].state}>
                     {describeState(e[id])}
                   </td>
                 </tr>

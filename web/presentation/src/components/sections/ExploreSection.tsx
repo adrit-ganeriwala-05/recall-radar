@@ -17,7 +17,7 @@ export function ExploreSection() {
   const [selected, setSelected] = useState<string | null>(null);
 
   return (
-    <SectionShell id={SECTION_IDS.explore} title="Inspect the reported issue">
+    <SectionShell id={SECTION_IDS.explore} title="Inspect the reported issue" chapter="explore">
       {state.status === "loading" && <Loading what="the example vehicle" />}
       {state.status === "error" && <DataError error={state.error} what="The example vehicle" />}
       {state.status === "ready" && (() => {
@@ -34,14 +34,14 @@ export function ExploreSection() {
             </p>
             <DataLabel provenance={vehicle.provenance} />
             {shown.length === 0 ? (
-              <p className="mt-6 rounded-lg border border-line bg-surface px-4 py-3 text-muted">No complaints for this vehicle in the cached data.</p>
+              <p className="mt-6 rounded-xl border border-line bg-surface px-4 py-3 text-muted">No complaints for this vehicle in the cached data.</p>
             ) : (
-              <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+              <div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(min(100%,17rem),1fr))] gap-6">
                 <div>
-                  <h3 id="categories-label" className="text-sm font-medium text-muted">
+                  <h3 id="categories-label" className="rr-eyebrow">
                     Reported issue categories
                   </h3>
-                  <ul aria-labelledby="categories-label" className="mt-3 flex flex-wrap gap-2">
+                  <ul aria-labelledby="categories-label" className="mt-4 flex flex-wrap gap-2">
                     {shown.map((c) => {
                       const on = c.group.group_id === active.group.group_id;
                       return (
@@ -51,10 +51,10 @@ export function ExploreSection() {
                             aria-pressed={on}
                             aria-controls="explore-panel"
                             onClick={() => setSelected(c.group.group_id)}
-                            className={`inline-flex min-h-11 max-w-full items-center gap-2 rounded-md border px-3 text-left text-[15px] [overflow-wrap:anywhere] transition-colors ${on ? "border-cobalt bg-cobalt-strong text-ink" : "border-line bg-surface text-ink/90 hover:border-cobalt"}`}
+                            className={`inline-flex min-h-11 max-w-full items-center gap-2.5 rounded-full border px-4 text-left text-[15px] [overflow-wrap:anywhere] transition-colors ${on ? "border-cobalt bg-cobalt-strong text-ink shadow-[0_8px_24px_-12px_rgb(58_98_222/0.8)]" : "border-line-strong bg-surface text-ink/90 hover:border-cobalt"}`}
                           >
                             <span>{c.group.comp_system}</span>
-                            <span className={on ? "text-ink" : "text-muted"}>{c.group.distinct_complaints}</span>
+                            <span className={`rr-figure text-[13px] ${on ? "text-ink" : "text-muted"}`}>{c.group.distinct_complaints}</span>
                           </button>
                         </li>
                       );
@@ -66,30 +66,30 @@ export function ExploreSection() {
                     </p>
                   )}
                 </div>
-                <div id="explore-panel" role="region" aria-live="polite" aria-labelledby="explore-panel-title" className="min-w-0 rounded-xl border border-line bg-surface p-5 sm:p-6">
-                  <h3 id="explore-panel-title" className="text-2xl font-medium [overflow-wrap:anywhere]">
+                <div id="explore-panel" role="region" aria-live="polite" aria-labelledby="explore-panel-title" className="rr-card min-w-0 p-6 sm:p-7">
+                  <h3 id="explore-panel-title" className="text-2xl font-medium tracking-tight [overflow-wrap:anywhere]">
                     {active.group.comp_system}
                   </h3>
-                  <dl className="mt-4 grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-[max-content_minmax(0,1fr)]">
-                    <dt className="text-muted">Distinct complaints</dt>
-                    <dd data-testid="panel-count">{active.group.distinct_complaints}</dd>
-                    <dt className="text-muted">Months with complaints</dt>
+                  <dl className="mt-5 grid grid-cols-1 gap-x-6 gap-y-3 border-t border-line pt-5 sm:grid-cols-[max-content_minmax(0,1fr)]">
+                    <dt className="text-sm text-muted sm:pt-0.5">Distinct complaints</dt>
+                    <dd data-testid="panel-count" className="rr-figure text-ink">{active.group.distinct_complaints}</dd>
+                    <dt className="text-sm text-muted sm:pt-0.5">Months with complaints</dt>
                     <dd>
                       {active.group.first_month && active.group.last_month
                         ? `${monthText(active.group.first_month)} to ${monthText(active.group.last_month)}`
                         : "Not listed"}
                     </dd>
-                    <dt className="text-muted">Alerts for this component</dt>
+                    <dt className="text-sm text-muted sm:pt-0.5">Alerts for this component</dt>
                     <dd>
                       {active.episodes.length}
                       <span className="block text-sm text-muted">An alert means this complaint pattern deserves a closer look.</span>
                     </dd>
                   </dl>
                   <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
-                    <SmartLink to={ROUTES.issue(active.group.group_id)} className="inline-flex min-h-11 items-center rounded-md bg-cobalt-strong px-4 font-medium text-ink hover:bg-cobalt-strong/85">
+                    <SmartLink to={ROUTES.issue(active.group.group_id)} className="rr-btn rr-btn-primary min-h-11 px-5">
                       View these complaints
                     </SmartLink>
-                    <SmartLink to={ROUTES.vehicle(v)} className="inline-flex min-h-11 items-center text-cobalt underline underline-offset-4 hover:text-ink">
+                    <SmartLink to={ROUTES.vehicle(v)} className="inline-flex min-h-11 items-center rr-link">
                       All components for this vehicle
                     </SmartLink>
                   </div>
