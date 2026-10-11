@@ -80,7 +80,7 @@ export function ReplayView({ data }: { data: Replay }) {
   // PRD v2 F3: recall markers with campno/link open the F1 card; hidden until their date unless toggled
   const linked = features.recallMarkers && data.markers.some((m) => m.type === "recall_reported" && m.campno && m.link);
   const [showLater, setShowLater] = useState(false);
-  const [drawer, setDrawer] = useState<{ campno: string; el: Element } | null>(null);
+  const [drawer, setDrawer] = useState<{ campno: string; link: "issue" | "vehicle" | null; el: Element } | null>(null);
   const [veh] = useApi(
     linked && drawer ? () => getVehicle(data.vehicle.make, data.vehicle.model, data.vehicle.model_year) : null,
     [linked && drawer !== null],
@@ -182,6 +182,7 @@ export function ReplayView({ data }: { data: Replay }) {
       {drawer && (
         <RecallDrawer
           campno={drawer.campno}
+          link={drawer.link}
           campaign={veh.state === "done" && veh.ok ? veh.data.recall_campaigns.find((c) => c.campno === drawer.campno) : undefined}
           loading={veh.state === "loading"}
           vehicle={data.vehicle}
@@ -193,7 +194,7 @@ export function ReplayView({ data }: { data: Replay }) {
         title="Distinct complaints per month, as known at the replay date"
         valueLabel="Distinct complaints"
         points={framePoints(frames, index)}
-        markers={frameMarkers(frames, data.markers, index, linked ? { showLater, onRecall: (campno, el) => setDrawer({ campno, el }) } : {})}
+        markers={frameMarkers(frames, data.markers, index, linked ? { showLater, onRecall: (campno, el) => setDrawer({ campno, el, link: data.markers.find((m) => m.campno === campno)?.link ?? null }) } : {})}
         extraHeaders={["Expected (2-month window)", "Surprise score"]}
       />
       <p className="small">

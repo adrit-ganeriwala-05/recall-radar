@@ -5,6 +5,7 @@ import { RecallCard } from "./RecallCard";
 
 export function RecallDrawer({
   campno,
+  link,
   campaign,
   loading,
   vehicle,
@@ -12,6 +13,7 @@ export function RecallDrawer({
   onClose,
 }: {
   campno: string;
+  link?: "issue" | "vehicle" | null;
   campaign: RecallCampaign | undefined;
   loading: boolean;
   vehicle: VehicleKey;
@@ -37,6 +39,16 @@ export function RecallDrawer({
         <p className="state">Loading the campaign…</p>
       ) : campaign ? (
         <RecallCard campaign={campaign} vehicle={vehicle} dataAsOf={dataAsOf} />
+      ) : link === "issue" ? (
+        // B's finding on #36: an investigation's campaign often names other model years or models. Showing that
+        // row's card would claim it covers this vehicle (F1.2), so say what is true instead.
+        <p className="state" data-testid="recall-other-vehicles">
+          Campaign {campno} is linked to the NHTSA investigation of this issue. NHTSA&apos;s recall file does not list the{" "}
+          {vehicle.model_year} {vehicle.make} {vehicle.model} under this campaign; it lists other model years or models.{" "}
+          <a href="https://www.nhtsa.gov/recalls" target="_blank" rel="noopener noreferrer">
+            Check a specific car by VIN →
+          </a>
+        </p>
       ) : (
         <p className="state" data-testid="recall-unavailable">
           Record unavailable: campaign {campno} is not in this cached dataset for the {vehicle.model_year} {vehicle.make}{" "}

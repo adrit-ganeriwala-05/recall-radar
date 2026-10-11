@@ -76,6 +76,21 @@ describe("recall drawer", () => {
   });
 });
 
+describe("issue-linked campaign that does not list this vehicle (B on #36)", () => {
+  it("says it is linked to the investigation and lists other vehicles; never shows another vehicle's card", async () => {
+    const r = withRecalls();
+    r.markers.push(recall("2018-08-01", "20V555000", "issue"));
+    r.markers.sort((a, b) => a.date.localeCompare(b.date));
+    show(r);
+    fireEvent.click(screen.getByLabelText(/Show later outcomes/));
+    fireEvent.click(recallButtons().find((b) => b.textContent!.includes("20V555000"))!);
+    const msg = await screen.findByTestId("recall-other-vehicles");
+    expect(msg.textContent).toMatch(/^Campaign 20V555000 is linked to the NHTSA investigation of this issue\. NHTSA's recall file does not list the 2017 EXAMPLE MOTORS ROADSTER under this campaign/);
+    expect(screen.queryByTestId("recall-card")).toBeNull();
+    expect(screen.queryByTestId("recall-unavailable")).toBeNull();
+  });
+});
+
 describe("replays without linked recalls", () => {
   it("have no toggle and no recall buttons", () => {
     show(replayFixture());
