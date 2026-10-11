@@ -4,12 +4,13 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 20:20 ET (clock times before 17:10 in this file were estimates; `git log` has the true times)
-- Branch / HEAD: b/method, pushed to origin (pre-freeze PR #8; check `git log` for the tip)
-- Last origin/main merged: dc05d35 (PR #7: A's test-real fix + 16 development labels), merged 20:13 ET, no conflicts
+- Updated: 2026-10-10 21:05 ET (clock times before 17:10 in this file were estimates; `git log` has the true times)
+- Branch / HEAD: b/method, export PR open (check `git log` for the tip; refreshed export at 3000b65)
+- Last origin/main merged: 35801e9 (PR #12 CI fix, PR #13 A8 held-out labels), merged 20:55 ET, no conflicts
 - Contract version: 1.0.0
-- Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a (hero rule text changed at b93a89e; was 419a39bbf60b) / LDATE_PLUS_7
-- Mode: waiting(A's re-review of PR #8 at its new head and D's merge; then the human's approval to push tag freeze-v1 — since 20:20)
+- Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a / LDATE_PLUS_7
+- **Freeze: tag `freeze-v1` → dd6b439, pushed 20:22 ET (Saketh approved the tag push). The held-out year has been run once. Nothing under `recall_radar/method/`, `config.yaml`, `review/system_map.csv`, `review/keywords.txt` may change without `freeze-v2`.**
+- Mode: waiting(A's review + D's merge of the export PR; the human sends the database to D — since 21:05)
 
 ## Done (task id → commit → evidence)
 - B1 → fe38661 → `tests/fixtures/method/*.csv` + hand calculations in `docs/METHOD_NOTES.md` §4
@@ -58,15 +59,25 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - main dc05d35 merged into b/method at 038e473 (20:13): `make check` → 296 passed, 29 deselected; web 72 passed; secrets, claims, fill_numbers: 0 problems; ownership: 0 violations. `uv run pytest -m real_data tests/method` → 1 passed.
 - Development run with A's 16 labels at 038e473: `make match evaluate SCOPE=full PERIOD=development` → exit 0, log `logs/full_dev_labels.log`. Tier 1–2 counts unchanged; the seeded sample metric is no longer pending. Still PRELIMINARY (no freeze). Held-out: `evaluate` and `candidates --period held_out` → exit 2.
 
+- PR #8 merged by D at A's reviewed head ac3edf1 → main dd6b439 (tree identical to ac3edf1).
+- B8 → `git tag -a freeze-v1 -m "frozen config 0c26e23e0a3a" dd6b439`, `check_freeze` → `freeze-v1`, tag pushed.
+- **B9 → cbd5034.** `RR_RAW_DIR=~/rr-raw make pipeline` at dd6b439, clean tree → exit 0 in 127 s, log `logs/pipeline_freeze_v1.log`; run ids `development-0c26e23e0a3a-dd6b439`, `held_out-0c26e23e0a3a-dd6b439`. Outputs: `exports/demo/` (27 files, about 1.1 MB), `review/candidates_heldout.csv` (15 rows, 3 families). Results are in `exports/demo/results.csv`; the held-out early coverage is no better than the matched controls (read the file for the counts). Hero: no held-out family qualifies, so the frozen rule's development branch applies (`hero.json`, period "development").
+- Held-out count checked outside the evaluation code with plain SQL (eligible families; families with an exact-group alert 60–730 days before opening): equal to the export.
+- B10 (first pass) → `RR_RAW_DIR=~/rr-raw make repro` at cbd5034 → exit 0, MATCH for results_development.json, results_held_out.json, results.csv, cases.csv; log `logs/repro_freeze_v1.log`.
+- CI break after the tag (reported by D 20:27): `tests/method/test_evaluation.py` evaluated against the real checkout, so with `freeze-v1` present 2 tests failed. Fixed test-only on b/ci-freeze-tests 7f9968c (PR #12): `uv run pytest` → 296 passed, 29 deselected with the tag, and the same in a scratch clone without it. My rehearsal had not run the test suite with a tag present.
+- Handoff for the frozen run: `docs/handoffs/20261010-2035-B-to-A-C-D-frozen-run.md`.
+
+- PR #12 merged → main 82ba637. Review of A's PR #13 at 1c8dd4b (A8, 15 held-out labels) → posted "Reviewed 1c8dd4b: ok" (keys equal my 15 candidates; frozen paths equal freeze-v1); merged → main 35801e9.
+- **B9 refresh → 3000b65.** main 35801e9 merged into b/method; `RR_RAW_DIR=~/rr-raw make pipeline` → exit 0 in 128 s, log `logs/pipeline_freeze_v1_labels.log`; run ids `development-0c26e23e0a3a-1c8dd4b`, `held_out-0c26e23e0a3a-1c8dd4b`. Versus cbd5034, ignoring ids: held-out `early_coverage_sample` pending → measured, three cases carry a review label, nothing else.
+- `RR_RAW_DIR=~/rr-raw make repro` at 3000b65 → exit 0, MATCH ×4; log `logs/repro_freeze_v1_labels.log`.
+
 ## In progress
 - none
 
 ## Next (in order)
-1. A re-reviews PR #8 at the new head (only change since f7606e1: main merged in + this file), D merges it. Then `git fetch && git switch main && git merge --ff-only origin/main`.
-2. Tag: `git tag -a freeze-v1 -m "frozen config <hash>"` on the main commit that merges PR #8; push the tag only after the human says yes.
-3. B9: `RR_RAW_DIR=~/rr-raw make pipeline` (held-out once; tree must be clean), `python -m recall_radar.method.candidates --period held_out` for A8, commit `exports/demo/` and `review/candidates_heldout.csv`; hand off to A, C, D.
-4. After A's held-out labels (A8) reach main: re-run evaluate + export and commit the refreshed bundle (the pipeline revision changes with the label file, by design).
-5. Review items for A; B10 `make repro` on rc1 (rehearsed: works).
+1. Export PR from b/method: A reviews, D merges, then D deploys. The human sends `data/recall_radar.duckdb` (run ids ending 1c8dd4b) to D.
+2. B10 on rc1: `make repro` again on D's release candidate.
+3. Review items for A, C, D when asked. No change under the freeze without `freeze-v2` and a new held-out disclosure.
 
 ## Last passing commands (exact)
 - `uv run pytest` → 127 passed, 1 deselected (the deselected one is the real_data test) at the tip after A's review changes @ 02263ed

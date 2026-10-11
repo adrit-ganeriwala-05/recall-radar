@@ -1,0 +1,16 @@
+family_id,group_id,start_month,label,reviewer,note
+F-PE21010~8a58c4,g_8a81ef43a0e5,2019-12,not_related,A,brake complaints; none mention air bags
+F-PE21010~8a58c4,g_bf579b74a19c,2020-01,not_related,A,stability-control complaints; none mention air bags
+F-PE21010~8a58c4,g_d76ef85882c1,2020-01,not_related,A,electrical complaints; none mention air bags
+F-PE21010~8a58c4,g_e7c8b16929e2,2020-01,not_related,A,steering complaints; none mention air bags
+F-PE21010~8a58c4,g_e9db6da5a65b,2020-01,not_related,A,engine complaints; none mention air bags
+F-PE21010~8a58c4,g_927dfe97a64f,2020-02,not_related,A,brake complaints; none mention air bags
+F-PE21010~8a58c4,g_af5fc8f072ef,2020-08,not_related,A,stability-control complaints; none mention air bags
+F-PE21021~ff9ef0,g_57df2da0f4a9,2019-11,not_related,A,drag-link recall repair complaints; no fuel-pump or stalling descriptions
+F-PE21021~ff9ef0,g_654db161b254,2020-04,not_related,A,transmission recall complaints; no fuel-pump or stalling descriptions
+F-PE21023~fc00b2,g_81a5341d9e0c,2019-12,not_related,A,suspension arm failures; nothing about games on the screen while driving
+F-PE21023~fc00b2,g_f5f1b8d363bd,2020-02,not_related,A,speed-control complaints; nothing about games on the screen while driving
+F-PE21023~fc00b2,g_c5af3ebc64f5,2020-07,not_related,A,"touchscreen (MCU) hardware failures, a different issue; nothing about games while driving"
+F-PE21023~fc00b2,g_21d51e8af291,2020-08,not_related,A,"touchscreen (MCU) hardware failures, a different issue; nothing about games while driving"
+F-PE21023~fc00b2,g_81a5341d9e0c,2020-12,not_related,A,suspension arm failures; nothing about games on the screen while driving
+F-PE21023~fc00b2,g_229c4670f887,2021-02,not_related,A,"screen blackouts (MCU failures), a different issue; nothing about games while driving"

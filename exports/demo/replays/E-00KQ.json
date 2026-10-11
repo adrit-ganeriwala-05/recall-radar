@@ -1,0 +1,415 @@
+{
+  "provenance": {
+    "contract_version": "1.0.0",
+    "data_label": "cached_real",
+    "snapshot_id": "e808281f001a",
+    "data_as_of": "2026-10-10",
+    "config_hash": "0c26e23e0a3a",
+    "git_sha": "1c8dd4b44e2712163c5a205db84d9304430704ba",
+    "availability_basis": "LDATE_PLUS_7",
+    "generated_at": "2026-10-11T00:40:35Z"
+  },
+  "episode_id": "E-00KQ",
+  "group_id": "g_5cf08db4f6f5",
+  "vehicle": {
+    "make": "HYUNDAI",
+    "model": "SONATA",
+    "model_year": 2011
+  },
+  "comp_system": "AIR BAGS",
+  "frames": [
+    {
+      "cutoff": "2015-05-01",
+      "month": "2015-04",
+      "n_distinct": 1,
+      "baseline_lambda": 1.666667,
+      "score": 0.304228,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2015-06-01",
+      "month": "2015-05",
+      "n_distinct": 0,
+      "baseline_lambda": 1.692308,
+      "score": 0.08836,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2015-07-01",
+      "month": "2015-06",
+      "n_distinct": 0,
+      "baseline_lambda": 1.714286,
+      "score": 0.0,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2015-08-01",
+      "month": "2015-07",
+      "n_distinct": 1,
+      "baseline_lambda": 1.6,
+      "score": 0.097941,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2015-09-01",
+      "month": "2015-08",
+      "n_distinct": 1,
+      "baseline_lambda": 1.5,
+      "score": 0.354406,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2015-10-01",
+      "month": "2015-09",
+      "n_distinct": 1,
+      "baseline_lambda": 1.529412,
+      "score": 0.344891,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2015-11-01",
+      "month": "2015-10",
+      "n_distinct": 3,
+      "baseline_lambda": 1.555556,
+      "score": 1.137823,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2015-12-01",
+      "month": "2015-11",
+      "n_distinct": 4,
+      "baseline_lambda": 1.578947,
+      "score": 2.906737,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-01-01",
+      "month": "2015-12",
+      "n_distinct": 1,
+      "baseline_lambda": 1.8,
+      "score": 1.438819,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-02-01",
+      "month": "2016-01",
+      "n_distinct": 1,
+      "baseline_lambda": 2.095238,
+      "score": 0.208198,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-03-01",
+      "month": "2016-02",
+      "n_distinct": 2,
+      "baseline_lambda": 2.090909,
+      "score": 0.458529,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-04-01",
+      "month": "2016-03",
+      "n_distinct": 7,
+      "baseline_lambda": 2.086957,
+      "score": 3.491343,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-05-01",
+      "month": "2016-04",
+      "n_distinct": 6,
+      "baseline_lambda": 2.166667,
+      "score": 6.297858,
+      "partial": false,
+      "alert_active": true
+    },
+    {
+      "cutoff": "2016-06-01",
+      "month": "2016-05",
+      "n_distinct": 7,
+      "baseline_lambda": 2.583333,
+      "score": 5.470669,
+      "partial": false,
+      "alert_active": true
+    },
+    {
+      "cutoff": "2016-07-01",
+      "month": "2016-06",
+      "n_distinct": 8,
+      "baseline_lambda": 3.0,
+      "score": 6.173675,
+      "partial": false,
+      "alert_active": true
+    },
+    {
+      "cutoff": "2016-08-01",
+      "month": "2016-07",
+      "n_distinct": 6,
+      "baseline_lambda": 3.583333,
+      "score": 4.620524,
+      "partial": false,
+      "alert_active": true
+    },
+    {
+      "cutoff": "2016-09-01",
+      "month": "2016-08",
+      "n_distinct": 10,
+      "baseline_lambda": 4.25,
+      "score": 4.98969,
+      "partial": false,
+      "alert_active": true
+    },
+    {
+      "cutoff": "2016-10-01",
+      "month": "2016-09",
+      "n_distinct": 23,
+      "baseline_lambda": 4.75,
+      "score": 16.605663,
+      "partial": false,
+      "alert_active": true
+    },
+    {
+      "cutoff": "2016-11-01",
+      "month": "2016-10",
+      "n_distinct": 17,
+      "baseline_lambda": 5.583333,
+      "score": 20.39739,
+      "partial": false,
+      "alert_active": true
+    },
+    {
+      "cutoff": "2016-12-01",
+      "month": "2016-11",
+      "n_distinct": 4,
+      "baseline_lambda": 7.333333,
+      "score": 4.55003,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-01-01",
+      "month": "2016-12",
+      "n_distinct": 4,
+      "baseline_lambda": 8.75,
+      "score": 0.189752,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-02-01",
+      "month": "2017-01",
+      "n_distinct": 5,
+      "baseline_lambda": 9.083333,
+      "score": 0.255492,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-03-01",
+      "month": "2017-02",
+      "n_distinct": 2,
+      "baseline_lambda": 9.25,
+      "score": 0.088814,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-04-01",
+      "month": "2017-03",
+      "n_distinct": 5,
+      "baseline_lambda": 9.583333,
+      "score": 0.075038,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-05-01",
+      "month": "2017-04",
+      "n_distinct": 5,
+      "baseline_lambda": 9.583333,
+      "score": 0.310707,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-06-01",
+      "month": "2017-05",
+      "n_distinct": 8,
+      "baseline_lambda": 9.916667,
+      "score": 0.697644,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-07-01",
+      "month": "2017-06",
+      "n_distinct": 5,
+      "baseline_lambda": 10.25,
+      "score": 0.633184,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-08-01",
+      "month": "2017-07",
+      "n_distinct": 5,
+      "baseline_lambda": 10.916667,
+      "score": 0.186834,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-09-01",
+      "month": "2017-08",
+      "n_distinct": 5,
+      "baseline_lambda": 11.333333,
+      "score": 0.158301,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-10-01",
+      "month": "2017-09",
+      "n_distinct": 6,
+      "baseline_lambda": 11.666667,
+      "score": 0.209797,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-11-01",
+      "month": "2017-10",
+      "n_distinct": 5,
+      "baseline_lambda": 12.0,
+      "score": 0.185239,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-12-01",
+      "month": "2017-11",
+      "n_distinct": 9,
+      "baseline_lambda": 12.416667,
+      "score": 0.439963,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-01-01",
+      "month": "2017-12",
+      "n_distinct": 6,
+      "baseline_lambda": 12.583333,
+      "score": 0.548048,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-02-01",
+      "month": "2018-01",
+      "n_distinct": 3,
+      "baseline_lambda": 13.0,
+      "score": 0.045641,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-03-01",
+      "month": "2018-02",
+      "n_distinct": 4,
+      "baseline_lambda": 13.416667,
+      "score": 0.008879,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-04-01",
+      "month": "2018-03",
+      "n_distinct": 6,
+      "baseline_lambda": 13.583333,
+      "score": 0.0608,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-05-01",
+      "month": "2018-04",
+      "n_distinct": 4,
+      "baseline_lambda": 13.75,
+      "score": 0.056394,
+      "partial": false,
+      "alert_active": false
+    }
+  ],
+  "markers": [
+    {
+      "type": "alert",
+      "date": "2016-05-01",
+      "label": "Alert: this complaint pattern deserves a closer look",
+      "is_outcome": false,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2018-02-27",
+      "label": "Recall campaign 18V137000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "investigation_opened",
+      "date": "2018-03-16",
+      "label": "Investigation PE18003 opened (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": "PE18003",
+      "match_tier": "1",
+      "lead_days": 684
+    },
+    {
+      "type": "recall_reported",
+      "date": "2018-06-01",
+      "label": "Recall campaign 18V363000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    }
+  ],
+  "outcome": {
+    "episode_id": "E-00KQ",
+    "family_id": "F-PE18003~232bef",
+    "earliest_action_no": "PE18003",
+    "inv_type": "PE",
+    "investigation_open_date": "2018-03-16",
+    "tier": "1",
+    "basis": "Tier 1: investigation PE18003 (opened 2018-03-16) names the same make, model, model year and component system.",
+    "confidence": "high",
+    "lead_days": 684,
+    "status": "early",
+    "recall_campnos": [
+      "18E043000",
+      "18V137000",
+      "18V363000",
+      "20V024"
+    ],
+    "follow_up_end": "2018-05-01",
+    "follow_up_complete": true,
+    "reviewer": null
+  },
+  "banner": "Received-date experiment: this replay orders complaints by the date NHTSA received them plus 7 days, using today's records and labels. It is not an archive of what the website showed on each date."
+}
