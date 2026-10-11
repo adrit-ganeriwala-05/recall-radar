@@ -79,6 +79,9 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | 20:05 | Merged PR #9 (C stand-in ok a9fb133) → main cc40c0b. Reviewed PR #10 (C) 34c212e: ok | D |
 | 20:15 | Merged PR #7 (B ok 4425bb2: A7 dev labels, DuckDB 1 GB cap) → main dc05d35; deployed dc05d35 fixture: integration 11/10 skipped, Playwright 2/2, outage 0 FAIL, 126 MB | D |
 | 20:20 | Merged PR #8 (A ok ac3edf1: pre-freeze fixes) → main dd6b439; `make check` 296 + 72 passed. B tagged **freeze-v1** (annotated, config 0c26e23e0a3a) → dd6b439 at 20:21. Main merges resume | D |
+| 20:30 | CI red on every PR once freeze-v1 reached origin (2 method tests read the real checkout's tag). B fixed in PR #12 (test-only, outside the freeze); A ok 7f9968c → D merged → main 82ba637 | D |
+| 20:35 | B: held-out run done once at freeze-v1; exports/demo committed on b/method (cbd5034); `make repro` MATCH ×4. Held-out early coverage measured at zero, below chance (see exports/demo/results.csv); hero = development-period case | B/D |
+| 20:45 | D: submission copy for the measured result: verdict lines for both periods, hero labeled development period, "what we learned" filled; dry fill from cbd5034 results.csv → 0 unfilled (median-lead line cut: not_applicable). In PR #11 | D |
 
 ## Gate log
 | Gate | Time | Main SHA | Result | Decision |
