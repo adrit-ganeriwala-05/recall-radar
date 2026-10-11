@@ -1,9 +1,11 @@
 // Owner: C. C3 replay: step month by month through what was public at each cutoff.
-import { useCallback, useEffect, useState, type KeyboardEvent } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { useCallback, useEffect, useMemo, useState, type KeyboardEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getHero, getReplay, getVehicle } from "../api/client";
 import { useApi } from "../api/useApi";
-import { BarChart } from "../components/BarChart";
+import { ChartFrame, ComplaintTimeline } from "../charts";
+import { MarkerList, TimelineTable, ToneLegend } from "../charts/TimelineTable";
 import { ProvenanceBar } from "../components/Provenance";
 import { RecallDrawer } from "../components/RecallDrawer";
 import { features } from "../features";
@@ -12,6 +14,7 @@ import { VIN_LOOKUP_URL } from "../components/VinBox";
 import type { OutcomeMatch, Replay } from "../contracts.gen";
 import { dateText, heroPeriodNote, monthText, plural, statusText, vehicleText } from "../format";
 import { frameMarkers, framePoints } from "../replay";
+import { useMotionPresets } from "../ui/motion";
 
 const STEP_MS = 800;
 
@@ -73,6 +76,7 @@ function Outcome({ o }: { o: OutcomeMatch | null }) {
 }
 
 export function ReplayView({ data }: { data: Replay }) {
+  const mp = useMotionPresets();
   const frames = data.frames;
   const last = frames.length - 1;
   const [index, setIndex] = useState(0);
@@ -90,6 +94,15 @@ export function ReplayView({ data }: { data: Replay }) {
     setDrawer(null);
     setTimeout(() => el?.focus(), 0);
   }, [drawer]);
+  const onRecall = useCallback(
+    (campno: string, el: Element) => setDrawer({ campno, el, link: data.markers.find((m) => m.campno === campno)?.link ?? null }),
+    [data.markers],
+  );
+  const points = useMemo(() => framePoints(frames, index), [frames, index]);
+  const markers = useMemo(
+    () => frameMarkers(frames, data.markers, index, linked ? { showLater, onRecall } : {}),
+    [frames, data.markers, index, linked, showLater, onRecall],
+  );
 
   useEffect(() => {
     if (!playing) return;
@@ -129,28 +142,29 @@ export function ReplayView({ data }: { data: Replay }) {
       <p className="replay-banner">{data.banner}</p>
 
       <div className="replay-controls" role="group" aria-label="Replay controls" onKeyDown={onKey}>
-        <button type="button" aria-label="Restart" onClick={() => go(0)}>
+        <motion.button type="button" aria-label="Restart" onClick={() => go(0)} {...mp.buttonTap}>
           ⏮ Restart
-        </button>
-        <button type="button" aria-label="Step back" onClick={() => go(index - 1)} disabled={index === 0}>
+        </motion.button>
+        <motion.button type="button" aria-label="Step back" onClick={() => go(index - 1)} disabled={index === 0} {...mp.buttonTap}>
           ◀ Step back
-        </button>
-        <button
+        </motion.button>
+        <motion.button
           type="button"
           onClick={() => {
             if (index >= last) setIndex(0);
             setPlaying((p) => !p);
           }}
           aria-label={playing ? "Pause" : "Play"}
+          {...mp.buttonTap}
         >
           {playing ? "⏸ Pause" : "▶ Play"}
-        </button>
-        <button type="button" aria-label="Step forward" onClick={() => go(index + 1)} disabled={index === last}>
+        </motion.button>
+        <motion.button type="button" aria-label="Step forward" onClick={() => go(index + 1)} disabled={index === last} {...mp.buttonTap}>
           Step forward ▶
-        </button>
-        <button type="button" aria-label="Jump to end" onClick={() => go(last)} disabled={index === last}>
+        </motion.button>
+        <motion.button type="button" aria-label="Jump to end" onClick={() => go(last)} disabled={index === last} {...mp.buttonTap}>
           Jump to end ⏭
-        </button>
+        </motion.button>
         <label className="slider">
           <span className="visually-hidden">Replay month</span>
           <input
@@ -170,7 +184,7 @@ export function ReplayView({ data }: { data: Replay }) {
         {frame.partial && " (partial month)"}
         {frame.baseline_lambda !== null && <>, about {frame.baseline_lambda.toFixed(1)} expected for the 2-month window</>}
         {frame.score !== null && <>, surprise score {frame.score.toFixed(2)}</>}.{" "}
-        {frame.alert_active ? <strong>▲ Alert active.</strong> : "No alert."}
+        {frame.alert_active ? <strong>● Alert active.</strong> : "No alert."}
       </p>
 
       {linked && (
@@ -179,27 +193,53 @@ export function ReplayView({ data }: { data: Replay }) {
           (recall campaigns reported after the current replay date)
         </label>
       )}
-      {drawer && (
-        <RecallDrawer
-          campno={drawer.campno}
-          link={drawer.link}
-          campaign={veh.state === "done" && veh.ok ? veh.data.recall_campaigns.find((c) => c.campno === drawer.campno) : undefined}
-          loading={veh.state === "loading"}
-          vehicle={data.vehicle}
-          dataAsOf={veh.state === "done" && veh.ok ? veh.data.provenance.data_as_of : null}
-          onClose={closeDrawer}
-        />
-      )}
-      <BarChart
+      <AnimatePresence>
+        {drawer && (
+          <RecallDrawer
+            key={drawer.campno}
+            campno={drawer.campno}
+            link={drawer.link}
+            campaign={veh.state === "done" && veh.ok ? veh.data.recall_campaigns.find((c) => c.campno === drawer.campno) : undefined}
+            loading={veh.state === "loading"}
+            vehicle={data.vehicle}
+            dataAsOf={veh.state === "done" && veh.ok ? veh.data.provenance.data_as_of : null}
+            onClose={closeDrawer}
+          />
+        )}
+      </AnimatePresence>
+      <ChartFrame
         title="Distinct complaints per month, as known at the replay date"
-        valueLabel="Distinct complaints"
-        points={framePoints(frames, index)}
-        markers={frameMarkers(frames, data.markers, index, linked ? { showLater, onRecall: (campno, el) => setDrawer({ campno, el, link: data.markers.find((m) => m.campno === campno)?.link ?? null }) } : {})}
-        extraHeaders={["Expected (2-month window)", "Surprise score"]}
-      />
+        description="Each bar is one month's distinct complaints, counted only from complaints public before the replay date. Markers show the alert and, as later reveals, investigations and recalls."
+        state={{ kind: "ready" }}
+        table={
+          <TimelineTable
+            title="Distinct complaints per month, as known at the replay date"
+            valueLabel="Distinct complaints"
+            points={points}
+            markers={markers}
+            extraHeaders={["Expected (2-month window)", "Surprise score"]}
+          />
+        }
+        legend={
+          <>
+            <ToneLegend points={points} />
+            <MarkerList markers={markers} />
+          </>
+        }
+        summary={
+          <>
+            Data through {monthText(frame.month)}: {plural(points.filter((p) => p.value !== null).length, "month", "months")} shown,{" "}
+            {plural(markers.length, "marker", "markers")} visible at this replay date.
+          </>
+        }
+        testId="replay-chart"
+      >
+        <ComplaintTimeline title="Distinct complaints per month, as known at the replay date" points={points} markers={markers} />
+      </ChartFrame>
       <p className="small">
-        ▲ marks the alert the method raised from complaints public at that date. ◆ marks investigations and recalls,
-        which are later reveals and never inputs to the alert.
+        ● (cobalt circle) marks the alert the method raised from complaints public at that date. ◆ (amber diamond) marks
+        an investigation opening; a red vertical line marks a recall linked to this issue and a gray one another recall
+        for this model. Investigations and recalls are later reveals and never inputs to the alert.
       </p>
 
       {index === last ? (

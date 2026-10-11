@@ -1,8 +1,10 @@
 // Owner: C. C2 issue page: one vehicle + component group, its alert episodes and the evidence list.
+import { useMemo } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { getIssue } from "../api/client";
 import { useApi } from "../api/useApi";
-import { BarChart } from "../components/BarChart";
+import { ChartFrame, ComplaintTimeline } from "../charts";
+import { TimelineTable, ToneLegend } from "../charts/TimelineTable";
 import { ProvenanceBar } from "../components/Provenance";
 import { Empty, ErrorState, Loading } from "../components/States";
 import type { AlertEpisode, Complaint, IssueResponse } from "../contracts.gen";
@@ -97,6 +99,17 @@ function Issue({
 }) {
   const { group, evidence } = data;
   const totalPages = Math.max(1, Math.ceil(evidence.total / evidence.page_size));
+  const title = `Distinct ${group.comp_system} complaints per month`;
+  const points = useMemo(
+    () =>
+      monthlyPoints(data.series).map((p, i) => ({
+        ...p,
+        // baseline_lambda is the expected count for a 2-month window (λ̂ = 2 × typical month)
+        baseline: data.series[i].baseline_lambda === null ? null : data.series[i].baseline_lambda! / 2,
+        extra: [data.series[i].baseline_lambda?.toFixed(2) ?? "—", data.series[i].score?.toFixed(2) ?? "—"],
+      })),
+    [data.series],
+  );
   return (
     <>
       <h1>
@@ -123,24 +136,22 @@ function Issue({
         )}
       </p>
 
-      {data.series.length > 0 ? (
-        <BarChart
-          title={`Distinct ${group.comp_system} complaints per month`}
-          valueLabel="Distinct complaints"
-          points={monthlyPoints(data.series).map((p, i) => ({
-            ...p,
-            // baseline_lambda is the expected count for a 2-month window (λ̂ = 2 × typical month)
-            baseline: data.series[i].baseline_lambda === null ? null : data.series[i].baseline_lambda! / 2,
-            extra: [
-              data.series[i].baseline_lambda?.toFixed(2) ?? "—",
-              data.series[i].score?.toFixed(2) ?? "—",
-            ],
-          }))}
-          extraHeaders={["Expected for the 2-month window", "Surprise score"]}
-        />
-      ) : (
-        <Empty>No complaints for this component in the data range.</Empty>
-      )}
+      <ChartFrame
+        title={title}
+        description="Each bar is one month's distinct complaints about this component. The dashed line is the typical month before, from the detector's expected count for the 2-month window."
+        state={points.length === 0 ? { kind: "empty", message: "No complaints for this component in the data range." } : { kind: "ready" }}
+        table={<TimelineTable title={title} valueLabel="Distinct complaints" points={points} extraHeaders={["Expected for the 2-month window", "Surprise score"]} />}
+        legend={<ToneLegend points={points} />}
+        summary={
+          <>
+            {plural(group.distinct_complaints, "distinct complaint", "distinct complaints")} over{" "}
+            {plural(points.length, "month", "months")}; {plural(points.filter((pt) => pt.tone === "alert").length, "alert month", "alert months")}.
+          </>
+        }
+        testId="issue-timeline"
+      >
+        <ComplaintTimeline title={title} points={points} />
+      </ChartFrame>
 
       <h2>Alerts</h2>
       {data.episodes.length === 0 ? (

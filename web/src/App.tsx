@@ -1,5 +1,6 @@
 // Owner: C. App shell: header with data label + data-as-of, routes for the five P0 screens.
-import { NavLink, Route, Routes } from "react-router-dom";
+import { MotionConfig, motion } from "motion/react";
+import { NavLink, Route, Routes, useLocation } from "react-router-dom";
 import { getMeta } from "./api/client";
 import { useApi } from "./api/useApi";
 import { ReceivedDateNote } from "./components/Provenance";
@@ -15,6 +16,7 @@ import ReplayPage from "./pages/ReplayPage";
 import ResultsPage from "./pages/ResultsPage";
 import SelectorPage from "./pages/SelectorPage";
 import VehiclePage from "./pages/VehiclePage";
+import { useMotionPresets } from "./ui/motion";
 
 function Header() {
   const [meta] = useApi(getMeta, []);
@@ -64,13 +66,19 @@ function NotFound() {
 }
 
 export default function App() {
+  const mp = useMotionPresets();
+  // One MotionConfig for the whole app: reducedMotion="user" drops every transform for visitors who ask
+  // for less motion (only short opacity changes remain). The page content fades in on each route without
+  // waiting for the old page to leave; the header sits outside it and never animates.
+  const location = useLocation();
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       <a className="skip-link" href="#main">
         Skip to content
       </a>
       <Header />
       <main id="main" tabIndex={-1}>
+        <motion.div key={location.pathname} {...mp.page}>
         <Routes>
           <Route path="/" element={<SelectorPage />} />
           <Route path="/vehicle" element={<VehiclePage />} />
@@ -84,6 +92,7 @@ export default function App() {
           <Route path="/observatory" element={<ObservatoryRedirect />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </motion.div>
       </main>
       <footer className="site-footer">
         <p>
@@ -95,6 +104,6 @@ export default function App() {
           .
         </p>
       </footer>
-    </>
+    </MotionConfig>
   );
 }

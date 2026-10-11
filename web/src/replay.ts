@@ -2,7 +2,7 @@
 //  * bars: only months <= the current frame's month are drawn (never a month after the cutoff)
 //  * markers: visible from the first frame whose cutoff >= marker.date, drawn on that frame's month
 // ISO dates/months compare correctly as strings.
-import type { BarPoint, ChartMarker } from "./components/BarChart";
+import type { BarPoint, ChartMarker, MarkerKind } from "./charts/types";
 import type { ReplayFrame, ReplayMarker } from "./contracts.gen";
 import { dateText, monthText } from "./format";
 
@@ -42,10 +42,38 @@ export function framePoints(frames: ReplayFrame[], index: number): BarPoint[] {
       label: monthText(f.month),
       value: known ? f.n_distinct : null,
       tone: f.partial ? "partial" : f.alert_active ? "alert" : "normal",
+      // The detector's own values for this month, exactly as the API supplies them (tooltip only).
+      detail: known
+        ? [
+            ...(f.baseline_lambda !== null ? [{ label: "Expected (2-month window)", value: f.baseline_lambda.toFixed(2) }] : []),
+            ...(f.score !== null ? [{ label: "Surprise score", value: f.score.toFixed(2) }] : []),
+          ]
+        : [],
       extra: [f.baseline_lambda?.toFixed(2) ?? "—", f.score?.toFixed(2) ?? "—"],
     };
   });
 }
+
+function markerKind(m: ReplayMarker): MarkerKind {
+  if (m.type === "alert") return "alert";
+  if (m.type === "investigation_opened") return "investigation";
+  return m.link === "issue" ? "recall-issue" : m.link === "vehicle" ? "recall-vehicle" : "recall";
+}
+
+const GLYPH: Record<MarkerKind, ChartMarker["glyph"]> = {
+  alert: "●",
+  investigation: "◆",
+  "recall-issue": "│",
+  "recall-vehicle": "│",
+  recall: "│",
+};
+
+/** What each marker date is (shown in tooltips and tables). */
+export const DATE_BASIS: Record<ReplayMarker["type"], string> = {
+  alert: "Alert date, from complaints public before that date",
+  investigation_opened: "Date NHTSA opened the investigation (later reveal)",
+  recall_reported: "Date NHTSA's recall file reports the campaign (later reveal)",
+};
 
 export function frameMarkers(
   frames: ReplayFrame[],
@@ -63,9 +91,21 @@ export function frameMarkers(
     if (key === null) continue;
     const testId = m.type === "alert" ? "marker-alert" : m.type === "investigation_opened" ? "marker-investigation" : "marker-recall";
     const campno = isLinkedRecall ? m.campno! : undefined;
+    const kind = markerKind(m);
     out.push({
-      key, symbol: m.is_outcome ? "◆" : "▲", text: markerText(m), outcome: m.is_outcome, testId, campno,
-      onActivate: campno && opts.onRecall ? (el: Element) => opts.onRecall!(campno, el) : undefined,
+      key,
+      kind,
+      symbol: m.is_outcome ? "◆" : "▲",
+      glyph: GLYPH[kind],
+      text: markerText(m),
+      outcome: m.is_outcome,
+      testId,
+      date: m.date,
+      dateBasis: DATE_BASIS[m.type],
+      identifier: m.type === "recall_reported" ? (m.campno ?? m.action_no) : m.action_no,
+      link: m.type === "recall_reported" ? (m.link ?? null) : null,
+      campno,
+      onActivate: campno && opts.onRecall ? (el: HTMLElement) => opts.onRecall!(campno, el) : undefined,
     });
   }
   return out;

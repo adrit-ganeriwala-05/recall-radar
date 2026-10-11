@@ -6,21 +6,24 @@ import { allReplayFiles, replayFixture } from "../test/fixtures";
 import { markerText } from "../replay";
 import { ReplayView } from "./ReplayPage";
 
-function renderReplay(data: Replay) {
-  return render(
+/** Renders and waits for the chart's first measured render (Bklit measures its box once after mounting). */
+async function renderReplay(data: Replay) {
+  const r = render(
     <MemoryRouter>
       <ReplayView data={data} />
     </MemoryRouter>,
   );
+  await screen.findAllByTestId("bar");
+  return r;
 }
 
 const barMonths = () => screen.queryAllByTestId("bar").map((b) => b.getAttribute("data-month"));
 const forward = () => fireEvent.click(screen.getByRole("button", { name: "Step forward" }));
 
 describe("replay", () => {
-  it("never draws a bar for a month after the current frame's cutoff", () => {
+  it("never draws a bar for a month after the current frame's cutoff", async () => {
     const data = replayFixture();
-    renderReplay(data);
+    await renderReplay(data);
     data.frames.forEach((frame, i) => {
       const months = barMonths();
       // bars are exactly the frames up to and including this one
@@ -31,10 +34,10 @@ describe("replay", () => {
     });
   });
 
-  it("shows the alert marker only from the frame whose cutoff >= alert_date", () => {
+  it("shows the alert marker only from the frame whose cutoff >= alert_date", async () => {
     // fixture alert_date 2018-05-01; frame 2018-04 has cutoff 2018-05-01 (first with cutoff >= it)
     const data = replayFixture();
-    renderReplay(data);
+    await renderReplay(data);
     const seen: Record<string, boolean> = {};
     data.frames.forEach((f, i) => {
       seen[f.month] = screen.queryAllByTestId("marker-alert").length > 0;
@@ -45,10 +48,10 @@ describe("replay", () => {
     expect(seen["2018-12"]).toBe(true);
   });
 
-  it("reveals the investigation (◆, labeled later reveal) only once its date has passed", () => {
+  it("reveals the investigation (◆, labeled later reveal) only once its date has passed", async () => {
     // investigation opened 2018-10-15 -> first frame with cutoff >= that is 2018-10 (cutoff 2018-11-01)
     const data = replayFixture();
-    renderReplay(data);
+    await renderReplay(data);
     const firstOutcome = data.frames.findIndex((_, i) => {
       if (i > 0) forward();
       return screen.queryAllByTestId("marker-investigation").length > 0;
@@ -68,9 +71,9 @@ describe("replay", () => {
     expect(screen.getByTestId("marker-alert").textContent).toContain("▲");
   });
 
-  it("is keyboard operable and shows the documented outcome at the end", () => {
+  it("is keyboard operable and shows the documented outcome at the end", async () => {
     const data = replayFixture();
-    renderReplay(data);
+    await renderReplay(data);
     const controls = screen.getByRole("group", { name: "Replay controls" });
     fireEvent.keyDown(controls, { key: "ArrowRight" });
     expect(barMonths()).toHaveLength(2);
@@ -85,11 +88,11 @@ describe("replay", () => {
     expect(screen.queryByTestId("outcome-status")).toBeNull();
   });
 
-  it("greys a partial month and labels it 'partial'", () => {
+  it("greys a partial month and labels it 'partial'", async () => {
     const data = replayFixture();
     const last = data.frames.length - 1;
     data.frames[last] = { ...data.frames[last], partial: true, score: null, baseline_lambda: null };
-    renderReplay(data);
+    await renderReplay(data);
     fireEvent.keyDown(screen.getByRole("group", { name: "Replay controls" }), { key: "End" });
     const bar = screen.getAllByTestId("bar").find((b) => b.getAttribute("data-month") === data.frames[last].month)!;
     expect(bar.getAttribute("data-tone")).toBe("partial");
@@ -99,8 +102,8 @@ describe("replay", () => {
 });
 
 describe("agreement: cutoff rules hold for every replay we ship (fixtures + exports/demo/replays)", () => {
-  it.each(allReplayFiles())("%s", (_file, data) => {
-    renderReplay(data);
+  it.each(allReplayFiles())("%s", async (_file, data) => {
+    await renderReplay(data);
     data.frames.forEach((frame, i) => {
       expect(barMonths()).toEqual(data.frames.slice(0, i + 1).map((f) => f.month));
       // every visible marker is listed under the chart (the SVG stacks at most 4 per month, PRD v2 F3)
@@ -111,10 +114,10 @@ describe("agreement: cutoff rules hold for every replay we ship (fixtures + expo
         return (linkedRecall ? frame.cutoff > m.date : m.date <= frame.cutoff) && data.frames.some((f) => f.cutoff >= m.date);
       }).length;
       expect(shown).toBe(due);
-      // the SVG never shows more than 4 markers on one month
+      // the chart never draws more than 4 markers on one month
       const perMonth = new Map<string, number>();
       for (const el of [...screen.queryAllByTestId("marker-alert"), ...screen.queryAllByTestId("marker-investigation"), ...screen.queryAllByTestId("marker-recall")]) {
-        const k = el.getAttribute("x") ?? "";
+        const k = el.getAttribute("data-month") ?? "";
         perMonth.set(k, (perMonth.get(k) ?? 0) + 1);
       }
       expect(Math.max(0, ...perMonth.values())).toBeLessThanOrEqual(4);

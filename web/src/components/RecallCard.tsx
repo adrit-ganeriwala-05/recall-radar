@@ -1,5 +1,7 @@
 // Owner: C. PRD v2 F1: one official recall card per campno; reused by the F3 replay drawer.
 // Official NHTSA text is shown verbatim as plain text (React escapes it; CSS keeps line breaks).
+import { motion } from "motion/react";
+import { useMotionPresets } from "../ui/motion";
 import { useState } from "react";
 import type { RecallCampaign, VehicleKey } from "../contracts.gen";
 import { features } from "../features";
@@ -31,6 +33,7 @@ export function RecallCard({
   vehicle: VehicleKey;
   dataAsOf?: string | null;
 }) {
+  const mp = useMotionPresets();
   const total = (c.summary?.length ?? 0) + (c.consequence?.length ?? 0) + (c.remedy?.length ?? 0);
   const long = total > LONG;
   const [full, setFull] = useState(!long);
@@ -38,7 +41,7 @@ export function RecallCard({
   const accepted = features.recallExplain && exp?.status === "accepted" && (exp.sentences?.length ?? 0) > 0;
   const id = `recall-${c.campno}`;
   return (
-    <article className="recall-card" aria-labelledby={`${id}-h`} data-testid="recall-card">
+    <motion.article className="recall-card" {...mp.cardHover} aria-labelledby={`${id}-h`} data-testid="recall-card">
       <h3 id={`${id}-h`}>
         NHTSA campaign {c.campno} <span className="subtle">· {c.component}</span>
       </h3>
@@ -106,7 +109,7 @@ export function RecallCard({
           Check a specific car by VIN →
         </a>
       </p>
-    </article>
+    </motion.article>
   );
 }
 

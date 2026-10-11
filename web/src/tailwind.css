@@ -16,7 +16,6 @@
   --chart-cobalt: #638fff;
   --chart-amber: #f4b860;
   --chart-recall: #e06c75;
-  --chart-gray: #8a939e;
   --chart-grid: rgba(174, 182, 190, 0.14);
   --chart-tooltip-background: #1c2024;
   --chart-tooltip-border: rgba(174, 182, 190, 0.24);
@@ -36,7 +35,7 @@
   --chart-tooltip-foreground: var(--chart-text);
   --chart-tooltip-muted: var(--chart-text-secondary);
   --chart-1: var(--chart-cobalt);
-  --chart-2: var(--chart-gray);
+  --chart-2: var(--chart-text-secondary);
   --chart-3: var(--chart-amber);
   --chart-4: var(--chart-recall);
   --chart-5: var(--chart-text-secondary);
