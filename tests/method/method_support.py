@@ -13,6 +13,8 @@ parameters below (the bootstrap defaults), so they do not move when config.yaml 
 from __future__ import annotations
 
 import csv
+import shutil
+import subprocess
 from datetime import date
 from pathlib import Path
 
@@ -22,6 +24,7 @@ import pytest
 from recall_radar.method.detect import DetectorParams
 from recall_radar.method.util import month_index_from_str
 
+ROOT = Path(__file__).resolve().parents[2]
 FIX = Path(__file__).resolve().parents[1] / "fixtures" / "method"
 FIXTURE_CUTOFF = date(2019, 1, 1)
 FIXTURE_HASH = "synthetic0000"
@@ -161,6 +164,30 @@ def fixture_config() -> dict:
     cfg = load_config()
     cfg["config_hash"] = FIXTURE_HASH
     return cfg
+
+
+def run_git(repo, *args):
+    subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.invalid", *args], cwd=repo, check=True, capture_output=True)
+
+
+def scratch_repo(path: Path) -> Path:
+    """A throwaway git repository holding only config.yaml, with no tags.
+
+    Tests pass it as `repo=` so that nothing they assert depends on the real checkout: once
+    `freeze-v1` exists there, a result computed against it carries the tag and loses its
+    PRELIMINARY note.
+    """
+    path.mkdir(parents=True, exist_ok=True)
+    shutil.copy(ROOT / "config.yaml", path / "config.yaml")
+    run_git(path, "init", "-q", "-b", "main")
+    run_git(path, "add", "config.yaml")
+    run_git(path, "commit", "-q", "-m", "config")
+    return path
+
+
+@pytest.fixture(scope="session")
+def untagged_repo(tmp_path_factory) -> Path:
+    return scratch_repo(tmp_path_factory.mktemp("untagged") / "repo")
 
 
 @pytest.fixture(scope="session")

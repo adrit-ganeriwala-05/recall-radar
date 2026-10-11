@@ -109,7 +109,7 @@ def test_tier2_pairs_only_for_the_family_that_meets_every_rule(db):
     }
 
 
-def test_episode_outcome_and_family_cases_carry_the_tier(db):
+def test_episode_outcome_and_family_cases_carry_the_tier(db, untagged_repo):
     cfg = fixture_config()
     row = M.run(db, cfg).iloc[0]
     # the next opening after the alert is the tier-2 family
@@ -117,7 +117,7 @@ def test_episode_outcome_and_family_cases_carry_the_tier(db):
     assert row["basis"].startswith("Tier 2:") and "shared keywords: PEDAL" in row["basis"]
     M.to_outcome(row.to_dict())
 
-    summary, controls = E.evaluate(db, cfg, "development", "full")
+    summary, controls = E.evaluate(db, cfg, "development", "full", repo=untagged_repo)
     got = {c.family_id: (c.status, c.match_tier.value, c.lead_days) for c in summary.cases}
     assert got == {
         "F-PE18101": ("early", "2", 91),
@@ -196,26 +196,26 @@ def write_labels(tmp_path, cand, labels: dict[str, str]):
     rows.to_csv(tmp_path / "match_labels_dev.csv", index=False)
 
 
-def test_sample_metric_is_pending_until_every_candidate_is_labeled(db, tmp_path):
+def test_sample_metric_is_pending_until_every_candidate_is_labeled(db, tmp_path, untagged_repo):
     cfg = fixture_config()
     cand = candidates_for(db)
-    summary, _ = E.evaluate(db, cfg, "development", "full", review_dir=tmp_path)
+    summary, _ = E.evaluate(db, cfg, "development", "full", repo=untagged_repo, review_dir=tmp_path)
     sample = {m.name: m for m in summary.metrics}["early_coverage_sample"]
     assert sample.status == C.MetricStatus.pending and "0 of 4 candidate pairs" in sample.note
 
     write_labels(tmp_path, cand, {"F-PE18104": "related", "F-PE18102": "not_related", "F-PE18103": "unsure"})
-    summary, _ = E.evaluate(db, cfg, "development", "full", review_dir=tmp_path)
+    summary, _ = E.evaluate(db, cfg, "development", "full", repo=untagged_repo, review_dir=tmp_path)
     sample = {m.name: m for m in summary.metrics}["early_coverage_sample"]
     assert sample.status == C.MetricStatus.pending and "3 of 4 candidate pairs" in sample.note
     # labels already show on the cases, but an unfinished review never produces a number
     assert {c.family_id: c.review_label for c in summary.cases}["F-PE18104"] == "related"
 
 
-def test_labels_add_tier3_to_the_sample_only(db, tmp_path):
+def test_labels_add_tier3_to_the_sample_only(db, tmp_path, untagged_repo):
     cfg = fixture_config()
     cand = candidates_for(db)
     write_labels(tmp_path, cand, {"F-PE18104": "related", "F-PE18102": "not_related", "F-PE18103": "unsure", "F-PE18105": "not_related"})
-    summary, _ = E.evaluate(db, cfg, "development", "full", review_dir=tmp_path)
+    summary, _ = E.evaluate(db, cfg, "development", "full", repo=untagged_repo, review_dir=tmp_path)
     got = {c.family_id: (c.status, c.match_tier.value, c.lead_days, c.review_label) for c in summary.cases}
     assert got == {
         "F-PE18101": ("early", "2", 91, None),
@@ -233,22 +233,22 @@ def test_labels_add_tier3_to_the_sample_only(db, tmp_path):
     C.EvaluationSummary.model_validate_json(E.summary_json(summary))
 
 
-def test_stale_or_malformed_label_files_cannot_add_matches(db, tmp_path):
+def test_stale_or_malformed_label_files_cannot_add_matches(db, tmp_path, untagged_repo):
     cfg = fixture_config()
     cand = candidates_for(db)
     # a "related" label for a pair that is not a current candidate is ignored
     stale = pd.DataFrame([{"family_id": "F-PE18102", "group_id": "g_000000000000", "start_month": "2018-03", "label": "related", "reviewer": "A"}])
     stale.to_csv(tmp_path / "match_labels_dev.csv", index=False)
-    summary, _ = E.evaluate(db, cfg, "development", "full", review_dir=tmp_path)
+    summary, _ = E.evaluate(db, cfg, "development", "full", repo=untagged_repo, review_dir=tmp_path)
     assert {c.family_id: c.status for c in summary.cases}["F-PE18102"] == "missed"
 
     write_labels(tmp_path, cand, {"F-PE18104": "definitely"})
     with pytest.raises(ValueError, match="unknown labels"):
-        E.evaluate(db, cfg, "development", "full", review_dir=tmp_path)
+        E.evaluate(db, cfg, "development", "full", repo=untagged_repo, review_dir=tmp_path)
     twice = pd.concat([cand[K.KEY].head(1)] * 2).assign(label="related")
     twice.to_csv(tmp_path / "match_labels_dev.csv", index=False)
     with pytest.raises(ValueError, match="labeled twice"):
-        E.evaluate(db, cfg, "development", "full", review_dir=tmp_path)
+        E.evaluate(db, cfg, "development", "full", repo=untagged_repo, review_dir=tmp_path)
 
 
 def test_candidate_file_round_trip(db, tmp_path):
