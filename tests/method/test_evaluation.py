@@ -39,11 +39,11 @@ def test_wilson_matches_scipy(k, n):
 
 
 @pytest.fixture(scope="module")
-def result(tmp_path_factory, rows):
+def result(tmp_path_factory, rows, untagged_repo):
     con = build_db(tmp_path_factory.mktemp("eval") / "e.duckdb", rows)
     cfg = fixture_config()
     M.run(con, cfg)
-    summary, controls = E.evaluate(con, cfg, "development", "full", config_path=ROOT / "config.yaml")
+    summary, controls = E.evaluate(con, cfg, "development", "full", config_path=untagged_repo / "config.yaml", repo=untagged_repo)
     E.write_tables(con, summary)
     yield summary, controls, con
     con.close()
@@ -112,14 +112,14 @@ def test_synthetic_data_is_never_labeled_as_a_measured_result(result):
     assert con.execute("SELECT count(*) FROM eval_metric WHERE status = 'measured' AND value IS NULL").fetchone()[0] == 0
 
 
-def test_baseline_period_alerts_are_not_counted(tmp_path, rows):
+def test_baseline_period_alerts_are_not_counted(tmp_path, rows, untagged_repo):
     # same data, but call 2016-2017 "baseline only": the COOLDOWN alert of 2017-02-01 no longer counts,
     # so F-PE18003 is left with its alert 50 days after the opening
     con = build_db(tmp_path / "b.duckdb", rows)
     cfg = fixture_config()
     cfg["periods"] = {**cfg["periods"], "baseline_only": ["2016-01-01", "2017-12-31"], "development": ["2018-01-01", "2019-12-31"]}
     M.run(con, cfg)
-    summary, _ = E.evaluate(con, cfg, "development", "full", config_path=ROOT / "config.yaml")
+    summary, _ = E.evaluate(con, cfg, "development", "full", config_path=untagged_repo / "config.yaml", repo=untagged_repo)
     case = {c.family_id: c for c in summary.cases}["F-PE18003"]
     assert (case.status, case.lead_days) == ("after_official_action", -50)
     con.close()
