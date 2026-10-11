@@ -21,9 +21,9 @@ from datetime import date, datetime
 from enum import StrEnum
 from typing import Generic, Literal, TypeVar
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, model_validator
 
-CONTRACT_VERSION = "1.0.0"
+CONTRACT_VERSION = "1.1.0"
 
 MonthStr = str  # pattern enforced per field: ^\d{4}-(0[1-9]|1[0-2])$
 MONTH_PATTERN = r"^\d{4}-(0[1-9]|1[0-2])$"
@@ -278,6 +278,13 @@ class ReplayMarker(Contract):
     action_no: str | None
     match_tier: MatchTier | None
     lead_days: int | None
+    # 1.1.0 (F3): recall_reported markers only; null on every other marker type
+    campno: str | None = Field(default=None, description="NHTSA campaign of a recall_reported marker")
+    link: Literal["issue", "vehicle"] | None = Field(
+        default=None,
+        description="issue: campaign of the episode's matched investigation family; "
+        "vehicle: other campaign for the same make/model/year ('Other recall for this model')",
+    )
 
 
 class Replay(Contract):
@@ -427,10 +434,54 @@ class VehicleComponent(Contract):
     episodes: list[AlertEpisode] = Field(description="Ascending by alert_date")
 
 
+EXPLANATION_SOURCE_FIELDS = ("summary", "consequence", "remedy")
+
+
+class ExplanationSentence(Contract):
+    """One plain-language sentence (F2). Every claim must be traceable to the official text."""
+
+    text: str = Field(min_length=1)
+    source_fields: list[Literal["summary", "consequence", "remedy"]] = Field(min_length=1)
+    source_spans: list[str] = Field(min_length=1, description="Verbatim substrings of the cited official fields")
+
+    @model_validator(mode="after")
+    def _short(self) -> ExplanationSentence:
+        if len(self.text.split()) > 45:
+            raise ValueError("an explanation sentence has at most 45 words")
+        return self
+
+
+class RecallExplanation(Contract):
+    """F2. `fallback` = show the official text only (never labeled AI); it carries no sentences."""
+
+    status: Literal["accepted", "fallback"]
+    sentences: list[ExplanationSentence] = Field(default_factory=list, max_length=2)
+    model: str | None = None
+    prompt_version: str | None = None
+
+    @model_validator(mode="after")
+    def _status_matches(self) -> RecallExplanation:
+        if self.status == "fallback" and self.sentences:
+            raise ValueError("a fallback explanation carries no sentences")
+        if self.status == "accepted" and not (self.sentences and self.model and self.prompt_version):
+            raise ValueError("an accepted explanation needs sentences, model and prompt_version")
+        return self
+
+
 class RecallCampaign(Contract):
     campno: str
     component: str
     report_date: date | None
+    # 1.1.0 (F1): official NHTSA text verbatim; null when the source lacks the field
+    summary: str | None = None
+    consequence: str | None = None
+    remedy: str | None = None
+    park_it: StrictBool | None = Field(default=None, description="Do-not-drive flag; null = unknown (never shown)")
+    park_outside: StrictBool | None = Field(default=None, description="Park-outside flag; null = unknown (never shown)")
+    report_date_basis: str | None = Field(default=None, description="Which source date `report_date` is")
+    source_url: str | None = None
+    snapshot_id: str | None = None
+    explanation: RecallExplanation | None = None
 
 
 class VehicleResponse(Contract):
@@ -465,6 +516,98 @@ class IssueResponse(Contract):
     episodes: list[AlertEpisode]
     evidence: Page[Complaint] = Field(description="Ordered by avail_date asc, then odino asc")
     summary: IssueSummary | None = Field(description="P1-2; null unless a validated summary exists")
+
+
+# --------------------------------------------------------------------------- 1.1.0: F7 symptom search
+
+
+class SymptomDoc(Contract):
+    odino: str = Field(pattern=r"^\d+$")
+    comp_systems: list[str]
+    avail_date: date
+    excerpt: str = Field(max_length=400, description="Redacted at ingest and again at serving time")
+    group_id: str | None = Field(default=None, pattern=r"^g_[0-9a-f]{12}$")
+    nhtsa_url: str
+
+
+class SymptomAlias(Contract):
+    phrase: str = Field(min_length=1)
+    concepts: list[str] = Field(min_length=1)
+
+
+class SymptomConcept(Contract):
+    id: str = Field(min_length=1)
+    label: str
+    comp_systems: list[str]
+    terms: list[str]
+
+
+class SymptomIndex(Contract):
+    """GET /api/symptom-index: searched in the browser; the query never reaches the server."""
+
+    provenance: Provenance
+    vehicle: VehicleKey
+    snapshot_label: Literal["current cached snapshot"] = "current cached snapshot"
+    docs: list[SymptomDoc] = Field(max_length=2000, description="Newest first (avail_date desc, then odino desc)")
+    aliases: list[SymptomAlias]
+    concepts: list[SymptomConcept]
+
+    @model_validator(mode="after")
+    def _newest_first(self) -> SymptomIndex:
+        keys = [(d.avail_date, int(d.odino)) for d in self.docs]
+        if keys != sorted(keys, reverse=True):
+            raise ValueError("docs must be newest first")
+        return self
+
+
+# --------------------------------------------------------------------------- 1.1.0: F8 buyer report
+
+
+class DateRange(Contract):
+    start: date | None
+    end: date | None
+
+
+class ReportGroup(Contract):
+    group: IssueGroup
+    distinct_complaints: int = Field(ge=0)
+    link: str = Field(description="App path of the issue page")
+
+
+class ReportInvestigation(Contract):
+    action_no: str
+    inv_type: InvType
+    open_date: date
+    subject: str | None
+    link: str
+
+
+class ReportData(Contract):
+    """GET /api/report: data for the one-page buyer report; counts equal /api/vehicle."""
+
+    provenance: Provenance
+    vehicle: VehicleKey
+    complaint_date_range: DateRange
+    snapshot_date: date | None
+    distinct_complaints: int = Field(ge=0)
+    counting_basis: Literal["distinct NHTSA complaint IDs"] = "distinct NHTSA complaint IDs"
+    top_groups: list[ReportGroup] = Field(max_length=5)
+    shown_n: int = Field(ge=0, description="len(top_groups)")
+    total_groups: int = Field(ge=0)
+    investigations: list[ReportInvestigation] = Field(max_length=5)
+    total_investigations: int = Field(default=0, ge=0)
+    campaigns: list[RecallCampaign] = Field(max_length=6)
+    total_campaigns: int = Field(default=0, ge=0)
+    vin_lookup_url: Literal["https://www.nhtsa.gov/recalls"] = "https://www.nhtsa.gov/recalls"
+    selection_rule: str
+
+    @model_validator(mode="after")
+    def _counts(self) -> ReportData:
+        if self.shown_n != len(self.top_groups) or self.total_groups < self.shown_n:
+            raise ValueError("shown_n must equal len(top_groups) and not exceed total_groups")
+        if self.total_investigations < len(self.investigations) or self.total_campaigns < len(self.campaigns):
+            raise ValueError("a total is smaller than the list it summarises")
+        return self
 
 
 class ErrorBody(Contract):
@@ -514,5 +657,15 @@ EXPORTED_MODELS: list[type[BaseModel]] = [
     IssueSummary,
     ErrorBody,
     ErrorResponse,
+    ExplanationSentence,
+    RecallExplanation,
+    SymptomDoc,
+    SymptomAlias,
+    SymptomConcept,
+    SymptomIndex,
+    DateRange,
+    ReportGroup,
+    ReportInvestigation,
+    ReportData,
     HeroPointer,
 ]

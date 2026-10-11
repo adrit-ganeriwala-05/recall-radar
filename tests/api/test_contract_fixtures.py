@@ -32,6 +32,8 @@ FIXTURE_MODELS = {
     "results_held_out.json": C.EvaluationSummary,
     "error_not_found.json": C.ErrorResponse,
     "hero.json": C.HeroPointer,
+    "symptom_index.json": C.SymptomIndex,
+    "report.json": C.ReportData,
 }
 
 
@@ -107,3 +109,66 @@ def test_exported_schema_is_current(tmp_path: Path) -> None:
     before = schema.read_text()
     subprocess.run([sys.executable, str(ROOT / "scripts" / "export_contracts.py")], check=True, cwd=ROOT)
     assert schema.read_text() == before, "run `make contracts` and commit the regenerated schema"
+
+
+# --------------------------------------------------------------------------- 1.1.0 rules
+
+
+def test_recall_cards_fixture_covers_every_flag_state() -> None:
+    cards = load("vehicle.json")["recall_campaigns"]
+    assert {c["campno"] for c in cards} == {"18V000000", "19V111000", "20V222000"}
+    assert {(c["park_it"], c["park_outside"]) for c in cards} == {(True, False), (False, True), (None, None)}
+    assert {(c["explanation"] or {}).get("status") for c in cards} == {"accepted", "fallback", None}
+
+
+@pytest.mark.parametrize("flag", ["false", "FALSE", "yes", "", 0, 1, "maybe"])
+def test_park_flags_are_strict_booleans(flag) -> None:
+    # normalisation happens once, at ingest; the contract never coerces strings or numbers
+    with pytest.raises(ValidationError):
+        C.RecallCampaign(campno="1V", component="X", report_date=None, park_it=flag)
+
+
+def test_old_recall_campaign_and_marker_shapes_still_validate() -> None:
+    assert C.RecallCampaign.model_validate({"campno": "1V", "component": "X", "report_date": None}).park_it is None
+    m = load("replay_E-0412.json")["markers"][0]
+    assert C.ReplayMarker.model_validate(m).campno is None
+
+
+def _sentence(words: int = 5) -> dict:
+    return {"text": " ".join(["word"] * words), "source_fields": ["summary"], "source_spans": ["word"]}
+
+
+@pytest.mark.parametrize(
+    "exp",
+    [
+        {"status": "fallback", "sentences": [_sentence()]},  # fallback carries no AI text
+        {"status": "accepted", "sentences": []},  # accepted needs sentences
+        {"status": "accepted", "sentences": [_sentence()], "model": None, "prompt_version": "p1"},
+        {"status": "accepted", "sentences": [_sentence()] * 3, "model": "m", "prompt_version": "p1"},  # > 2
+        {"status": "accepted", "sentences": [_sentence(46)], "model": "m", "prompt_version": "p1"},  # > 45 words
+        {"status": "accepted", "sentences": [{**_sentence(), "source_fields": ["title"]}], "model": "m", "prompt_version": "p1"},
+    ],
+)
+def test_recall_explanation_rules(exp) -> None:
+    with pytest.raises(ValidationError):
+        C.RecallExplanation.model_validate(exp)
+
+
+def test_symptom_index_rules() -> None:
+    idx = load("symptom_index.json")
+    with pytest.raises(ValidationError):  # oldest first
+        C.SymptomIndex.model_validate({**idx, "docs": list(reversed(idx["docs"]))})
+    with pytest.raises(ValidationError):  # excerpt over 400 characters
+        C.SymptomIndex.model_validate({**idx, "docs": [{**idx["docs"][0], "excerpt": "x" * 401}]})
+    with pytest.raises(ValidationError):  # more than 2,000 docs
+        C.SymptomIndex.model_validate({**idx, "docs": [idx["docs"][0]] * 2001})
+
+
+def test_report_data_rules() -> None:
+    rep = load("report.json")
+    with pytest.raises(ValidationError):  # shown_n must equal the list
+        C.ReportData.model_validate({**rep, "shown_n": rep["shown_n"] + 1})
+    with pytest.raises(ValidationError):  # a total smaller than its list
+        C.ReportData.model_validate({**rep, "total_campaigns": 0})
+    with pytest.raises(ValidationError):  # at most 6 campaigns
+        C.ReportData.model_validate({**rep, "campaigns": rep["campaigns"] * 3, "total_campaigns": 9})
