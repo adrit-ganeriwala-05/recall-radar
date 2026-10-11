@@ -4,7 +4,7 @@ Restart memory for session rr-C. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-11 03:25 ET (stand-in session, PRD v2 build)
+- Updated: 2026-10-11 02:55 ET (stand-in session, PRD v2 build)
 - Branch / HEAD: C's v2 PRs all merged (#29 #32 #36 #42; main 4398728). Earlier: c/web @ see `git log -1` (stand-in commits: ca03073 merge main, 738e88a fixes, status; PR #5 merged at 22e781a; then main f4eac57 fast-forward + verdict margin fix) · PR #10
 - Last origin/main merged: 4398728 (train #47)
 - Contract version: 1.1.0
