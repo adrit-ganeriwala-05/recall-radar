@@ -1,0 +1,401 @@
+{
+  "provenance": {
+    "contract_version": "1.0.0",
+    "data_label": "cached_real",
+    "snapshot_id": "e808281f001a",
+    "data_as_of": "2026-10-10",
+    "config_hash": "0c26e23e0a3a",
+    "git_sha": "1c8dd4b44e2712163c5a205db84d9304430704ba",
+    "availability_basis": "LDATE_PLUS_7",
+    "generated_at": "2026-10-11T00:40:35Z"
+  },
+  "episode_id": "E-00TK",
+  "group_id": "g_ce6065e078ca",
+  "vehicle": {
+    "make": "TOYOTA",
+    "model": "4RUNNER",
+    "model_year": 2006
+  },
+  "comp_system": "STRUCTURE",
+  "frames": [
+    {
+      "cutoff": "2016-05-01",
+      "month": "2016-04",
+      "n_distinct": 0,
+      "baseline_lambda": 0.5,
+      "score": 0.0,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-06-01",
+      "month": "2016-05",
+      "n_distinct": 0,
+      "baseline_lambda": 0.5,
+      "score": 0.0,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-07-01",
+      "month": "2016-06",
+      "n_distinct": 0,
+      "baseline_lambda": 0.5,
+      "score": 0.0,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-08-01",
+      "month": "2016-07",
+      "n_distinct": 0,
+      "baseline_lambda": 0.5,
+      "score": 0.0,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-09-01",
+      "month": "2016-08",
+      "n_distinct": 0,
+      "baseline_lambda": 0.5,
+      "score": 0.0,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-10-01",
+      "month": "2016-09",
+      "n_distinct": 0,
+      "baseline_lambda": 0.5,
+      "score": 0.0,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-11-01",
+      "month": "2016-10",
+      "n_distinct": 0,
+      "baseline_lambda": 0.5,
+      "score": 0.0,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-12-01",
+      "month": "2016-11",
+      "n_distinct": 3,
+      "baseline_lambda": 0.5,
+      "score": 1.842009,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-01-01",
+      "month": "2016-12",
+      "n_distinct": 1,
+      "baseline_lambda": 0.5,
+      "score": 2.756559,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-02-01",
+      "month": "2017-01",
+      "n_distinct": 0,
+      "baseline_lambda": 0.5,
+      "score": 0.405089,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-03-01",
+      "month": "2017-02",
+      "n_distinct": 0,
+      "baseline_lambda": 0.5,
+      "score": 0.0,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-04-01",
+      "month": "2017-03",
+      "n_distinct": 2,
+      "baseline_lambda": 0.5,
+      "score": 1.044774,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-05-01",
+      "month": "2017-04",
+      "n_distinct": 4,
+      "baseline_lambda": 0.5,
+      "score": 4.848785,
+      "partial": false,
+      "alert_active": true
+    },
+    {
+      "cutoff": "2017-06-01",
+      "month": "2017-05",
+      "n_distinct": 2,
+      "baseline_lambda": 0.583333,
+      "score": 4.477812,
+      "partial": false,
+      "alert_active": true
+    },
+    {
+      "cutoff": "2017-07-01",
+      "month": "2017-06",
+      "n_distinct": 1,
+      "baseline_lambda": 0.916667,
+      "score": 1.182904,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-08-01",
+      "month": "2017-07",
+      "n_distinct": 1,
+      "baseline_lambda": 1.083333,
+      "score": 0.530379,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-09-01",
+      "month": "2017-08",
+      "n_distinct": 0,
+      "baseline_lambda": 1.166667,
+      "score": 0.162035,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-10-01",
+      "month": "2017-09",
+      "n_distinct": 1,
+      "baseline_lambda": 1.25,
+      "score": 0.146609,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-11-01",
+      "month": "2017-10",
+      "n_distinct": 0,
+      "baseline_lambda": 1.25,
+      "score": 0.146609,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-12-01",
+      "month": "2017-11",
+      "n_distinct": 0,
+      "baseline_lambda": 1.25,
+      "score": 0.0,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-01-01",
+      "month": "2017-12",
+      "n_distinct": 2,
+      "baseline_lambda": 1.25,
+      "score": 0.449326,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-02-01",
+      "month": "2018-01",
+      "n_distinct": 0,
+      "baseline_lambda": 1.25,
+      "score": 0.449326,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-03-01",
+      "month": "2018-02",
+      "n_distinct": 1,
+      "baseline_lambda": 1.416667,
+      "score": 0.120629,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-04-01",
+      "month": "2018-03",
+      "n_distinct": 0,
+      "baseline_lambda": 1.416667,
+      "score": 0.120629,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-05-01",
+      "month": "2018-04",
+      "n_distinct": 1,
+      "baseline_lambda": 1.5,
+      "score": 0.109652,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-06-01",
+      "month": "2018-05",
+      "n_distinct": 0,
+      "baseline_lambda": 1.5,
+      "score": 0.109652,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-07-01",
+      "month": "2018-06",
+      "n_distinct": 1,
+      "baseline_lambda": 1.583333,
+      "score": 0.099791,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-08-01",
+      "month": "2018-07",
+      "n_distinct": 1,
+      "baseline_lambda": 1.583333,
+      "score": 0.328209,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-09-01",
+      "month": "2018-08",
+      "n_distinct": 5,
+      "baseline_lambda": 1.666667,
+      "score": 2.136561,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-10-01",
+      "month": "2018-09",
+      "n_distinct": 4,
+      "baseline_lambda": 1.75,
+      "score": 4.05054,
+      "partial": false,
+      "alert_active": true
+    },
+    {
+      "cutoff": "2018-11-01",
+      "month": "2018-10",
+      "n_distinct": 7,
+      "baseline_lambda": 2.166667,
+      "score": 4.763451,
+      "partial": false,
+      "alert_active": true
+    },
+    {
+      "cutoff": "2018-12-01",
+      "month": "2018-11",
+      "n_distinct": 7,
+      "baseline_lambda": 2.5,
+      "score": 6.376836,
+      "partial": false,
+      "alert_active": true
+    },
+    {
+      "cutoff": "2019-01-01",
+      "month": "2018-12",
+      "n_distinct": 4,
+      "baseline_lambda": 3.083333,
+      "score": 3.435617,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2019-02-01",
+      "month": "2019-01",
+      "n_distinct": 5,
+      "baseline_lambda": 3.416667,
+      "score": 2.068446,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2019-03-01",
+      "month": "2019-02",
+      "n_distinct": 4,
+      "baseline_lambda": 3.666667,
+      "score": 1.886101,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2019-04-01",
+      "month": "2019-03",
+      "n_distinct": 0,
+      "baseline_lambda": 4.083333,
+      "score": 0.234601,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2019-05-01",
+      "month": "2019-04",
+      "n_distinct": 7,
+      "baseline_lambda": 4.416667,
+      "score": 0.800181,
+      "partial": false,
+      "alert_active": false
+    }
+  ],
+  "markers": [
+    {
+      "type": "alert",
+      "date": "2017-05-01",
+      "label": "Alert: this complaint pattern deserves a closer look",
+      "is_outcome": false,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "investigation_opened",
+      "date": "2018-08-17",
+      "label": "Investigation DP18002 opened (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": "DP18002",
+      "match_tier": "1",
+      "lead_days": 473
+    },
+    {
+      "type": "alert",
+      "date": "2018-10-01",
+      "label": "Alert: this complaint pattern deserves a closer look",
+      "is_outcome": false,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    }
+  ],
+  "outcome": {
+    "episode_id": "E-00TK",
+    "family_id": "F-DP18002",
+    "earliest_action_no": "DP18002",
+    "inv_type": "DP",
+    "investigation_open_date": "2018-08-17",
+    "tier": "1",
+    "basis": "Tier 1: investigation DP18002 (opened 2018-08-17) names the same make, model, model year and component system.",
+    "confidence": "high",
+    "lead_days": 473,
+    "status": "early",
+    "recall_campnos": [],
+    "follow_up_end": "2019-05-01",
+    "follow_up_complete": true,
+    "reviewer": null
+  },
+  "banner": "Received-date experiment: this replay orders complaints by the date NHTSA received them plus 7 days, using today's records and labels. It is not an archive of what the website showed on each date."
+}
