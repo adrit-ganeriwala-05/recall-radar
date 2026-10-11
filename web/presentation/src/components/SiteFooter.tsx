@@ -7,7 +7,7 @@ import { SmartLink } from "./SmartLink";
 export function SiteFooter() {
   return (
     <footer className="relative border-t border-line bg-graphite">
-      <div className="mx-auto grid max-w-[90rem] gap-4 px-5 py-12 text-sm leading-relaxed text-muted sm:px-8 md:grid-cols-2">
+      <div className="safe-px mx-auto grid max-w-[90rem] gap-4 py-12 text-sm leading-relaxed text-muted [padding-bottom:max(3rem,env(safe-area-inset-bottom))] md:grid-cols-2">
         <p>
           {FOOTER.vinNote}{" "}
           <SmartLink to={DESTINATIONS.nhtsaRecalls} className="text-cobalt underline underline-offset-4 hover:text-ink">

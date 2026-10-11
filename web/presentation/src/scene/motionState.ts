@@ -30,6 +30,11 @@ export type MotionState = {
   chapter: ChapterId;
   /** 0..1 progress inside the chapter (written by the Phase 4 scroll director; unused in Phase 2). */
   progress: number;
+  /**
+   * Hero framing measured from the DOM stage (see stage.ts); null until measured. Overrides the
+   * authored anchor/fill of the "intro" chapter so the car follows the real layout.
+   */
+  stage: { anchor: { x: number; y: number }; fill: number } | null;
   /** -1..1 mouse position over the viewport; touch never writes it. */
   pointer: { x: number; y: number };
   reducedMotion: boolean;
@@ -77,6 +82,13 @@ export function compositionFor(chapter: ChapterId, viewportWidth: number): Compo
   return viewportWidth >= WIDE_MIN_WIDTH ? c.wide : c.narrow;
 }
 
+/** The composition actually used: the hero takes its anchor and fill from the measured stage. */
+export function activeComposition(motion: MotionState, viewportWidth: number): Composition {
+  const base = compositionFor(motion.chapter, viewportWidth);
+  if (motion.chapter === "intro" && motion.stage) return { ...base, anchor: motion.stage.anchor, fill: motion.stage.fill };
+  return base;
+}
+
 /** Normalized-space bounding-sphere radius used until the model reports its measured one. */
 export const DEFAULT_MODEL_RADIUS = 2.4;
 
@@ -91,5 +103,5 @@ export function fitDistance(radius: number, fill: number, fovDeg: number, aspect
 }
 
 export function createMotionState(): MotionState {
-  return { chapter: "intro", progress: 0, pointer: { x: 0, y: 0 }, reducedMotion: false };
+  return { chapter: "intro", progress: 0, stage: null, pointer: { x: 0, y: 0 }, reducedMotion: false };
 }

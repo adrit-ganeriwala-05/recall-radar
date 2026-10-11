@@ -1,6 +1,7 @@
-// Owner: C. Introduction. Wide grid is ~42% copy / ~58% vehicle composition. The car itself is drawn
-// by the fixed background SceneLayer (motionState COMPOSITIONS anchor it in the right column wide, and
-// above the copy narrow); this section only reserves that space and carries the DOM label.
+// Owner: C. Introduction. In the `wide` layout (globals.css: ≥ 1024 px, or landscape-shaped ≥ 560 px,
+// or two horizontal foldable segments) the grid is ~42% copy / ~58% vehicle stage; otherwise the stage
+// sits above the copy. The car itself is drawn by the fixed background SceneLayer, which measures the
+// visible [data-scene-stage] box and frames the car inside it (scene/stage.ts).
 import { HERO } from "@/content/copy";
 import { DESTINATIONS, SECTION_IDS } from "@/content/destinations";
 import { SmartLink } from "./SmartLink";
@@ -19,18 +20,18 @@ export function Hero() {
     <section
       id={SECTION_IDS.top}
       aria-labelledby="hero-title"
-      className="mx-auto grid min-h-[calc(100dvh-4rem)] max-w-[90rem] items-center gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[42fr_58fr]"
+      className="rr-hero-grid safe-px mx-auto grid min-h-[calc(100svh-4rem)] max-w-[90rem] content-center items-center gap-x-10 gap-y-4 py-10 wide:grid-cols-[42fr_58fr] wide:py-16"
     >
-      {/* @container: the heading is sized from this column's width (cqi), so the two authored lines
-          never break word-by-word inside the 42% column. "The available evidence." is ~10.3em wide. */}
-      {/* Narrow screens: reserved area for the car above the copy (narrow composition anchor y = 0.3). */}
-      <div aria-hidden="true" className="h-[20svh] lg:hidden" />
-      <IllustrativeLabel className="-mt-6 justify-self-center lg:hidden" />
-      {/* Opaque on narrow screens so light text never scrolls over the silver bodywork. */}
-      <div className="@container bg-graphite lg:bg-transparent">
+      {/* Narrow layouts: the stage above the copy (height follows the small viewport, within limits). */}
+      <div aria-hidden="true" data-scene-stage className="h-[clamp(9rem,30svh,20rem)] wide:hidden" />
+      <IllustrativeLabel className="-mt-2 justify-self-center wide:hidden" />
+      {/* Opaque on narrow layouts so light text never scrolls over the silver bodywork. */}
+      <div className="rr-hero-copy @container bg-graphite wide:bg-transparent">
+        {/* Sized from this column (cqi) so the two authored lines never break word by word; at extreme
+            text zoom, overflow-wrap lets a long word break instead of overflowing the column. */}
         <h1
           id="hero-title"
-          className="text-[clamp(2.25rem,9.4cqi,7rem)] font-medium leading-[1.04] tracking-[-0.03em] text-ink"
+          className="text-[clamp(2.25rem,9.4cqi,7rem)] font-medium leading-[1.04] tracking-[-0.03em] text-ink [overflow-wrap:anywhere]"
         >
           {HERO.titleLines.map((line) => (
             <span key={line} className="block">
@@ -39,7 +40,7 @@ export function Hero() {
           ))}
         </h1>
         <p className="mt-6 max-w-md text-lg leading-relaxed text-muted sm:text-xl">{HERO.lede}</p>
-        <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4">
+        <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 wide:mt-10">
           <SmartLink
             to={DESTINATIONS.vehicleSearch}
             className="inline-flex min-h-12 items-center rounded-md bg-cobalt-strong px-6 text-base font-medium text-ink transition-colors hover:bg-cobalt-strong/85"
@@ -55,7 +56,12 @@ export function Hero() {
           </a>
         </div>
       </div>
-      <div className="relative hidden aspect-[16/10] w-full lg:block">
+      {/* Wide layouts: the stage is the right column. On short screens (≤ 500 px tall) the copy column can
+          be taller than the viewport, so the stage aligns to the top instead of the row centre. */}
+      <div
+        data-scene-stage
+        className="relative hidden aspect-[16/10] max-h-[70svh] w-full wide:block [@media(max-height:500px)]:self-start"
+      >
         <IllustrativeLabel className="absolute -bottom-4 left-1/2 -translate-x-1/2" />
       </div>
     </section>

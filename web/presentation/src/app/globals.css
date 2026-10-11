@@ -7,6 +7,50 @@
                                                              filled buttons use the deeper blue) */
 @import "tailwindcss";
 
+/* Content-based layout switch for the hero (and anything that must follow it): side-by-side copy and
+   vehicle stage once there is room — 1024 px wide, or a landscape-shaped viewport at least 560 px wide
+   (landscape phones, short laptops), or a foldable reporting two horizontal segments. Pixel values on
+   purpose: they match the scene's measured-stage framing regardless of the text-size setting. */
+/* Block form on purpose: the one-line form with a comma-separated media list compiled to the first
+   query only (verified in the build output), dropping the landscape and foldable conditions. */
+@custom-variant wide {
+  @media (min-width: 1024px) {
+    @slot;
+  }
+  @media (min-aspect-ratio: 27/20) and (min-width: 560px) {
+    @slot;
+  }
+  @media (horizontal-viewport-segments: 2) {
+    @slot;
+  }
+}
+
+/* Side gutters that also clear display cutouts (viewport-fit=cover is set in layout.tsx). */
+@utility safe-px {
+  padding-left: max(1.25rem, env(safe-area-inset-left));
+  padding-right: max(1.25rem, env(safe-area-inset-right));
+  @media (min-width: 640px) {
+    padding-left: max(2rem, env(safe-area-inset-left));
+    padding-right: max(2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Foldables with a vertical hinge: one column per screen segment, the hinge as the gap, so the copy and
+   its actions stay entirely on the left segment and the vehicle stage on the right. */
+@media (horizontal-viewport-segments: 2) {
+  .rr-hero-grid {
+    max-width: none;
+    padding-left: 0;
+    padding-right: 0;
+    grid-template-columns: env(viewport-segment-width 0 0) env(viewport-segment-width 1 0);
+    column-gap: calc(env(viewport-segment-left 1 0) - env(viewport-segment-right 0 0));
+  }
+  .rr-hero-copy {
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    padding-right: 1.25rem;
+  }
+}
+
 @theme {
   --color-graphite: #111315;
   --color-surface: #1c2024;

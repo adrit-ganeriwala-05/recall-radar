@@ -10,7 +10,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 export default function ObservatoryPage() {
   return (
     <PresentationRoot scene={<SceneLayerLoader />} header={<SiteHeader />}>
-      <main>
+      <main id="main" tabIndex={-1} className="outline-none">
         <Hero />
         <HowItWorks />
       </main>

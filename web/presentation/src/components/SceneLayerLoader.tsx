@@ -5,6 +5,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { SceneFrame } from "./SceneFrame";
+import { useSceneStage } from "@/scene/stage";
 import { StaticVehicleFallback } from "./StaticVehicleFallback";
 
 const SceneLayer = dynamic(() => import("@/scene/SceneLayer"), { ssr: false, loading: () => null });
@@ -12,10 +13,9 @@ const SceneLayer = dynamic(() => import("@/scene/SceneLayer"), { ssr: false, loa
 function hasWebGL(): boolean {
   try {
     const canvas = document.createElement("canvas");
-    const gl = canvas.getContext("webgl2") ?? canvas.getContext("webgl");
-    if (!gl) return false;
-    gl.getExtension("WEBGL_lose_context")?.loseContext(); // release the probe context immediately
-    return true;
+    // The probe context is left to garbage collection: forcing loseContext() makes Firefox log
+    // "WebGL context was lost", and one short-lived extra context is far below browser limits.
+    return Boolean(canvas.getContext("webgl2") ?? canvas.getContext("webgl"));
   } catch {
     return false;
   }
@@ -23,6 +23,7 @@ function hasWebGL(): boolean {
 
 export function SceneLayerLoader() {
   const [support, setSupport] = useState<"unknown" | "webgl" | "none">("unknown");
+  const stage = useSceneStage();
 
   useEffect(() => {
     setSupport(hasWebGL() ? "webgl" : "none");
@@ -31,8 +32,8 @@ export function SceneLayerLoader() {
   if (support === "unknown") return null;
   if (support === "none") {
     return (
-      <SceneFrame state="fallback">
-        <StaticVehicleFallback reason="WebGL is not available in this browser" />
+      <SceneFrame state="fallback" stage={stage}>
+        <StaticVehicleFallback reason="WebGL is not available in this browser" stage={stage} />
       </SceneFrame>
     );
   }

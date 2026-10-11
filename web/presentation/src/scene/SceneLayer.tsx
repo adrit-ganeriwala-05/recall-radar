@@ -11,12 +11,16 @@ import { SceneFrame } from "@/components/SceneFrame";
 import { StaticVehicleFallback } from "@/components/StaticVehicleFallback";
 import { CHAPTERS, DEFAULT_MODEL_RADIUS, createMotionState, type ChapterId } from "./motionState";
 import { detectQuality } from "./quality";
-import { SceneController } from "./SceneController";
+import { stageFraming, useSceneStage } from "./stage";
+import { SceneController, type CarBox } from "./SceneController";
 import { SceneErrorBoundary } from "./SceneErrorBoundary";
 import { StudioLighting } from "./StudioLighting";
 import { VehicleModel } from "./VehicleModel";
 
 type Status = "loading" | "ready" | { failed: string };
+
+/** A model that has not arrived by then is treated as failed: show the static illustration instead. */
+export const MODEL_LOAD_TIMEOUT_MS = 45_000;
 
 type Invalidate = () => void;
 
@@ -40,6 +44,13 @@ export default function SceneLayer() {
   const quality = useMemo(detectQuality, []);
   const invalidateRef = useRef<Invalidate | null>(null);
   const radiusRef = useRef(DEFAULT_MODEL_RADIUS);
+  const stage = useSceneStage();
+  // Published as data-car-box on the frame (no React state): lets tests verify the car never covers copy.
+  const publishBox = useCallback((box: CarBox) => {
+    const frame = document.querySelector<HTMLElement>("[data-scene-state]");
+    frame?.setAttribute("data-car-box", [box.x, box.y, box.width, box.height].map((v) => Math.round(v)).join(","));
+    frame?.setAttribute("data-car-viewport", box.viewport);
+  }, []);
   const [status, setStatus] = useState<Status>("loading");
   // First reason wins: unmounting the canvas after a model error destroys its context on purpose,
   // which would otherwise overwrite the real reason with "context lost".
@@ -49,6 +60,18 @@ export default function SceneLayer() {
     invalidateRef.current?.();
     setStatus((s) => (s === "loading" ? "ready" : s));
   }, []);
+
+  // The measured stage is the single source of the hero framing (written here, read by SceneController).
+  useEffect(() => {
+    motion.stage = stage ? stageFraming(stage) : null;
+    invalidateRef.current?.();
+  }, [motion, stage]);
+
+  useEffect(() => {
+    if (status !== "loading") return;
+    const timer = window.setTimeout(() => fail("the 3D model took too long to load"), MODEL_LOAD_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, [status, fail]);
 
   // Reduced motion (live), mouse-only pointer influence, and a frame when the tab becomes visible.
   useEffect(() => {
@@ -97,22 +120,22 @@ export default function SceneLayer() {
 
   if (typeof status === "object") {
     return (
-      <SceneFrame state="fallback">
-        <StaticVehicleFallback reason={status.failed} />
+      <SceneFrame state="fallback" stage={stage}>
+        <StaticVehicleFallback reason={status.failed} stage={stage} />
       </SceneFrame>
     );
   }
 
   return (
-    <SceneFrame state={status}>
+    <SceneFrame state={status} stage={stage}>
       <SceneErrorBoundary
-        fallback={<StaticVehicleFallback reason="the 3D model could not be loaded" />}
+        fallback={<StaticVehicleFallback reason="the 3D model could not be loaded" stage={stage} />}
         onError={() => fail("the 3D model could not be loaded")}
       >
         <Canvas
           frameloop="demand"
           dpr={quality.dpr}
-          gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+          gl={{ antialias: quality.antialias, alpha: true, powerPreference: "high-performance" }}
           camera={{ fov: 30, near: 0.1, far: 100, position: [4.6, 1.55, 5.9] }}
           className={`transition-opacity duration-500 motion-reduce:transition-none ${status === "ready" ? "opacity-100" : "opacity-0"}`}
           onCreated={({ gl }) => {
@@ -129,7 +152,7 @@ export default function SceneLayer() {
         >
           <InvalidateBridge target={invalidateRef} />
           <StudioLighting />
-          <SceneController motion={motion} radius={radiusRef}>
+          <SceneController motion={motion} radius={radiusRef} onSettled={publishBox}>
             <Suspense fallback={null}>
               <VehicleModel transmission={quality.transmission} onReady={ready} />
             </Suspense>

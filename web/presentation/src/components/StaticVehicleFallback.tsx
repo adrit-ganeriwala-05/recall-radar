@@ -1,14 +1,24 @@
 // Owner: C. Static illustrative vehicle used when the 3D scene cannot run (no WebGL, model failed to
-// load, graphics context lost). Authored inline SVG of a generic hatchback silhouette, nose toward
-// screen-left like the 3D composition. It is the fallback, not the finished 3D experience; the
-// caption says so. Positioned where the 3D car would sit (right column wide, above the copy narrow).
+// load or timed out, graphics context lost). Authored inline SVG of a generic car silhouette, nose
+// toward screen-left like the 3D composition, drawn inside the measured hero stage. It is the
+// fallback, not the finished 3D experience; the caption says so.
+import type { Stage } from "@/scene/stage";
 
-type Props = { reason: string };
+type Props = { reason: string; stage: Stage | null };
 
-export function StaticVehicleFallback({ reason }: Props) {
+export function StaticVehicleFallback({ reason, stage }: Props) {
+  if (!stage) return null;
   return (
-    <div className="absolute inset-x-[7%] top-[13%] lg:inset-x-auto lg:left-[44%] lg:right-[3%] lg:top-[34%]">
-      <svg viewBox="0 0 640 240" className="w-full" role="presentation" style={{ transform: "scaleX(-1)" }}>
+    <div
+      className="absolute flex flex-col items-center justify-center"
+      style={{ left: stage.left, top: stage.top, width: stage.width, height: stage.height }}
+    >
+      <svg
+        viewBox="0 0 640 240"
+        className="h-auto max-h-[78%] w-[92%]"
+        role="presentation"
+        style={{ transform: "scaleX(-1)" }}
+      >
         <defs>
           <linearGradient id="rr-pearl" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#eceae5" />
@@ -36,7 +46,7 @@ export function StaticVehicleFallback({ reason }: Props) {
           </g>
         ))}
       </svg>
-      <p className="mt-3 text-center text-xs text-muted">Static illustration — 3D view unavailable ({reason})</p>
+      <p className="mt-1 px-2 text-center text-xs text-muted">Static illustration — 3D view unavailable ({reason})</p>
     </div>
   );
 }

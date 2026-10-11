@@ -5,8 +5,9 @@
 // clamped additive yaw/pitch on the model group; it never moves the camera. Nothing else writes these.
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef, type ReactNode } from "react";
-import { MathUtils, PerspectiveCamera, Vector3, type Group } from "three";
-import { compositionFor, fitDistance, type MotionState } from "./motionState";
+import { Box3, MathUtils, PerspectiveCamera, Vector3, type Group } from "three";
+import { activeComposition, fitDistance, type MotionState } from "./motionState";
+import { VEHICLE_NODE } from "./VehicleModel";
 
 const DAMPING = 3.2; // per second; higher = snappier
 const POINTER_YAW = 0.07; // radians at the viewport edge
@@ -15,14 +16,19 @@ const SETTLED = 1e-4;
 
 type Framing = { pos: Vector3; target: Vector3; fov: number; ax: number; ay: number; yaw: number; pitch: number };
 
+/** Screen-space box of the car in CSS pixels (published when motion settles; used by tests). */
+export type CarBox = { x: number; y: number; width: number; height: number; viewport: string };
+
 type Props = {
   motion: MotionState;
+  /** Called once each time the framing settles, with the car's projected screen box. */
+  onSettled?: (box: CarBox) => void;
   /** Measured bounding-sphere radius of the normalized model (see VehicleModel). */
   radius: { current: number };
   children: ReactNode;
 };
 
-export function SceneController({ motion, radius, children }: Props) {
+export function SceneController({ motion, radius, onSettled, children }: Props) {
   const camera = useThree((s) => s.camera) as PerspectiveCamera;
   const size = useThree((s) => s.size);
   const invalidate = useThree((s) => s.invalidate);
@@ -30,16 +36,31 @@ export function SceneController({ motion, radius, children }: Props) {
   const current = useRef<Framing | null>(null);
   const goalPos = useRef(new Vector3());
   const goalTarget = useRef(new Vector3());
+  const settled = useRef(false);
+  const lastGoal = useRef("");
+  const settledOnce = useRef(false);
+  const box = useRef(new Box3());
+  const corner = useRef(new Vector3());
 
   useFrame((_, delta) => {
-    const comp = compositionFor(motion.chapter, size.width);
+    const comp = activeComposition(motion, size.width);
     goalTarget.current.set(...comp.target);
     // Camera = target + direction * distance, with the distance solved from the measured model size.
     const distance = fitDistance(radius.current, comp.fill, comp.fov, size.width / Math.max(1, size.height));
     goalPos.current.set(...comp.direction).normalize().multiplyScalar(distance).add(goalTarget.current);
-    const still = motion.reducedMotion;
+    // Snap (no easing) until the first settled framing: before that the car is not visible yet (it fades
+    // in), so easing from the default framing to the measured stage would only cost frames on slow devices.
+    const still = motion.reducedMotion || !settledOnce.current;
     const yawGoal = comp.yaw + (still ? 0 : motion.pointer.x * POINTER_YAW);
     const pitchGoal = still ? 0 : motion.pointer.y * POINTER_PITCH;
+
+    // A new goal (composition, stage, viewport) needs a new settle report even if it is reached in a
+    // single frame (reduced motion snaps), so the published box is never stale.
+    const goalKey = `${goalPos.current.toArray().map((v) => v.toFixed(3))}|${comp.anchor.x.toFixed(4)},${comp.anchor.y.toFixed(4)}|${yawGoal.toFixed(3)}|${size.width}x${size.height}`;
+    if (goalKey !== lastGoal.current) {
+      lastGoal.current = goalKey;
+      settled.current = false;
+    }
 
     let cur = current.current;
     if (!cur) {
@@ -89,7 +110,31 @@ export function SceneController({ motion, radius, children }: Props) {
       Math.abs(cur.yaw - yawGoal) +
       Math.abs(cur.pitch - pitchGoal);
     // Keep rendering while damping is still moving things; stop when settled or when the tab is hidden.
-    if (residual > SETTLED && !document.hidden) invalidate();
+    if (residual > SETTLED) {
+      settled.current = false;
+      if (!document.hidden) invalidate();
+    } else if (!settled.current && model.current && onSettled) {
+      // Project the model's world box once per settle (not per frame) and report it.
+      settled.current = true;
+      if (model.current.getObjectByName(VEHICLE_NODE)) settledOnce.current = true;
+      model.current.updateWorldMatrix(true, true);
+      // The vehicle only: the contact-shadow plane in the same group is much larger than the car.
+      const vehicle = model.current.getObjectByName(VEHICLE_NODE);
+      box.current.makeEmpty();
+      if (vehicle) box.current.setFromObject(vehicle);
+      if (!box.current.isEmpty()) {
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        for (let i = 0; i < 8; i++) {
+          corner.current
+            .set(i & 1 ? box.current.max.x : box.current.min.x, i & 2 ? box.current.max.y : box.current.min.y, i & 4 ? box.current.max.z : box.current.min.z)
+            .project(camera);
+          const sx = ((corner.current.x + 1) / 2) * size.width;
+          const sy = ((1 - corner.current.y) / 2) * size.height;
+          minX = Math.min(minX, sx); maxX = Math.max(maxX, sx); minY = Math.min(minY, sy); maxY = Math.max(maxY, sy);
+        }
+        onSettled({ x: minX, y: minY, width: maxX - minX, height: maxY - minY, viewport: `${size.width}x${size.height}` });
+      }
+    }
   });
 
   return <group ref={model}>{children}</group>;

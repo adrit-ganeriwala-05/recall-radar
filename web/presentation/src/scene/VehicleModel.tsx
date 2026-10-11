@@ -12,6 +12,9 @@ import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.j
 
 export const MODEL_URL = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/models/car-concept-pearl.glb`;
 
+/** Name of the vehicle's root group (SceneController measures the car alone, not its shadow plane). */
+export const VEHICLE_NODE = "rr-vehicle";
+
 /** Normalized car length in scene units; COMPOSITIONS in motionState.ts are authored for this. */
 export const TARGET_LENGTH = 4;
 
@@ -109,7 +112,7 @@ export function VehicleModel({ transmission, onReady }: Props) {
   // The cached scene is shared with useLoader's cache: R3F does not dispose <primitive> objects,
   // so unmount/remount (Strict Mode, route changes) reuses it safely.
   return (
-    <group scale={scale}>
+    <group name={VEHICLE_NODE} scale={scale}>
       <group position={offset}>
         <primitive object={gltf.scene} />
       </group>

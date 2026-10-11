@@ -7,7 +7,9 @@
     "dev": "next dev --port 3100",
     "build": "next build",
     "typecheck": "next typegen && tsc --noEmit",
-    "check": "node scripts/check-copy.mjs"
+    "check": "node scripts/check-copy.mjs",
+    "e2e": "playwright test",
+    "serve": "node scripts/serve-static.mjs"
   },
   "dependencies": {
     "@react-three/drei": "10.7.9",
@@ -19,6 +21,8 @@
     "three": "0.186.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.64.0",
     "@tailwindcss/postcss": "4.3.3",
     "@types/node": "24.19.0",
     "@types/react": "19.3.0",

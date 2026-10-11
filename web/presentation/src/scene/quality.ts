@@ -10,11 +10,13 @@ export type QualitySettings = {
   shadowResolution: number;
   /** Keep KHR_materials_transmission glass (costs one extra scene render per frame). */
   transmission: boolean;
+  /** MSAA on the default framebuffer. */
+  antialias: boolean;
 };
 
 const SETTINGS: Record<QualityTier, QualitySettings> = {
-  high: { tier: "high", dpr: [1, 1.75], shadowResolution: 1024, transmission: true },
-  low: { tier: "low", dpr: [1, 1.25], shadowResolution: 512, transmission: false },
+  high: { tier: "high", dpr: [1, 1.75], shadowResolution: 1024, transmission: true, antialias: true },
+  low: { tier: "low", dpr: [1, 1.25], shadowResolution: 512, transmission: false, antialias: false },
 };
 
 export function detectQuality(): QualitySettings {

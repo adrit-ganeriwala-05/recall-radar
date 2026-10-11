@@ -12,14 +12,16 @@ export function HowItWorks() {
       className="relative bg-graphite"
     >
       {/* Opaque sheet: until Phase 4 choreographs the car, later sections cover the fixed scene. */}
-      <div className="mx-auto max-w-[90rem] border-t border-line px-5 py-24 sm:px-8">
+      <div className="safe-px mx-auto max-w-[90rem] border-t border-line py-16 sm:py-24">
       <h2 id="how-title" className="text-4xl font-medium tracking-[-0.02em] sm:text-5xl">
         {HOW_IT_WORKS.title}
       </h2>
       <p className="mt-6 max-w-3xl text-lg leading-relaxed text-muted">{PROMISE}</p>
-      <ol className="mt-12 grid gap-6 md:grid-cols-3">
+      {/* grid-cols-1 = minmax(0, 1fr): the track may shrink below the cards' min-content width, so large
+          text sizes wrap inside the cards instead of pushing the page sideways. */}
+      <ol className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
         {HOW_IT_WORKS.steps.map((step, i) => (
-          <li key={step.title} className="rounded-xl border border-line bg-surface p-6">
+          <li key={step.title} className="min-w-0 rounded-xl border border-line bg-surface p-5 [overflow-wrap:anywhere] sm:p-6">
             <p className="text-sm font-medium text-cobalt">Step {i + 1}</p>
             <h3 className="mt-2 text-xl font-medium">{step.title}</h3>
             <p className="mt-3 leading-relaxed text-muted">{step.body}</p>

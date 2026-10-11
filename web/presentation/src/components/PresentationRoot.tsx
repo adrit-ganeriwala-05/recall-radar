@@ -20,7 +20,9 @@ export function PresentationRoot({ scene, header, children }: Props) {
     <div className="relative isolate min-h-dvh bg-graphite text-ink">
       {scene}
       {header}
-      <div className="relative z-10">{children}</div>
+      <div data-interface-layer className="relative z-10">
+        {children}
+      </div>
     </div>
   );
 }

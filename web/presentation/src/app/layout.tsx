@@ -14,6 +14,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: "#111315",
   colorScheme: "dark",
+  // Edge-to-edge on devices with display cutouts; gutters use env(safe-area-inset-*) (globals.css).
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

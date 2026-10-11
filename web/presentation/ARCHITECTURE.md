@@ -139,3 +139,21 @@ npm --prefix web/presentation run build      # static export to web/presentation
 npm --prefix web/presentation run dev        # http://localhost:3100/observatory/
 # product links in dev: NEXT_PUBLIC_RR_APP_ORIGIN=http://127.0.0.1:5173 npm --prefix web/presentation run dev
 ```
+
+## 9. Verification (Phases 1–2 audit, 2026-10-11)
+Run: `npm run build && npm run e2e` (Playwright starts `scripts/serve-static.mjs`, a stand-in for the
+Caddy routing). Specs in `e2e/`: `responsive` (20-viewport matrix: overflow, layout mode, clipping,
+44 px targets, car framing vs copy), `resize` (continuous sweep, ±1 px breakpoint pairs, orientation,
+foldable transitions, emulated vertical hinge), `scene` (canvas pass-through for pointer/wheel/touch/
+selection/links, slow/404/corrupt/hung model, no WebGL, context loss, reduced motion, resize while
+easing, leave/return cleanup with listener counts), `a11y` (axe WCAG 2.0/2.1/2.2 A+AA, keyboard order
+and focus visibility, skip link, headings, 200%/400% zoom reflow, 200% text size), `browsers`
+(Chromium/Firefox/WebKit smoke). `scripts/perf-profile.mjs` records the throttled profile.
+The scene publishes `data-car-box` / `data-car-viewport` on the frame (computed once per settle) so
+tests can check that the car never covers the copy.
+
+Known issues (open): a one-off main-thread task of ~0.4 s (4× throttled) to ~0.6 s (desktop) while the
+model is parsed and shaders compile; after a live layout switch the first frame can still use the
+previous stage (corrected on the next frame); `@react-three/fiber` 9.8.1 logs a THREE.Clock deprecation
+notice; on slow networks the 3D car arrives late (page fully usable meanwhile); the bare
+`/observatory/` URL still needs the release-time redirect decision (§3).
