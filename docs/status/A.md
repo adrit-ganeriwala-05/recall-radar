@@ -4,23 +4,24 @@ Restart memory for session rr-A. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-11 01:30 ET (PRD v2 build)
-- Branch / HEAD: v2 PRs #26 #28 #30 #31 #34 (a/replay-fallback, a/f1-recall, a/f78-api, a/f6-vin, a/f9-messaging); contract #25 merged
-- Last origin/main merged: 2d3b0a1 (PR #15 A9 names, live)
+- Updated: 2026-10-11 01:55 ET (PRD v2 build)
+- Branch / HEAD: a/f3-ondemand (F3 links on on-demand replays); #25 #26 #28 #30 #31 #34 merged (train #39 → main faa12f9)
+- Last origin/main merged: b8960cd (train #39 + #36)
 - Contract version: 1.1.0 (PR #25, main ba839ba)
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a (main config.yaml) / LDATE_PLUS_7 (decided A3)
-- Mode: building (cutoff 03:45); waiting on D's merge windows 01:45 / 02:30 / 03:15
+- Mode: building (cutoff 03:45); next windows 02:30 / 03:15; Gate B 03:45–04:20
 
 ## PRD v2 (2026-10-11) — statuses use PRD §9 words; none is `verified` until Gate B
 | Feature | A's part | PR | Status | Evidence |
 | --- | --- | --- | --- | --- |
 | Gate A | test-real, verify-snapshot, data+api tests at 45fd5ac | #23 | done | 3/5/4 passed; snapshot ok; 174 passed → baseline-v1 |
 | C1.1 | contract 1.1.0 | #25 | merged (ba839ba) | 364 py tests; exports untouched; B + C acks |
-| F1 | recall_radar_v2.duckdb + /api/vehicle cards | #28 | implemented-unverified | 93,362 cards; 17/17 protected identical; b_v2.protect IDENTICAL; B's own parse agrees |
-| F6 | VIN identify + handoff | #31 | implemented-unverified | 17 tests; vPIC CORS verified from a page; in-app status blocked(no documented authorized interface) |
-| F7/F8 | /api/symptom-index, /api/report | #30 | implemented-unverified | 25 vehicles report = /api/vehicle; ≤ 0.25 MB gzip |
-| F9 | messaging service | #34 | disabled (mock-verified; Gate P pending) | 29 tests; router=keywords; documents=fallback(link) |
-| extra | replay fallback (B 2306) | #26 | implemented-unverified | 21/21 byte-identical; 40 random 200 |
+| F1 | recall_radar_v2.duckdb + /api/vehicle cards | #28 merged | implemented-unverified | 93,362 cards; 17/17 protected identical; b_v2.protect IDENTICAL; B's own parse agrees |
+| F6 | VIN identify + handoff | #31 merged | implemented-unverified | 17 tests; vPIC CORS verified from a page; in-app status blocked(no documented authorized interface) |
+| F7/F8 | /api/symptom-index, /api/report | #30 merged | implemented-unverified | 25 vehicles report = /api/vehicle; ≤ 0.25 MB gzip |
+| F9 | messaging service | #34 merged | disabled (mock-verified; Gate P pending) | 29 tests; router=keywords; documents=fallback(link) |
+| extra | replay fallback (B 2306) | #26 merged | implemented-unverified | 21/21 byte-identical; 40 random 200 |
+| F3 | on-demand replays get B's recall links (B's #38 follow-up) | a/f3-ondemand | implemented-unverified | v2 DB: 60 random on-demand → 200, non-recall content = builder 60/60, 14 issue + 407 vehicle links, median 0.23 s; 21 exported = file; real test asserts campno+link (v2 + baseline DB); make check exit 0 (541 passed) |
 
 ## Done (task id → commit → evidence)
 - rc1 blocker (B): mixed-case titled names → `_HONORIFIC` case-insensitive title + capitalised name words (B's pattern), 6 sentence-case tests; full scan 346 → 0 (0 served), 388 texts change
