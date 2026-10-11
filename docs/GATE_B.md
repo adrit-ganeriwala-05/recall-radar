@@ -9,7 +9,7 @@ recorded inspection at the Gate B SHA + deployed `/healthz` = that SHA + a deplo
 | Gate B SHA | **`b963d647e66d48821507739fa7ba6b840fa0a20d`** (main after #54) — tag **`rc2`** |
 | Deployed | https://recall-radar.us, `/healthz` git_sha = b963d64, mode cached, snapshot e808281f001a; previous release = baseline-v1 (rollback target) |
 | v2 DB | `recall_radar_v2.duckdb`, sha256 **`a0bdcbbbb1a665a1ae2a6e5013f3da2e31f93d5294284ca297ddc5809b322497`** (verified on the VM) |
-| How built | A's v2 file c3a40246… (built from serving DB 5d708042…; 17/17 baseline tables identical) with only `recall_explanation` replaced by D's F2 run after `recall_explain --finalize --verdicts review/explanation_verdicts.csv` (at b963d64) |
+| How built | B's v2 build c3a40246… (made by B from serving DB 5d708042… with main's builder, handed over 02:26; 17/17 baseline tables identical; A's equivalent build is 9c248297…) with only `recall_explanation` replaced by D's F2 run after `recall_explain --finalize --verdicts review/explanation_verdicts.csv` (at b963d64) |
 | Pin | release `.deploy.env`: `RR_DB_FILE=recall_radar_v2.duckdb`; baseline file stays beside it |
 
 ## Checks at b963d64 + a0bdcbbb

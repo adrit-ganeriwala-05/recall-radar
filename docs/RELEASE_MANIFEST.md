@@ -22,9 +22,9 @@ on each PR (not independent).
 
 | Item | Value |
 | --- | --- |
-| Production SHA | fd6323ab137340328fa3662889bd0362c60059ec (deployed 04:56 ET; `/healthz` git_sha matches) |
+| Production SHA | da1324b186dee27cc6f562d3c91c4eb3dfa891a5 (deployed about 06:26 ET; `/healthz` git_sha matches; live integration 21 passed; messaging health disabled PASS; VIN 1FTFW1RG4KFA00412 → 2019 FORD F-150 page in a real browser) |
 | DB served | unchanged: recall_radar_v2.duckdb a0bdcbbb… · snapshot e808281f001a |
-| Since rc2 | #58 echo guard (rc3 dfe9caf) · #59 dedupe per message id (c3baf25) · #60 Gemini brain · #61 monitor job · #62 monitor timer + Gate P outbound · #63 F6 partial-decode confirm (pending merge/deploy) |
+| Since rc2 | #58 echo guard · #59 dedupe per message id · #60 Gemini brain · #61 monitor job · #62 monitor timer + Gate P outbound (#58–#62 self-reviewed, not independent) · train #67 = #66 DELETE leaves no handle, #64 model-name digits, #63 F6 partial-decode confirm, #56, #57, #65 (each reviewed by B at its exact head) |
 | Messaging | Gate P window only (`gatep.sh on`, guarded: auto-off at the window end, kill on > 6 replies to one route in 60 s). Off = RR_MESSAGING_ENABLED=0, sidecar + monitor timer stopped, messaging loopback-only |
 | Gemini (chat) | `RR_GEMINI_MODEL=gemini-3.1-flash-lite`, free tier (not zero data retention); off with `RR_BRAIN=0` |
-| Rollback | `bash deploy/rollback.sh` → previous release (c3baf25) |
+| Rollback | `bash deploy/rollback.sh` → previous release (fd6323a) |
