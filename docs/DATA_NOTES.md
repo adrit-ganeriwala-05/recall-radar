@@ -75,8 +75,19 @@ the more cautious basis, as B also suggested in the PR #4 review. Every screen t
   + one or two following words with [NAME], keeping common words and part names ("MRS CONTROL
   UNIT", "MR TIRE"). Stored texts keep the ingest redaction; what the site serves gets both.
   332 stored texts change. Re-scan of 1,004 served excerpts with the fix: 0 names flagged.
+- Mixed case (B's review of #15/#17): 141,602 stored texts are sentence case, and the first pattern was
+  uppercase-only, so "Ms. Jane Doe" passed. The title now matches in any case and name words need a
+  capital initial; common words are compared in uppercase. Full scan, title + period + capitalised
+  non-common word: 346 texts before, 0 after (0 in served excerpts); 388 texts change.
 - Known residual: "MS" without a period followed by a surname is not scrubbed, because "MS" is far
   more often Mississippi. Moving `scrub_names` into ingest is a post-hackathon change (needs a new
   freeze; the DB would be rebuilt).
+- Post-deploy re-scan (main 2d3b0a1 live): 1,007 served excerpts → 0 names; the found complaint shows [NAME].
+  It flagged a street address with a suffix the ingest rule lacks ("<number> AUTO PARK WAY", a dealer).
+  The rule knows STREET…HIGHWAY but not WAY, PIKE, LOOP, FREEWAY, EXPRESSWAY, TURNPIKE, PLAZA, SQUARE;
+  some matches are homes ("<number> <name> WAY"). `scrub_addresses` in the API adds them, with the
+  ingest rule's speed/distance exclusions, and skips phrases (a common word between number and
+  suffix: "2009 ALL THE WAY"). 1,871 stored texts change; a sample of 30 scrubbed spans is all
+  addresses or highway exits. Known miss: "<number> THE <name> WAY".
 - Displayed-vs-exported: `RR_RELEASE=1` integration against the live site and the browser field
   checks are recorded in docs/status/A.md.
