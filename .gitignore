@@ -1,7 +1,7 @@
 # Owner: D
 # data and generated outputs (never committed; see docs/OWNERSHIP.md)
-data/
-logs/
+/data/
+/logs/
 exports/*
 !exports/demo/
 exports/demo/*.duckdb
@@ -9,6 +9,9 @@ exports/demo/*.duckdb
 *.duckdb.wal
 *.parquet
 *.zip
+
+# filled submission copy (regenerate with `make submission`; never hand-edit numbers)
+submission/out/
 
 # secrets
 .env

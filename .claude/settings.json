@@ -52,7 +52,13 @@
       "Bash(uv add *)",
       "Bash(uv remove *)",
       "Bash(npm install *)",
-      "Bash(npm uninstall *)"
+      "Bash(npm uninstall *)",
+      "Bash(make deploy)",
+      "Bash(make vm-setup*)",
+      "Bash(make sync-data*)",
+      "Bash(make rollback*)",
+      "Bash(make outage-check*)",
+      "Bash(bash deploy/*)"
     ],
     "deny": [
       "Agent",
