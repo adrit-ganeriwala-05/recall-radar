@@ -45,9 +45,11 @@ time; excerpts are regex-redacted and shown truncated with a link to the public 
 No accounts, no tracking.
 
 **Can I reproduce it?** `make setup && make pipeline` on the snapshot recorded in
-`snapshots/SNAPSHOT.lock.json`; `make repro` compares the exports byte for byte (hash in Devpost).
+`snapshots/SNAPSHOT.lock.json`; `make repro` compares the result files (both period summaries, results.csv, cases.csv) byte for
+byte (hash in Devpost).
 
 **What's next?** Most held-out investigation families were excluded because their first action was an
-engineering analysis ([held_out.excluded_families.numerator] of
-[held_out.excluded_families.denominator]). The next test is at that level, with a new freeze and
+engineering analysis, almost all of them from a single analysis that names several hundred
+vehicle and system combinations ([held_out.excluded_families.numerator] of
+[held_out.excluded_families.denominator] families excluded for any reason). The next test is at that level, with a new freeze and
 a new held-out year.

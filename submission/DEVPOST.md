@@ -72,11 +72,12 @@ We asked a narrow question and answered it with rules fixed in advance: on the h
 simple complaint-growth detector did not raise alerts earlier for vehicles NHTSA later
 investigated than for comparable vehicles it never investigated. We report that as the result.
 Freezing the thresholds, the hero rule and the method code under a git tag before the held-out
-run is what makes the negative result trustworthy, and a clean clone reproduces every exported
-file byte for byte.
+run is what makes the negative result trustworthy, and a clean clone reproduces the result files
+(both period summaries, results.csv and cases.csv) byte for byte.
 Most held-out investigation families were excluded because their first action was an
-engineering analysis rather than a preliminary evaluation
-([held_out.excluded_families.numerator] of [held_out.excluded_families.denominator] excluded).
+engineering analysis, almost all of them from a single analysis that names several hundred
+vehicle and system combinations ([held_out.excluded_families.numerator] of
+[held_out.excluded_families.denominator] families excluded for any reason).
 Next: evaluate at the level of those engineering analyses, with a new freeze and a new held-out
 year, rather than tuning against this one.
 
