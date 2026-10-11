@@ -1,7 +1,9 @@
 """A4: the alias table merges punctuation/spacing variants only, and ingest applies it."""
 
 import csv
+import os
 import re
+from pathlib import Path
 
 import duckdb
 import pytest
@@ -52,7 +54,8 @@ def test_ingest_applies_alias_table(tmp_path, monkeypatch):
 
 @pytest.mark.real_data
 def test_real_alias_table_leaves_no_punctuation_variants():
-    con = duckdb.connect("data/recall_radar.duckdb", read_only=True)
+    # RR_DATA_DIR like every other real_data test (Gate A ran with a DB outside data/ and this one failed)
+    con = duckdb.connect(str(Path(os.environ.get("RR_DATA_DIR", "data")) / "recall_radar.duckdb"), read_only=True)
     n = con.execute("""SELECT count(*) FROM (SELECT make, regexp_replace(model, '[^A-Z0-9]', '', 'g') k
                        FROM complaint_doc GROUP BY 1, 2 HAVING count(DISTINCT model) > 1)""").fetchone()[0]
     con.close()
