@@ -30,7 +30,7 @@
 | F3.1 issue = family campaigns, vehicle = same make/model/year, never by component | `test_issue_links_come_from_the_family_and_vehicle_links_from_the_exact_vehicle`, `test_component_is_never_read`, `test_committed_replays_carry_link_kinds_on_recall_markers_only` |
 | F3.2 date = report date; no dated record → no marker | same first test (undated and missing campaigns); `test_replay_without_a_family_or_without_campaigns`; basis RCDATE recorded in METHOD_NOTES §12.2 |
 | F3.5 only replay markers change | `test_rewrite_changes_only_the_recall_markers_and_is_idempotent`, `test_apply_touches_replays_and_their_manifest_lines_only`, `test_apply_refuses_a_bundle_whose_results_do_not_match_the_manifest`, real: `test_real_bundle_keeps_frames_results_and_issue_markers`; `make protected` |
-| On-demand replays (not in the PRD, same rule) | A's `test_replay_built_from_the_database_gets_f3_recall_links` (PR #44); B's real-data check: 709 markers on 100 episodes, 0 rule violations |
+| On-demand replays (not in the PRD, same rule) | A's `test_replay_built_from_the_database_gets_f3_recall_links` (on main since the 03:15 train); real: A's `test_every_alert_episode_has_a_replay`; B's real-data check: 709 markers on 100 episodes, 0 rule violations |
 | Known data fact for the drawer | 66 of 81 issue-linked markers name a campaign that does not list the replay's own vehicle; C's drawer says so (PR #36) |
 
 ## F7 (B's part: index, rules, evaluation) — implemented; API is A's, UI is C's
