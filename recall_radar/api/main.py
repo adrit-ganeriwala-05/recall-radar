@@ -26,6 +26,7 @@ import io
 import json
 import math
 import os
+import re
 import subprocess
 import threading
 from collections.abc import AsyncIterator
@@ -124,8 +125,36 @@ def index_month(i: int) -> str:
     return f"{i // 12:04d}-{i % 12 + 1:02d}"
 
 
+# Stored texts were redacted at ingest (recall_radar/data/redact.py). A9 found people named after an
+# honorific ("MS. <FIRST> <LAST> OF <MAKER>") that the ingest rules do not cover. The data code is
+# under freeze-v1's pipeline inputs, so the extra rule runs here, on what the site serves.
+# MS and DR only with a period (without one: a state, "DR OFFICE"); MR and MRS also without one,
+# unless a part name follows ("MRS CONTROL UNIT", "MR TIRE" the shop).
+_HONORIFIC = re.compile(r"\b(?:(?:MR|MRS|MS|DR)\.|(?:MR|MRS)(?=\s))\s+([A-Z][A-Z'-]*)(?:\s+([A-Z][A-Z'-]*))?")
+_NOT_A_NAME = frozenset("""
+    A AN AND ARE AS AT BE BECAUSE BUT BY CALLED CAME CAR DID FOR FROM HAD HAS HAVE HE HER HIM HIS I
+    IF IN IS IT ITS ME MY NO NOT OF ON OR OUR OUT SAID SHE SO THAT THE THEIR THEM THEN THERE THEY THIS
+    TO TOLD US VEHICLE WAS WE WENT WERE WHEN WHERE WHICH WHILE WHO WITH WOULD YOU
+    BELT CONTROL MODULE SENSOR SYSTEM TIRE TRANSMISSION UNIT
+""".split())
+
+
+def _scrub_honorific(m: re.Match[str]) -> str:
+    first, second = m.group(1), m.group(2)
+    if first in _NOT_A_NAME:  # "...MAIN DR. AND THEN" is a street, not a person
+        return m.group(0)
+    if second is None or second in _NOT_A_NAME:
+        return "[NAME]" if second is None else f"[NAME] {second}"
+    return "[NAME]"
+
+
+def scrub_names(text: str) -> str:
+    """Replace an honorific + name (one or two words) with [NAME]; a following common word is kept."""
+    return _HONORIFIC.sub(_scrub_honorific, text)
+
+
 def excerpt(text: str | None) -> str:
-    text = " ".join((text or "").split())
+    text = scrub_names(" ".join((text or "").split()))
     if len(text) <= EXCERPT_CHARS:
         return text
     cut = text[: EXCERPT_CHARS - 1]

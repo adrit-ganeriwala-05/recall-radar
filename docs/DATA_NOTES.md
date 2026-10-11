@@ -64,3 +64,19 @@ the more cautious basis, as B also suggested in the PR #4 review. Every screen t
   0 of 658,675 stored texts flagged by either checker (`pytest -m real_data`).
 - Over-redaction is accepted: 10-digit numbers in any grouping (including part numbers like
   12345-67890) become [PHONE]; "<number> <words> <street suffix>" becomes [ADDRESS].
+
+## A9 (release check, 2026-10-10 22:30)
+- 1,004 excerpts fetched from the live site's `/api/issue` (http://64.177.53.230, main f324b00, real
+  data): 0 emails, phone numbers or VINs; every excerpt ≤ 400 characters. A name scan beyond the
+  ingest rules found a person named after an honorific (a manufacturer employee quoted from a
+  letter): "MS. <first> <last>". Across all 658,677 stored texts, 349 contain an honorific + word.
+- Fix at serving time, not at ingest: `recall_radar/data` is a pipeline input under freeze-v1, so
+  `recall_radar/api/main.py` `scrub_names` replaces MR./MRS./MS./DR. (and MR/MRS without a period)
+  + one or two following words with [NAME], keeping common words and part names ("MRS CONTROL
+  UNIT", "MR TIRE"). Stored texts keep the ingest redaction; what the site serves gets both.
+  332 stored texts change. Re-scan of 1,004 served excerpts with the fix: 0 names flagged.
+- Known residual: "MS" without a period followed by a surname is not scrubbed, because "MS" is far
+  more often Mississippi. Moving `scrub_names` into ingest is a post-hackathon change (needs a new
+  freeze; the DB would be rebuilt).
+- Displayed-vs-exported: `RR_RELEASE=1` integration against the live site and the browser field
+  checks are recorded in docs/status/A.md.
