@@ -4,16 +4,20 @@
 //     excludes logos and trademarks), then assert no image named Khronos remains;
 //  2. bake the "Pearly Swirly" KHR_materials_variants choice into the primitives, drop the variants;
 //  3. prune, dedup, quantize + meshopt-compress geometry (decoded by three's bundled MeshoptDecoder).
-// Usage (from a folder with @gltf-transform/core|extensions|functions@4 and meshoptimizer installed;
-// not a dependency of this app): node process-car-model.mjs <CarConcept.gltf> <out.glb>
+// Usage (from a folder with @gltf-transform/core|extensions|functions@4, meshoptimizer and sharp installed;
+// not a dependency of this app): node process-car-model.mjs <CarConcept.gltf> <out.glb> [ratio=0.5]
 import { NodeIO } from "@gltf-transform/core";
 import { ALL_EXTENSIONS, EXTMeshoptCompression, KHRMaterialsVariants } from "@gltf-transform/extensions";
-import { dedup, meshopt, prune, weld } from "@gltf-transform/functions";
-import { MeshoptDecoder, MeshoptEncoder } from "meshoptimizer";
+import { dedup, meshopt, prune, simplify, textureCompress, weld } from "@gltf-transform/functions";
+import { MeshoptDecoder, MeshoptEncoder, MeshoptSimplifier } from "meshoptimizer";
+import sharp from "sharp";
 
-const [input, output] = process.argv.slice(2);
+const [input, output, ratioArg] = process.argv.slice(2);
+// Simplification target (share of triangles kept where the error bound allows); 1 = off.
+const RATIO = Number(ratioArg ?? 0.5);
 await MeshoptDecoder.ready;
 await MeshoptEncoder.ready;
+await MeshoptSimplifier.ready;
 const io = new NodeIO()
   .registerExtensions(ALL_EXTENSIONS)
   .registerDependencies({ "meshopt.decoder": MeshoptDecoder, "meshopt.encoder": MeshoptEncoder });
@@ -65,8 +69,18 @@ for (const mesh of root.listMeshes()) {
 variantsExt.dispose();
 log(`baked Pearly Swirly on ${baked} primitives; variants extension removed`);
 
-// 3. clean + compress
+// 3. clean, simplify (error bound 0.05% of the mesh extent keeps silhouettes intact), compress
+const countTris = () => root.listMeshes().reduce((n, m) => n + m.listPrimitives().reduce((k, p) => k + (p.getIndices()?.getCount() ?? 0) / 3, 0), 0);
 await doc.transform(prune(), dedup(), weld());
+const before = countTris();
+if (RATIO < 1) await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio: RATIO, error: 0.0005 }), prune());
+log(`triangles: ${before} -> ${countTris()} (ratio target ${RATIO})`);
+// Halve the two oversized textures (on-screen the whole car is at most ~720 px wide): the 2048² baked
+// occlusion map and the 1024² tyre-sidewall normal map. WebP stays WebP.
+await doc.transform(
+  textureCompress({ encoder: sharp, targetFormat: "webp", pattern: /Occlusion/, resize: [1024, 1024], quality: 85 }),
+  textureCompress({ encoder: sharp, targetFormat: "webp", pattern: /Tireside_N/, resize: [512, 512], quality: 90 }),
+);
 const remaining = root.listTextures().map((t) => t.getURI() || t.getName());
 if (remaining.some((n) => /khronos/i.test(n))) throw new Error(`logo texture still present: ${remaining}`);
 log("textures kept:", remaining.join(", "));

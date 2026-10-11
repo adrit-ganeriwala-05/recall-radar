@@ -4,6 +4,7 @@ import { getMeta } from "./api/client";
 import { useApi } from "./api/useApi";
 import { ReceivedDateNote } from "./components/Provenance";
 import { DATA_LABEL_TEXT, dateText } from "./format";
+import ObservatoryRedirect from "./ObservatoryRedirect";
 import IssuePage from "./pages/IssuePage";
 import IssueForPage from "./pages/IssueForPage";
 import ReplayPage from "./pages/ReplayPage";
@@ -71,6 +72,7 @@ export default function App() {
           <Route path="/issue-for" element={<IssueForPage />} />
           <Route path="/replay/:episodeId" element={<ReplayPage />} />
           <Route path="/results" element={<ResultsPage />} />
+          <Route path="/observatory" element={<ObservatoryRedirect />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

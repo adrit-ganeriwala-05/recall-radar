@@ -11,7 +11,7 @@ import { SceneFrame } from "@/components/SceneFrame";
 import { StaticVehicleFallback } from "@/components/StaticVehicleFallback";
 import { CHAPTERS, DEFAULT_MODEL_RADIUS, createMotionState, type ChapterId } from "./motionState";
 import { detectQuality } from "./quality";
-import { stageFraming, useSceneStage } from "./stage";
+import { useSceneStage } from "./stage";
 import { SceneController, type CarBox } from "./SceneController";
 import { SceneErrorBoundary } from "./SceneErrorBoundary";
 import { StudioLighting } from "./StudioLighting";
@@ -61,9 +61,9 @@ export default function SceneLayer() {
     setStatus((s) => (s === "loading" ? "ready" : s));
   }, []);
 
-  // The measured stage is the single source of the hero framing (written here, read by SceneController).
+  // A layout change (fonts, content, resize) flags the stage; SceneController re-measures it in-frame.
   useEffect(() => {
-    motion.stage = stage ? stageFraming(stage) : null;
+    motion.stageDirty = true;
     invalidateRef.current?.();
   }, [motion, stage]);
 

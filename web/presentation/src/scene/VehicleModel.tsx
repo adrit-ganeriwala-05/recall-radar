@@ -4,8 +4,8 @@
 // (CC BY 4.0, Eric Chadwick / Darmstadt Graphics Group) — see public/models/ATTRIBUTION.md.
 // Loaded with three's own GLTFLoader (current support for clearcoat, iridescence, transmission) and
 // three's bundled meshopt decoder; no Draco, so no decoder is fetched from a CDN.
-import { useLoader } from "@react-three/fiber";
-import { useEffect } from "react";
+import { useLoader, useThree } from "@react-three/fiber";
+import { useEffect, useState } from "react";
 import { Box3, Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Sphere, Vector3, type Material, type Object3D } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
@@ -20,7 +20,14 @@ export const TARGET_LENGTH = 4;
 
 type Normalization = { scale: number; offset: [number, number, number]; radius: number };
 
+let decoderWorkersStarted = false;
+
 function configureLoader(loader: GLTFLoader) {
+  // Decode the meshopt-compressed geometry in two Web Workers instead of on the main thread.
+  if (!decoderWorkersStarted) {
+    MeshoptDecoder.useWorkers(2);
+    decoderWorkersStarted = true;
+  }
   loader.setMeshoptDecoder(MeshoptDecoder);
 }
 
@@ -101,13 +108,41 @@ type Props = { transmission: boolean; onReady: (radius: number) => void };
 
 export function VehicleModel({ transmission, onReady }: Props) {
   const gltf = useLoader(GLTFLoader, MODEL_URL, configureLoader);
+  const gl = useThree((s) => s.gl);
+  const camera = useThree((s) => s.camera);
+  const scene = useThree((s) => s.scene);
   const { scale, offset, radius } = normalization(gltf.scene);
   applyPearlSilver(gltf.scene);
   if (!transmission) simplifyGlass(gltf.scene);
 
+  // Compile every shader before the car enters the scene (KHR_parallel_shader_compile where available),
+  // compiled against the real scene so its environment map and lights match and the first render
+  // reuses the programs. Rendering an uncompiled scene blocked the main thread for ~0.4–0.6 s.
+  const [compiled, setCompiled] = useState<boolean>(gltf.scene.userData.rrCompiled === true);
   useEffect(() => {
-    onReady(radius);
-  }, [onReady, radius]);
+    if (compiled) return;
+    let alive = true;
+    const done = () => {
+      gltf.scene.userData.rrCompiled = true;
+      if (alive) setCompiled(true);
+    };
+    // Without KHR_parallel_shader_compile three.js compiles synchronously anyway and logs a warning, so
+    // the async step is used only where the GPU supports it; otherwise the car renders directly.
+    if (!gl.extensions.has("KHR_parallel_shader_compile")) {
+      done();
+      return;
+    }
+    gl.compileAsync(gltf.scene, camera, scene).then(done, done);
+    return () => {
+      alive = false;
+    };
+  }, [compiled, gl, camera, scene, gltf.scene]);
+
+  useEffect(() => {
+    if (compiled) onReady(radius);
+  }, [compiled, onReady, radius]);
+
+  if (!compiled) return null;
 
   // The cached scene is shared with useLoader's cache: R3F does not dispose <primitive> objects,
   // so unmount/remount (Strict Mode, route changes) reuses it safely.

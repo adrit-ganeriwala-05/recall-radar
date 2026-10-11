@@ -101,7 +101,7 @@ Destinations come only from `src/content/destinations.ts` (product routes that e
 `https://www.nhtsa.gov/recalls`). Feature claims follow `docs/LEDGER.md` statuses only.
 
 ## 7. 3D scene (Phase 2, implemented)
-- **Asset**: `public/models/car-concept-pearl.glb` (3,639,612 bytes), derived from Khronos glTF Sample
+- **Asset**: `public/models/car-concept-pearl.glb` (2,480,072 bytes; 123,118 triangles after simplification), derived from Khronos glTF Sample
   Assets "Car Concept" by Eric Chadwick, © Darmstadt Graphics Group GmbH, **CC BY 4.0**. Upstream licence
   excludes logos, so the licence plate and every use of the Khronos logo texture were removed (asserted
   by `tools/process-car-model.mjs`). Pearl variant baked, geometry meshopt-compressed; body paint retuned

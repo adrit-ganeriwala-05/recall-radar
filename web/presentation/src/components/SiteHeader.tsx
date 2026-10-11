@@ -36,7 +36,9 @@ export function SiteHeader() {
         </a>
         <nav aria-label="Presentation">
           <ul className="flex flex-wrap items-center gap-x-1 gap-y-0 sm:gap-x-3">
-            <li>
+            {/* Below 360 px "Explore" is dropped: it goes to the same place as "Open app", and keeping both
+                wrapped the header onto three rows. */}
+            <li className="hidden min-[360px]:block">
               <SmartLink to={DESTINATIONS.vehicleSearch} className={linkClass}>
                 {NAV.explore}
               </SmartLink>

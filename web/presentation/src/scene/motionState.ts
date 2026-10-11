@@ -35,6 +35,8 @@ export type MotionState = {
    * authored anchor/fill of the "intro" chapter so the car follows the real layout.
    */
   stage: { anchor: { x: number; y: number }; fill: number } | null;
+  /** Set when the DOM stage may have changed (fonts, layout); SceneController re-measures and clears it. */
+  stageDirty: boolean;
   /** -1..1 mouse position over the viewport; touch never writes it. */
   pointer: { x: number; y: number };
   reducedMotion: boolean;
@@ -103,5 +105,5 @@ export function fitDistance(radius: number, fill: number, fovDeg: number, aspect
 }
 
 export function createMotionState(): MotionState {
-  return { chapter: "intro", progress: 0, stage: null, pointer: { x: 0, y: 0 }, reducedMotion: false };
+  return { chapter: "intro", progress: 0, stage: null, stageDirty: true, pointer: { x: 0, y: 0 }, reducedMotion: false };
 }

@@ -7,6 +7,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useRef, type ReactNode } from "react";
 import { Box3, MathUtils, PerspectiveCamera, Vector3, type Group } from "three";
 import { activeComposition, fitDistance, type MotionState } from "./motionState";
+import { measureStage, stageFraming } from "./stage";
 import { VEHICLE_NODE } from "./VehicleModel";
 
 const DAMPING = 3.2; // per second; higher = snappier
@@ -39,10 +40,20 @@ export function SceneController({ motion, radius, onSettled, children }: Props) 
   const settled = useRef(false);
   const lastGoal = useRef("");
   const settledOnce = useRef(false);
+  const lastSize = useRef("");
   const box = useRef(new Box3());
   const corner = useRef(new Vector3());
 
   useFrame((_, delta) => {
+    // Single writer of motion.stage: re-measure the DOM stage in the same frame the canvas size changes
+    // (and when the layer flags a layout change), so the framing never uses the previous layout's stage.
+    const sizeKey = `${size.width}x${size.height}`;
+    if (sizeKey !== lastSize.current || motion.stageDirty) {
+      lastSize.current = sizeKey;
+      motion.stageDirty = false;
+      const measured = measureStage();
+      motion.stage = measured ? stageFraming(measured) : null;
+    }
     const comp = activeComposition(motion, size.width);
     goalTarget.current.set(...comp.target);
     // Camera = target + direction * distance, with the distance solved from the measured model size.
