@@ -72,6 +72,19 @@
         "grinding",
         "squeal",
         "noise"
+      ],
+      "require_all": [
+        [
+          "noise",
+          "grinding",
+          "squeal",
+          "squeak"
+        ]
+      ],
+      "exclude": [
+        "failed",
+        "no brakes",
+        "to the floor"
       ]
     },
     {
@@ -84,7 +97,16 @@
         "failed",
         "floor",
         "no brakes"
-      ]
+      ],
+      "require_all": [
+        [
+          "failed",
+          "floor",
+          "no brakes",
+          "would not stop"
+        ]
+      ],
+      "exclude": []
     },
     {
       "id": "steering_vibration",
@@ -96,7 +118,9 @@
         "shakes",
         "vibration",
         "shimmy"
-      ]
+      ],
+      "require_all": [],
+      "exclude": []
     }
   ]
 }

@@ -172,3 +172,14 @@ def test_report_data_rules() -> None:
         C.ReportData.model_validate({**rep, "total_campaigns": 0})
     with pytest.raises(ValidationError):  # at most 6 campaigns
         C.ReportData.model_validate({**rep, "campaigns": rep["campaigns"] * 3, "total_campaigns": 9})
+
+
+def test_review_change_requests_from_b() -> None:
+    # B on #25: undated investigations must not 500; concept groups keep F7.2 pairs apart
+    inv = {"action_no": "PE99001", "inv_type": "PE", "open_date": None, "subject": None, "link": "/vehicle"}
+    assert C.ReportInvestigation.model_validate(inv).open_date is None
+    old = {"id": "x", "label": "X", "comp_systems": ["STEERING"], "terms": ["shakes"]}
+    c = C.SymptomConcept.model_validate(old)
+    assert (c.require_all, c.exclude) == ([], [])
+    fixture = {k["id"]: k for k in load("symptom_index.json")["concepts"]}
+    assert "failed" in fixture["brake_noise"]["exclude"]

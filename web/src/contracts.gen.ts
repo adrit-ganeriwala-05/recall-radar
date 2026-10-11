@@ -427,7 +427,10 @@ export type Investigations =
   | [ReportInvestigation, ReportInvestigation, ReportInvestigation, ReportInvestigation, ReportInvestigation];
 export type ActionNo1 = string;
 export type Link1 = string;
-export type OpenDate = string;
+/**
+ * INV ODATE; null for the ~108 actions without one (listed last)
+ */
+export type OpenDate = string | null;
 export type Subject = string | null;
 export type SelectionRule = string;
 /**
@@ -460,8 +463,16 @@ export type VinLookupUrl = "https://www.nhtsa.gov/recalls";
 export type Concepts = [string, ...string[]];
 export type Phrase = string;
 export type CompSystems1 = string[];
+/**
+ * A doc containing any of these is not this concept
+ */
+export type Exclude = string[];
 export type Id = string;
 export type Label2 = string;
+/**
+ * Every inner list must match at least one of its phrases
+ */
+export type RequireAll = string[][];
 export type Terms = string[];
 export type AvailDate1 = string;
 export type CompSystems2 = string[];
@@ -958,13 +969,18 @@ export interface SymptomAlias {
   phrase: Phrase;
 }
 /**
+ * A doc matches when one of its comp_systems is listed, every `require_all` group has a phrase
+ * present, and no `exclude` phrase is present (keeps PRD F7.2 pairs apart); `terms` highlights.
+ *
  * This interface was referenced by `RecallRadarContracts`'s JSON-Schema
  * via the `definition` "SymptomConcept".
  */
 export interface SymptomConcept {
   comp_systems: CompSystems1;
+  exclude?: Exclude;
   id: Id;
   label: Label2;
+  require_all?: RequireAll;
   terms: Terms;
 }
 /**

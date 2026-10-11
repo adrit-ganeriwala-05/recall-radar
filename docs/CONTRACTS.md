@@ -141,6 +141,7 @@ defect in the producer or a change request, never a reason to edit the contract 
   remedy, park_it, park_outside — strict booleans, report_date_basis, source_url, snapshot_id, explanation) and
   `ReplayMarker` (campno, link); new models `ExplanationSentence`, `RecallExplanation`, `SymptomDoc`,
   `SymptomAlias`, `SymptomConcept`, `SymptomIndex`, `DateRange`, `ReportGroup`, `ReportInvestigation`,
-  `ReportData`; endpoints `/api/symptom-index`, `/api/report`. No existing field, route or shape changes.
+  `ReportData` (`ReportInvestigation.open_date` nullable; `SymptomConcept.require_all`/`exclude`, after B's
+  review); endpoints `/api/symptom-index`, `/api/report`. No existing field, route or shape changes.
   Frozen `exports/demo` files keep `contract_version` 1.0.0 and validate unchanged under 1.1.0: a payload
   is compatible when its major version matches.

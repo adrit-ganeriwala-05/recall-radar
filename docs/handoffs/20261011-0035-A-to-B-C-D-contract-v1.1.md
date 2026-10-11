@@ -26,3 +26,12 @@
   `tests/integration/conftest.py` asserts `prov.contract_version == C.CONTRACT_VERSION`, so after this merges the
   release integration fails on results/hero/replays. Suggested: compare the major version only (1.x = compatible),
   per the CONTRACTS.md changelog line.
+
+## After B's review (#25)
+- `ReportInvestigation.open_date` is `date | None` (108 actions have no ODATE; B lists them last).
+- `SymptomConcept.require_all: list[list[str]]` and `exclude: list[str]` (defaults empty). A doc matches a concept
+  when one of its comp_systems is listed, every require_all group has a phrase present, and no exclude phrase is
+  present; `terms` is for highlighting. Fixture: brake_noise requires a noise word and excludes failure words.
+- B's question: `recall_campaign.report_date` in the v1 DB is RCDATE, the Part 573 report received date
+  (`recall_radar/data/investigations.py` RCL_KEEP; earliest per campno + vehicle). F1 cards say
+  "Report received date (RCDATE)" as `report_date_basis`.

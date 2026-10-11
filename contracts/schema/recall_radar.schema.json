@@ -2062,9 +2062,17 @@
           "type": "string"
         },
         "open_date": {
-          "format": "date",
-          "title": "Open Date",
-          "type": "string"
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "INV ODATE; null for the ~108 actions without one (listed last)",
+          "title": "Open Date"
         },
         "subject": {
           "anyOf": [
@@ -2139,12 +2147,21 @@
     },
     "SymptomConcept": {
       "additionalProperties": false,
+      "description": "A doc matches when one of its comp_systems is listed, every `require_all` group has a phrase\npresent, and no `exclude` phrase is present (keeps PRD F7.2 pairs apart); `terms` highlights.",
       "properties": {
         "comp_systems": {
           "items": {
             "type": "string"
           },
           "title": "Comp Systems",
+          "type": "array"
+        },
+        "exclude": {
+          "description": "A doc containing any of these is not this concept",
+          "items": {
+            "type": "string"
+          },
+          "title": "Exclude",
           "type": "array"
         },
         "id": {
@@ -2155,6 +2172,17 @@
         "label": {
           "title": "Label",
           "type": "string"
+        },
+        "require_all": {
+          "description": "Every inner list must match at least one of its phrases",
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Require All",
+          "type": "array"
         },
         "terms": {
           "items": {

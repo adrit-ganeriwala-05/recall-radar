@@ -536,10 +536,17 @@ class SymptomAlias(Contract):
 
 
 class SymptomConcept(Contract):
+    """A doc matches when one of its comp_systems is listed, every `require_all` group has a phrase
+    present, and no `exclude` phrase is present (keeps PRD F7.2 pairs apart); `terms` highlights."""
+
     id: str = Field(min_length=1)
     label: str
     comp_systems: list[str]
     terms: list[str]
+    require_all: list[list[str]] = Field(
+        default_factory=list, description="Every inner list must match at least one of its phrases"
+    )
+    exclude: list[str] = Field(default_factory=list, description="A doc containing any of these is not this concept")
 
 
 class SymptomIndex(Contract):
@@ -577,7 +584,7 @@ class ReportGroup(Contract):
 class ReportInvestigation(Contract):
     action_no: str
     inv_type: InvType
-    open_date: date
+    open_date: date | None = Field(description="INV ODATE; null for the ~108 actions without one (listed last)")
     subject: str | None
     link: str
 
