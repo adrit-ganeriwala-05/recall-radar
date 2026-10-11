@@ -127,7 +127,12 @@ try {
     await page.goto(BASE + "/results?period=held_out");
     await page.getByRole("tab", { name: "Held-out period" }).waitFor();
     await guardLabels(page);
-    await pause(2500);
+    // shot list 6: hold on the verdict sentence (coverage vs chance), then scroll the misses list
+    const verdict = page.getByTestId("coverage-verdict");
+    await verdict.waitFor();
+    await verdict.scrollIntoViewIfNeeded();
+    await verdict.hover();
+    await pause(7000);
     await page.getByTestId("misses-list").scrollIntoViewIfNeeded().catch(() => {});
     await slowScroll(page, 900, 30);
     await pause(1500);

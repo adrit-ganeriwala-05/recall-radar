@@ -104,6 +104,23 @@ def test_verdict_matches_the_results_page_rule(tmp_path: Path, period: str, expe
     assert code == 0 and out == expected + "\n"
 
 
+def test_verdict_at_exactly_the_margin_is_met(tmp_path: Path) -> None:
+    # Same case as web/src/reframe.test.tsx: 30.0% - 20.0% = 10.0 points is not below the margin
+    # (a float subtraction gives 9.999999999999998). CIs 20-41% and 15-25% overlap.
+    p = tmp_path / "results.csv"
+    p.write_text(
+        HEADER
+        + "held_out,early_coverage_all,measured,0.3,0.2,0.41,30,100,synthetic_fixture-ho,c,g,s\n"
+        + "held_out,chance_coverage,measured,0.2,0.15,0.25,20,100,synthetic_fixture-ho,c,g,s\n"
+    )
+    code, out = run_fill(tmp_path, p, "[verdict.held_out]\n")
+    assert code == 0 and out == (
+        "Early-alert coverage was 30.0%; chance coverage was 20.0%. That is 10.0 percentage points above chance. "
+        "The margin set before the evaluation was 10 points above chance, and it is met, but the two 95% intervals "
+        "overlap, so the difference is uncertain.\n"
+    )
+
+
 def test_verdict_is_cut_when_chance_is_not_measured(tmp_path: Path, csv_path: Path) -> None:
     code, out = run_fill(tmp_path, csv_path, "a\n[verdict.held_out]\nb\n", "--cut-unmeasured")
     assert code == 0 and out == "a\nb\n"

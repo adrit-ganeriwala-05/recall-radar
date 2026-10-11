@@ -24,7 +24,9 @@ at the time.
   score, and the redacted complaint excerpts with links to each NHTSA record.
 - **Replay:** step through history month by month. The detector only sees complaints that
   counted as public (received date plus seven days) before each cutoff. ▲ marks the alert; ◆ marks the
-  investigation opening, shown as a later reveal.
+  investigation opening, shown as a later reveal. The replay in our demo is a development-period
+  case, labeled as such: no held-out investigation was alerted early, so the hero rule (frozen
+  before the held-out run) fell back to the development period.
 - **Results:** how often the frozen detector raised an alert early for documented investigations,
   next to the rate expected by chance, with every miss and unmatched alert listed.
 
@@ -42,6 +44,9 @@ history and seeing what was public before each NHTSA investigation.
 - Chance comparison: matched control groups reached [held_out.chance_coverage].
 - Median lead time when early: [held_out.median_lead_days] days.
 - Top alerts audited: [held_out.top25_matched.numerator] later linked to an investigation, [held_out.top25_unmatched.numerator] unmatched, [held_out.top25_ambiguous.numerator] ambiguous.
+Development years, for comparison (these were used to choose the settings):
+[verdict.development]
+
 Development-period results are on the results page, labeled separately. Full table:
 `exports/demo/results.csv` (config hash and git SHA on every row).
 
@@ -63,7 +68,18 @@ complaint can list several components. Evaluation discipline: thresholds were tu
 development years only and frozen (git tag `freeze-v1`) before the held-out year was run.
 
 ## What we learned / what's next
-<fill at Gate 3 from the measured results; no hypotheses>
+We asked a narrow question and answered it with rules fixed in advance: on the held-out year, a
+simple complaint-growth detector did not raise alerts earlier for vehicles NHTSA later
+investigated than for comparable vehicles it never investigated. We report that as the result.
+Freezing the thresholds, the hero rule and the method code under a git tag before the held-out
+run is what makes the negative result trustworthy, and a clean clone reproduces the result files
+(both period summaries, results.csv and cases.csv) byte for byte.
+Most held-out investigation families were excluded because their first action was an
+engineering analysis, almost all of them from a single analysis that names several hundred
+vehicle and system combinations ([held_out.excluded_families.numerator] of
+[held_out.excluded_families.denominator] families excluded for any reason).
+Next: evaluate at the level of those engineering analyses, with a new freeze and a new held-out
+year, rather than tuning against this one.
 
 ## Built with
 Python, DuckDB, SciPy, FastAPI, React, Vite, TypeScript, Recharts, Playwright, Vultr, Caddy,
