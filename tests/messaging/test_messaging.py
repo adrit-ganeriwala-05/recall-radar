@@ -97,6 +97,25 @@ def test_kill_switch_default_off_and_webhook_end_to_end(tmp_path, monkeypatch):
     assert len(prov.sent) == 1
 
 
+def test_every_message_counts_although_the_webhook_id_header_never_changes(tmp_path, monkeypatch):
+    """Gate P finding: X-Spectrum-Webhook-Id is the subscription id (same on every delivery); dedupe is per message id."""
+    prov = MockProvider()
+    client = TestClient(app_mod.create_app(FakeAnalysis(), prov, tmp_path / "m.sqlite"))
+    monkeypatch.setenv("RR_MESSAGING_ENABLED", "1")
+    monkeypatch.setenv("IMESSAGE_WEBHOOK_SECRET", "s3cret")
+
+    def post(text, mid):
+        body = json.dumps(ev(text, mid=mid)).encode()
+        ts = str(int(time.time()))
+        h = {"X-Spectrum-Signature": security.sign("s3cret", ts, body), "X-Spectrum-Timestamp": ts, "X-Spectrum-Webhook-Id": "wh-same"}
+        return client.post("/spectrum-webhook", content=body, headers=h).status_code
+
+    assert post("HELP", "m-1") == 200 and len(prov.sent) == 1
+    assert post("WATCH 2017 Example Motors Roadster", "m-2") == 200 and len(prov.sent) == 2
+    assert post("WATCH 2017 Example Motors Roadster", "m-2") == 200 and len(prov.sent) == 2  # a retried delivery
+    assert post("STATUS", "m-3") == 200 and len(prov.sent) == 3
+
+
 # ---------------------------------------------------------------- enrollment and commands
 
 
@@ -119,6 +138,19 @@ def test_group_chats_refused_and_echoes_ignored(con):
     assert "one-to-one" in say(con, "WATCH 2017 Example Motors Roadster", "e1", type="group")
     prov = MockProvider()
     assert say(con, "HELP", "e2", prov=prov, extra={"isFromMe": True}) is None and prov.sent == []
+
+
+def test_agent_sender_and_text_we_just_sent_are_never_answered(con):
+    """Gate P safety: an echo of our own message must not start a reply loop, whatever the provider flags."""
+    prov = MockProvider()
+    assert say(con, "HELP", "a1", prov=prov, extra={"sender": {"kind": "agent", "id": "line"}}) is None
+    assert prov.sent == []
+    reply = say(con, "HELP", "a2", prov=prov)  # a real user message gets the HELP text
+    assert reply and len(prov.sent) == 1
+    # that exact reply text arriving back on the same route (no flags at all) is ignored
+    assert say(con, reply, "a3", prov=prov) is None and len(prov.sent) == 1
+    # the same text on another route is a different person: still answered normally
+    assert say(con, "HELP", "a4", route="space-2", prov=prov) is not None
 
 
 def test_one_vehicle_per_subscriber_and_routes_are_isolated(con):
