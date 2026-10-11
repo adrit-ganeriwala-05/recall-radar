@@ -5,6 +5,7 @@ import { useApi } from "./api/useApi";
 import { ReceivedDateNote } from "./components/Provenance";
 import { DATA_LABEL_TEXT, dateText } from "./format";
 import IssuePage from "./pages/IssuePage";
+import IssueForPage from "./pages/IssueForPage";
 import ReplayPage from "./pages/ReplayPage";
 import ResultsPage from "./pages/ResultsPage";
 import SelectorPage from "./pages/SelectorPage";
@@ -67,6 +68,7 @@ export default function App() {
           <Route path="/" element={<SelectorPage />} />
           <Route path="/vehicle" element={<VehiclePage />} />
           <Route path="/issue/:groupId" element={<IssuePage />} />
+          <Route path="/issue-for" element={<IssueForPage />} />
           <Route path="/replay/:episodeId" element={<ReplayPage />} />
           <Route path="/results" element={<ResultsPage />} />
           <Route path="*" element={<NotFound />} />
