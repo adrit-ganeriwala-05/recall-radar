@@ -10,7 +10,7 @@ anything before NHTSA staff did. To check a specific car, use NHTSA's VIN lookup
 https://www.nhtsa.gov/recalls.
 
 ## Status
-Release `rc1`. Live demo: http://64.177.53.230 (one Vultr VM; the app makes no outbound calls).
+Release `rc1`. Live demo: https://recall-radar.us (one Vultr VM; the app makes no outbound calls).
 Detector settings were frozen under the git tag `freeze-v1` before the held-out year was run once.
 On that year the alerts did not come earlier for investigated vehicles than for comparable vehicles
 that were never investigated; the results page states the comparison with chance in one sentence.

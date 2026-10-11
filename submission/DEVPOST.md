@@ -5,8 +5,8 @@ A line whose number is not measured is cut (`fill_numbers.py --cut-unmeasured`),
 # Recall Radar
 
 **Main track:** <TRACK: Social Good (PRD default) or AI/ML — humans decide, docs/SOURCES.md>
-**Sponsor challenges:** Best Use of Vultr (deployed on a Vultr VM) <add Gemini only if P1-2 shipped; GoDaddy only if a domain was registered>
-**Live demo:** <RR_PUBLIC_BASE_URL> · **Video:** <VIDEO_URL> · **Code:** https://github.com/adrit-ganeriwala-05/recall-radar (tag `rc1`)
+**Sponsor challenges:** Best Use of Vultr (deployed on a Vultr VM)
+**Live demo:** https://recall-radar.us · **Video:** <VIDEO_URL> · **Code:** https://github.com/adrit-ganeriwala-05/recall-radar (tag `rc1`)
 **Team:** <name (GitHub)> ×4
 
 ## Inspiration
