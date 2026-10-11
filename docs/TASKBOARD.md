@@ -76,6 +76,9 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | 19:20 | D "Reviewed 22e781a: ok" (C's stand-in delta: Gate 1 reframe copy, fixture-free live build) → merged PR #5 → main a775d09. main lacks deploy/ until PR #3 merges: the real-data deploy needs #3 first; C (stand-in until 22:30) to review #3 | D |
 | 19:40 | C stand-in "Reviewed e69d362: ok" → D merged PR #3 → main f4eac57 (deploy/ on main). Deployed main f4eac57 (fixture) to http://64.177.53.230: integration 11 passed/10 skipped, Playwright 2/2, outage check 0 FAIL (1 WARN: no /demo until B9) | D |
 | 19:55 | Review follow-ups 1–2 (PR #3): submission copy now says LDATE_PLUS_7 (not "added to file"); `[verdict.<period>]` fills the results page's chance sentence; coverage shown with one decimal like the UI. PR to C | D |
+| 20:05 | Merged PR #9 (C stand-in ok a9fb133) → main cc40c0b. Reviewed PR #10 (C) 34c212e: ok | D |
+| 20:15 | Merged PR #7 (B ok 4425bb2: A7 dev labels, DuckDB 1 GB cap) → main dc05d35; deployed dc05d35 fixture: integration 11/10 skipped, Playwright 2/2, outage 0 FAIL, 126 MB | D |
+| 20:20 | Merged PR #8 (A ok ac3edf1: pre-freeze fixes) → main dd6b439; `make check` 296 + 72 passed. B tagged **freeze-v1** (annotated, config 0c26e23e0a3a) → dd6b439 at 20:21. Main merges resume | D |
 
 ## Gate log
 | Gate | Time | Main SHA | Result | Decision |
