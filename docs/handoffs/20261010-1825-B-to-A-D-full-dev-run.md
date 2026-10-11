@@ -1,7 +1,7 @@
 # HANDOFF B→A, B→D: full development run (2014–2023 data) and tier-3 candidates for A7
 - From: B · To: A (labels, reviewer), D (pitch, gate log) · Contract version: 1.0.0
 - Snapshot: e808281f001a · Config hash: 0c26e23e0a3a · Availability basis: LDATE_PLUS_7
-- Run id: `development-0c26e23e0a3a-b93a89e` · Data code: a/data-api at fdcb05c (PR #6: full ingest with alias table), exported to a
+- Run id: `development-0c26e23e0a3a-4d85ce5` · Data code: a/data-api at fdcb05c (PR #6: full ingest with alias table), exported to a
   separate directory to build the database; method code: the commit in the run id (b/method plus B's unpushed work).
 - Commands: `make verify-snapshot && make ingest SCOPE=full && make investigations` (A's tree), then
   `make detect match SCOPE=full`, `make evaluate SCOPE=full PERIOD=development`,
@@ -20,7 +20,7 @@
 investigated vehicles about as often as they precede matched vehicles that were never investigated.
 - Tier 1 alone (exact vehicle and component system): 16 early; 7 more through tier 2.
 - By investigation: 11 of 65 have at least one early family.
-- 6 of the 23 early families' alerts followed an earlier related investigation or recall. These still count as early under the pre-written rule; they can never be the hero replay.
+- 9 of the 23 early families' alerts followed an earlier related investigation or recall (recall campaigns filed under an older name of the same system now count). These still count as early under the pre-written rule; they can never be the hero replay.
 - 160 cases have at least one control.
 - Lead time of early families, median (quartiles), days: 354 (139–444.5).
 - Episodes per month, all vehicle groups: 22.2 (1064 in 48 months).

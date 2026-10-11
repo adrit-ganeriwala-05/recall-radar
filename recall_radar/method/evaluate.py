@@ -15,8 +15,8 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import random
-import tempfile
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -29,7 +29,7 @@ from recall_radar import contracts as C
 from recall_radar.method import candidates as K
 from recall_radar.method import match as M
 from recall_radar.method.config import config_hash as hash_config_file
-from recall_radar.method.config import load_config
+from recall_radar.method.config import config_hash_text, load_config
 from recall_radar.method.util import REPO_ROOT, git, month_index, month_index_from_str, table_exists
 
 FREEZE_TAG = "freeze-v1"
@@ -61,23 +61,36 @@ def wilson_interval(k: int, n: int, z: float = Z_95) -> tuple[float, float]:
 
 
 FROZEN_REVIEW_FILES = ("review/system_map.csv", "review/keywords.txt")
+FROZEN_CODE = "recall_radar/method"
+# Everything a result depends on. A commit that touches none of these cannot change an output.
+PIPELINE_PATHS = (
+    "config.yaml", "recall_radar/contracts.py", "recall_radar/data", "recall_radar/method",
+    "review/system_map.csv", "review/keywords.txt", "review/match_labels_dev.csv",
+    "review/match_labels_heldout.csv", "snapshots/SNAPSHOT.lock.json", "uv.lock",
+)  # fmt: skip
 
 
-def check_freeze(config_path: Path | str, repo: Path | str = REPO_ROOT, tag: str = FREEZE_TAG) -> str:
-    """Return the tag name if it exists and froze exactly the working config and matching files.
+def latest_freeze_tag(repo: Path | str = REPO_ROOT) -> str | None:
+    """The highest `freeze-v<N>` tag, or None. A change after a freeze needs the next tag."""
+    tags = git("tag", "-l", "freeze-v*", "--sort=-v:refname", cwd=repo)
+    return tags.splitlines()[0].strip() if tags else None
 
-    The tag covers config.yaml (compared by config hash, so comments do not matter) and the
-    tier-2 review files (compared byte for byte). Any difference seals the held-out period.
+
+def check_freeze(config_path: Path | str, repo: Path | str = REPO_ROOT, tag: str | None = None) -> str:
+    """Return the freeze tag if it froze exactly the working rules; else raise FreezeError.
+
+    The tag covers: config.yaml (compared by config hash, so comments do not matter), the
+    tier-2 review files (byte for byte) and every file under recall_radar/method (the
+    eligibility, matching, evaluation and hero rules are code). Any difference, committed or
+    not, seals the held-out period until a new freeze tag exists.
     """
-    if git("rev-parse", "-q", "--verify", f"refs/tags/{tag}", cwd=repo) is None:
-        raise FreezeError(f"held_out is sealed: tag {tag} does not exist")
+    tag = tag or latest_freeze_tag(repo)
+    if tag is None or git("rev-parse", "-q", "--verify", f"refs/tags/{tag}", cwd=repo) is None:
+        raise FreezeError(f"held_out is sealed: tag {tag or FREEZE_TAG} does not exist")
     frozen = git("show", f"{tag}:config.yaml", cwd=repo)
     if frozen is None:
         raise FreezeError(f"held_out is sealed: tag {tag} has no config.yaml")
-    with tempfile.NamedTemporaryFile("w", suffix=".yaml") as tmp:
-        tmp.write(frozen + "\n")
-        tmp.flush()
-        frozen_hash = hash_config_file(tmp.name)
+    frozen_hash = config_hash_text(frozen)
     working = hash_config_file(config_path)
     if frozen_hash != working:
         raise FreezeError(
@@ -90,7 +103,34 @@ def check_freeze(config_path: Path | str, repo: Path | str = REPO_ROOT, tag: str
         now = path.read_text().strip() if path.is_file() else None
         if at_tag != now:
             raise FreezeError(f"held_out is sealed: {rel} differs from {tag}")
+    # `git diff --quiet <tag> -- <dir>` compares the tag with the working tree: exit 1 on any change
+    if git("diff", "--quiet", tag, "--", FROZEN_CODE, cwd=repo) is None:
+        raise FreezeError(f"held_out is sealed: {FROZEN_CODE} differs from {tag}; a change after the freeze needs a new freeze tag")
+    untracked = git("ls-files", "--others", "--exclude-standard", "--", FROZEN_CODE, cwd=repo)
+    if untracked:
+        raise FreezeError(f"held_out is sealed: untracked files under {FROZEN_CODE}")
     return tag
+
+
+def pipeline_revision(repo: Path | str = REPO_ROOT) -> tuple[str | None, datetime, bool]:
+    """(commit, its committer time, dirty) identifying the code + rules + inputs behind a result.
+
+    The commit is the last one that changed any of PIPELINE_PATHS; when nothing changed since
+    the freeze tag, it is the tagged commit itself. It does not move when later commits touch
+    other files (web, docs, exports), so a clean-clone rerun at a later commit writes the same
+    bytes (scripts/repro.sh). `dirty` is true when those paths have uncommitted changes.
+    """
+    last = git("log", "-1", "--format=%H", "--", *PIPELINE_PATHS, cwd=repo)
+    if not last:
+        return None, datetime(1970, 1, 1, tzinfo=UTC), False
+    tag = latest_freeze_tag(repo)
+    if tag:
+        tagged = git("rev-list", "-n", "1", tag, cwd=repo)
+        if tagged and git("merge-base", "--is-ancestor", last, tagged, cwd=repo) is not None:
+            last = tagged
+    stamp = git("show", "-s", "--format=%cI", last, cwd=repo)
+    dirty = bool(git("status", "--porcelain", "--", *PIPELINE_PATHS, cwd=repo))
+    return last, datetime.fromisoformat(stamp).astimezone(UTC), dirty
 
 
 # ----------------------------------------------------------------------------- eligibility
@@ -345,20 +385,28 @@ def provenance(
     cfg: dict[str, Any],
     repo: Path | str = REPO_ROOT,
     real_label: C.DataLabel = C.DataLabel.measured_evaluation,
+    allow_dirty: bool = False,
 ) -> C.Provenance:
     """Real-data provenance from the snapshot table; synthetic snapshots stay labeled synthetic.
 
-    `generated_at` is the committer time of HEAD, not the wall clock, so that the same
-    snapshot + config + seed + commit always writes byte-identical files.
+    `git_sha` and `generated_at` come from `pipeline_revision`, not from HEAD or the wall clock,
+    so the same snapshot + config + seed + pipeline revision always writes byte-identical files.
+    A real-data payload must come from committed code: with uncommitted changes in the pipeline
+    paths this raises, unless `allow_dirty` (development only), which marks the sha "-dirty".
     """
     snapshot_id, as_of = None, None
     if table_exists(con, "source_snapshot"):
         row = con.execute("SELECT min(snapshot_id), max(CAST(nhtsa_updated AS TIMESTAMP)) FROM source_snapshot").fetchone()
         snapshot_id, as_of = row[0], (row[1].date() if row[1] is not None else None)
-    sha = git("rev-parse", "HEAD", cwd=repo)
-    stamp = git("show", "-s", "--format=%cI", "HEAD", cwd=repo)
-    generated = datetime.fromisoformat(stamp).astimezone(UTC) if stamp else datetime(1970, 1, 1, tzinfo=UTC)
+    sha, generated, dirty = pipeline_revision(repo)
     synthetic = snapshot_id is None or str(snapshot_id).startswith("synthetic")
+    if dirty and not synthetic:
+        if not allow_dirty:
+            raise RuntimeError(
+                "uncommitted changes in pipeline inputs (git status -- " + " ".join(PIPELINE_PATHS[:4]) + " ...): "
+                "commit them first, or set RR_ALLOW_DIRTY=1 for a development-only look"
+            )
+        sha = f"{sha}-dirty"
     return C.Provenance(
         data_label=C.DataLabel.synthetic_fixture if synthetic else real_label,
         snapshot_id=snapshot_id,
@@ -441,7 +489,7 @@ def evaluate(
     labels (tier 3) for the seeded sample. `cases` shows the tier 1-3 view of each family.
     """
     freeze_tag = check_freeze(config_path, repo) if period == C.Period.held_out.value else None
-    if freeze_tag is None and git("rev-parse", "-q", "--verify", f"refs/tags/{FREEZE_TAG}", cwd=repo) is not None:
+    if freeze_tag is None and latest_freeze_tag(repo) is not None:
         try:
             freeze_tag = check_freeze(config_path, repo)
         except FreezeError:
@@ -570,7 +618,16 @@ def evaluate(
             "top25_unmatched": sum(a.outcome.status == C.OutcomeStatus.unmatched for a in audit),
             "top25_ambiguous": sum(a.outcome.status == C.OutcomeStatus.ambiguous for a in audit),
         }
-        metrics += [proportion(n, v, k_audit, f"top {k_audit} episodes by peak score, not after official action") for n, v in counts.items()]
+        by_status = pd.Series([a.outcome.status.value for a in audit], dtype=object).value_counts()
+        spread = ", ".join(f"{s} {int(n)}" for s, n in sorted(by_status.items()))
+        recall_only = sum(a.outcome.status == C.OutcomeStatus.unmatched and bool(a.outcome.recall_campnos) for a in audit)
+        n_pool = int((~in_period["after_official_action"].astype(bool)).sum())
+        audit_note = (
+            f"top {k_audit} episodes by peak score among the {n_pool} of {len(in_period)} episodes of the period with no "
+            f"earlier investigation or recall for the same vehicle and component system; outcomes: {spread}; "
+            f"{recall_only} of the unmatched had a recall campaign for the same vehicle and system inside the follow-up window"
+        )
+        metrics += [proportion(n, v, k_audit, audit_note) for n, v in counts.items()]
     else:
         metrics += [
             metric(n, status=C.MetricStatus.not_applicable, note="held_out only")
@@ -580,7 +637,8 @@ def evaluate(
     metrics.append(metric("pipeline_runtime_s", status=C.MetricStatus.pending, note="measured by make pipeline"))
 
     reasons = pd.Series([c.exclusion_reason for c in cases if not c.eligible], dtype=object).value_counts()
-    prov = provenance(con, cfg, repo)
+    allow_dirty = period != C.Period.held_out.value and os.environ.get("RR_ALLOW_DIRTY") == "1"
+    prov = provenance(con, cfg, repo, allow_dirty=allow_dirty)
     summary = C.EvaluationSummary(
         provenance=prov,
         run_id=f"{period}-{cfg['config_hash']}-{(prov.git_sha or 'nogit')[:7]}",

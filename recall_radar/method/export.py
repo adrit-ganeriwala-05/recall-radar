@@ -3,7 +3,7 @@
 Inputs: `exports/results_<period>.json` written by evaluate.py (the only source of numbers)
 and the DuckDB file (for replays). Outputs, all validated against the contract models:
 results_development.json, results_held_out.json (if it exists), results.csv, cases.csv,
-replays/E-*.json (hero + up to 30 early cases), hero.json (only once freeze-v1 exists and the
+replays/E-*.json (hero + up to 30 early cases), hero.json (only once a freeze tag exists and the
 frozen rule selects a case), MANIFEST.json. Refuses synthetic results unless --allow-synthetic.
 CLI: `uv run python -m recall_radar.method.export --config config.yaml --db <file>`
 """
@@ -25,7 +25,7 @@ import duckdb
 
 from recall_radar import contracts as C
 from recall_radar.method.config import load_config
-from recall_radar.method.evaluate import FREEZE_TAG, rounded, summary_json
+from recall_radar.method.evaluate import latest_freeze_tag, rounded, summary_json
 from recall_radar.method.replay import replay_for_episode, replay_json
 from recall_radar.method.util import REPO_ROOT, data_cutoff, git
 
@@ -137,7 +137,8 @@ def export(
 
     cutoff = data_cutoff(cfg, scope)
     hero = None
-    rule_commit = git("rev-list", "-n", "1", FREEZE_TAG, cwd=repo)
+    tag = latest_freeze_tag(repo)
+    rule_commit = git("rev-list", "-n", "1", tag, cwd=repo) if tag else None
     if rule_commit:  # the hero rule only exists once it has been frozen
         flagged = {
             r[0] for r in con.execute(
