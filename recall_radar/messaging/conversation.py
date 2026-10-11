@@ -127,7 +127,8 @@ def answer(text: str, ctx: dict | None, a: Analysis, router: Callable[[str], str
     new_ctx = {"make": mk, "model": md, "model_year": yr, "campno": (ctx or {}).get("campno"), "expires_at": now + CONTEXT_S}
     tools = Tools(a)
     reply = _reply("problems" if intent in (None, "other") else intent, text, vehicle, tools, new_ctx)
-    if not numbers_grounded(reply, " ".join(tools.used) + f" {yr}"):
+    # the vehicle's own name grounds its digits too (F-150, CX-5, 300): it came from the data via find_vehicle
+    if not numbers_grounded(reply, " ".join(tools.used) + f" {yr} {mk} {md}"):
         return f"I couldn't check those numbers, so here is the source instead: {T.link(yr, mk, md)}", new_ctx
     if brain is not None and tools.calls and time.time() - started < timeout_s:
         try:

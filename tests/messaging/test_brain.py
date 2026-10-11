@@ -99,3 +99,16 @@ def test_gemini_http_failure_is_none(monkeypatch):
 def test_every_planned_intent_gets_a_reply(intent):
     r, _ = conversation.answer("2017 example motors roadster", None, FakeAnalysis(), brain=FakeBrain(plan={"intent": intent}))
     assert r
+
+
+def test_digits_in_the_model_name_are_grounded():
+    class Digits(FakeAnalysis):
+        def get(self, path, **p):
+            if path == "/api/makes":
+                return {"items": ["FORD"]}
+            if path == "/api/models":
+                return {"items": ["F-150"]}
+            return super().get(path, **p)
+    r, _ = conversation.answer("how many complaints for the 2017 ford f-150", None, Digits())
+    assert "35 distinct NHTSA complaint IDs" in r and "F-150" in r and "couldn't check" not in r
+    assert not conversation.numbers_grounded("2017 FORD F-150: 36 complaints", "35 2017 FORD F-150")  # still strict
