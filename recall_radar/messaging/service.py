@@ -6,7 +6,7 @@ import json
 import sqlite3
 import time
 
-from . import commands, conversation
+from . import brain, commands, conversation
 from . import templates as T
 from .analysis import Analysis
 from .outbox import enqueue, process
@@ -38,7 +38,7 @@ def handle(con: sqlite3.Connection, event: dict, a: Analysis, provider: Provider
         reply = commands.run(con, route, text, a)
     else:
         row = con.execute("SELECT * FROM convo_ctx WHERE route = ?", [route]).fetchone()
-        reply, ctx = conversation.answer(text, dict(row) if row else None, a)
+        reply, ctx = conversation.answer(text, dict(row) if row else None, a, brain=brain.from_env())
         if ctx:
             con.execute("INSERT OR REPLACE INTO convo_ctx VALUES (?, ?, ?, ?, ?, ?, ?)",
                         [route, ctx["make"], ctx["model"], ctx["model_year"], ctx.get("campno"), None, ctx["expires_at"]])

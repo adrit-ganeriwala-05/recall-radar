@@ -12,6 +12,14 @@ NO_DIAGNOSIS = ("I can't diagnose a vehicle or say whether it is safe to drive. 
                 "reported to NHTSA and the official recalls. " + REPORT_HOWTO)
 HELP = ("Recall Radar commands: WATCH <year make model>, STATUS, DETAILS, PAUSE, RESUME, STOP, DELETE, HELP. "
         "You can also ask about reported problems, recalls or remedies for your vehicle.")
+SCOPE = ("I answer questions about public NHTSA data for a car model: reported problems, complaint counts, "
+         "recalls and their official remedy text, and how to report a problem to NHTSA. "
+         "Try: what problems do 2019 Jeep Cherokee owners report?")
+CLAIM_HELP = ("I can't give insurance or legal advice, but I can point you to public records people often gather: "
+              "the NHTSA complaints and recall campaigns for your model (ask me, or see the one-page summary on "
+              "https://recall-radar.us), your car's own recall status by VIN at https://www.nhtsa.gov/recalls, and "
+              "your repair and dealer receipts. You can also file your own complaint at "
+              "https://www.nhtsa.gov/report-a-safety-problem")
 GROUP_REFUSAL = "Recall Radar only works in one-to-one chats."
 PHONE_REFUSAL = "Please don't send phone numbers. To watch a vehicle, reply WATCH <year make model>."
 
