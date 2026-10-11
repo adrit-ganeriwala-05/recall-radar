@@ -1,0 +1,513 @@
+{
+  "provenance": {
+    "contract_version": "1.0.0",
+    "data_label": "cached_real",
+    "snapshot_id": "e808281f001a",
+    "data_as_of": "2026-10-10",
+    "config_hash": "0c26e23e0a3a",
+    "git_sha": "1c8dd4b44e2712163c5a205db84d9304430704ba",
+    "availability_basis": "LDATE_PLUS_7",
+    "generated_at": "2026-10-11T00:40:35Z"
+  },
+  "episode_id": "E-00Q0",
+  "group_id": "g_52272a9092d9",
+  "vehicle": {
+    "make": "KIA",
+    "model": "OPTIMA",
+    "model_year": 2015
+  },
+  "comp_system": "ENGINE",
+  "frames": [
+    {
+      "cutoff": "2015-11-01",
+      "month": "2015-10",
+      "n_distinct": 0,
+      "baseline_lambda": 0.5,
+      "score": 0.0,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2015-12-01",
+      "month": "2015-11",
+      "n_distinct": 1,
+      "baseline_lambda": 0.5,
+      "score": 0.405089,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-01-01",
+      "month": "2015-12",
+      "n_distinct": 0,
+      "baseline_lambda": 0.5,
+      "score": 0.405089,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-02-01",
+      "month": "2016-01",
+      "n_distinct": 0,
+      "baseline_lambda": 0.5,
+      "score": 0.0,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-03-01",
+      "month": "2016-02",
+      "n_distinct": 0,
+      "baseline_lambda": 0.5,
+      "score": 0.0,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-04-01",
+      "month": "2016-03",
+      "n_distinct": 0,
+      "baseline_lambda": 0.5,
+      "score": 0.0,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-05-01",
+      "month": "2016-04",
+      "n_distinct": 0,
+      "baseline_lambda": 0.5,
+      "score": 0.0,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-06-01",
+      "month": "2016-05",
+      "n_distinct": 1,
+      "baseline_lambda": 0.5,
+      "score": 0.405089,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-07-01",
+      "month": "2016-06",
+      "n_distinct": 1,
+      "baseline_lambda": 0.5,
+      "score": 1.044774,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-08-01",
+      "month": "2016-07",
+      "n_distinct": 0,
+      "baseline_lambda": 0.5,
+      "score": 0.405089,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-09-01",
+      "month": "2016-08",
+      "n_distinct": 0,
+      "baseline_lambda": 0.5,
+      "score": 0.0,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-10-01",
+      "month": "2016-09",
+      "n_distinct": 3,
+      "baseline_lambda": 0.5,
+      "score": 1.842009,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2016-11-01",
+      "month": "2016-10",
+      "n_distinct": 3,
+      "baseline_lambda": 0.5,
+      "score": 4.848785,
+      "partial": false,
+      "alert_active": true
+    },
+    {
+      "cutoff": "2016-12-01",
+      "month": "2016-11",
+      "n_distinct": 1,
+      "baseline_lambda": 0.7,
+      "score": 2.240071,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-01-01",
+      "month": "2016-12",
+      "n_distinct": 0,
+      "baseline_lambda": 0.952381,
+      "score": 0.211705,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-02-01",
+      "month": "2017-01",
+      "n_distinct": 1,
+      "baseline_lambda": 1.0,
+      "score": 0.1992,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-03-01",
+      "month": "2017-02",
+      "n_distinct": 1,
+      "baseline_lambda": 0.956522,
+      "score": 0.605108,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-04-01",
+      "month": "2017-03",
+      "n_distinct": 2,
+      "baseline_lambda": 1.0,
+      "score": 1.095277,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-05-01",
+      "month": "2017-04",
+      "n_distinct": 8,
+      "baseline_lambda": 1.0,
+      "score": 6.953015,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-06-01",
+      "month": "2017-05",
+      "n_distinct": 3,
+      "baseline_lambda": 1.166667,
+      "score": 7.327374,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-07-01",
+      "month": "2017-06",
+      "n_distinct": 1,
+      "baseline_lambda": 1.833333,
+      "score": 0.942626,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-08-01",
+      "month": "2017-07",
+      "n_distinct": 3,
+      "baseline_lambda": 2.083333,
+      "score": 0.800743,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-09-01",
+      "month": "2017-08",
+      "n_distinct": 4,
+      "baseline_lambda": 2.166667,
+      "score": 2.161385,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-10-01",
+      "month": "2017-09",
+      "n_distinct": 0,
+      "baseline_lambda": 2.416667,
+      "score": 0.648266,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-11-01",
+      "month": "2017-10",
+      "n_distinct": 1,
+      "baseline_lambda": 2.75,
+      "score": 0.028691,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2017-12-01",
+      "month": "2017-11",
+      "n_distinct": 2,
+      "baseline_lambda": 2.75,
+      "score": 0.285215,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-01-01",
+      "month": "2017-12",
+      "n_distinct": 0,
+      "baseline_lambda": 2.833333,
+      "score": 0.110958,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-02-01",
+      "month": "2018-01",
+      "n_distinct": 2,
+      "baseline_lambda": 2.916667,
+      "score": 0.103444,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-03-01",
+      "month": "2018-02",
+      "n_distinct": 2,
+      "baseline_lambda": 2.916667,
+      "score": 0.476117,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-04-01",
+      "month": "2018-03",
+      "n_distinct": 3,
+      "baseline_lambda": 3.083333,
+      "score": 0.701303,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-05-01",
+      "month": "2018-04",
+      "n_distinct": 5,
+      "baseline_lambda": 3.25,
+      "score": 1.738476,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-06-01",
+      "month": "2018-05",
+      "n_distinct": 3,
+      "baseline_lambda": 3.5,
+      "score": 1.572856,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-07-01",
+      "month": "2018-06",
+      "n_distinct": 7,
+      "baseline_lambda": 3.916667,
+      "score": 2.149611,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-08-01",
+      "month": "2018-07",
+      "n_distinct": 3,
+      "baseline_lambda": 4.083333,
+      "score": 2.031818,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-09-01",
+      "month": "2018-08",
+      "n_distinct": 0,
+      "baseline_lambda": 4.583333,
+      "score": 0.078012,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-10-01",
+      "month": "2018-09",
+      "n_distinct": 2,
+      "baseline_lambda": 4.833333,
+      "score": 0.020649,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-11-01",
+      "month": "2018-10",
+      "n_distinct": 1,
+      "baseline_lambda": 4.833333,
+      "score": 0.065203,
+      "partial": false,
+      "alert_active": false
+    }
+  ],
+  "markers": [
+    {
+      "type": "alert",
+      "date": "2016-11-01",
+      "label": "Alert: this complaint pattern deserves a closer look",
+      "is_outcome": false,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "investigation_opened",
+      "date": "2018-08-21",
+      "label": "Investigation DP18003 opened (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": "DP18003",
+      "match_tier": "2",
+      "lead_days": 658
+    },
+    {
+      "type": "recall_reported",
+      "date": "2018-12-19",
+      "label": "Recall campaign 18V907000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2018-12-28",
+      "label": "Recall campaign 18V934000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2019-02-22",
+      "label": "Recall campaign 19V120000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2019-03-14",
+      "label": "Recall campaign 19V204000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2020-02-14",
+      "label": "Recall campaign 20V088000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2020-02-21",
+      "label": "Recall campaign 20V100000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2020-02-21",
+      "label": "Recall campaign 20V101000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2020-08-27",
+      "label": "Recall campaign 20V518000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2020-08-27",
+      "label": "Recall campaign 20V519000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2020-12-02",
+      "label": "Recall campaign 20V750000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2021-05-10",
+      "label": "Recall campaign 21V331000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2021-10-29",
+      "label": "Recall campaign 21V844000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    }
+  ],
+  "outcome": {
+    "episode_id": "E-00Q0",
+    "family_id": "F-DP18003~4370ad",
+    "earliest_action_no": "DP18003",
+    "inv_type": "DP",
+    "investigation_open_date": "2018-08-21",
+    "tier": "2",
+    "basis": "Tier 2: investigation DP18003 (opened 2018-08-21) names the same make and model, a model year within the allowed range and the same or a paired component system; shared keywords: STALL.",
+    "confidence": "medium",
+    "lead_days": 658,
+    "status": "early",
+    "recall_campnos": [
+      "18V907000",
+      "18V934000",
+      "19V120000",
+      "19V204000",
+      "20V088000",
+      "20V100000",
+      "20V101000",
+      "20V518000",
+      "20V519000",
+      "20V750000",
+      "21V331000",
+      "21V844000"
+    ],
+    "follow_up_end": "2018-11-01",
+    "follow_up_complete": true,
+    "reviewer": null
+  },
+  "banner": "Received-date experiment: this replay orders complaints by the date NHTSA received them plus 7 days, using today's records and labels. It is not an archive of what the website showed on each date."
+}
