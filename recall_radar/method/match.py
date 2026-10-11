@@ -117,14 +117,34 @@ def tier1_pairs(episodes: pd.DataFrame, family_vehicles: pd.DataFrame, families:
     return pairs.sort_values(["episode_id", "family_id"]).reset_index(drop=True)
 
 
-def load_system_map(cfg: dict[str, Any], root: Path | str = REPO_ROOT) -> dict[str, set[str]]:
-    """investigation system -> complaint systems treated as the same (always includes itself)."""
+def load_system_map(
+    cfg: dict[str, Any], root: Path | str = REPO_ROOT, kinds: set[str] | None = None
+) -> dict[str, set[str]]:
+    """Official (investigation / recall) system name -> complaint system names paired with it.
+
+    `kind` in the file is `same_system` (an older and a newer NHTSA name for one system) or
+    `cross_filing` (a different system under which such complaints are often filed).
+    """
     path = Path(root) / cfg["matching"]["tier2_system_map"]
     out: dict[str, set[str]] = {}
     if path.is_file():
         with open(path, newline="") as fh:
             for row in csv.DictReader(fh):
-                out.setdefault(row["inv_system"].strip(), set()).add(row["complaint_system"].strip())
+                if kinds is None or row.get("kind", "same_system").strip() in kinds:
+                    out.setdefault(row["inv_system"].strip(), set()).add(row["complaint_system"].strip())
+    return out
+
+
+def recall_system_names(cfg: dict[str, Any], root: Path | str = REPO_ROOT) -> dict[str, set[str]]:
+    """Complaint system name -> other names the same system carries in recall files.
+
+    Recall campaigns use the older names too ("SERVICE BRAKES, HYDRAULIC"). Only `same_system`
+    pairs are used: a recall has no text here to confirm a cross-filing with a keyword.
+    """
+    out: dict[str, set[str]] = {}
+    for official, complaint_names in load_system_map(cfg, root, kinds={"same_system"}).items():
+        for name in complaint_names:
+            out.setdefault(name, set()).add(official)
     return out
 
 
@@ -259,8 +279,12 @@ def match_episodes(
     recalls: pd.DataFrame,
     horizon: date,
     cfg: dict[str, Any],
+    recall_systems: dict[str, set[str]] | None = None,
 ) -> pd.DataFrame:
     """One OutcomeMatch per episode, plus `after_official_action` for the episode table.
+
+    `recall_systems` (from `recall_system_names`) lets a campaign filed under another name of
+    the same system count for the episode; without it only the identical name counts.
 
     `horizon` is the last day for which investigation openings are known (the investigations
     file's NHTSA "Updated" date); follow-up is complete when alert_date + follow_up_days <= horizon.
@@ -275,7 +299,8 @@ def match_episodes(
     fam = families.set_index("family_id")
     by_episode = {e: df for e, df in pairs.groupby("episode_id")}
     rec = recalls.dropna(subset=["report_date"]) if len(recalls) else recalls
-    rec_by_vehicle = {k: df for k, df in rec.groupby(VEHICLE_COLS)} if len(rec) else {}
+    rec_by_vehicle = {k: df for k, df in rec.groupby(["make", "model", "model_year"])} if len(rec) else {}
+    recall_systems = recall_systems or {}
 
     out = []
     for ep in episodes.sort_values("episode_id").itertuples():
@@ -283,7 +308,11 @@ def match_episodes(
         follow_up_end = alert_date + timedelta(days=follow_days)
         complete = follow_up_end <= horizon
         cands = by_episode.get(ep.episode_id)
-        related_recalls = rec_by_vehicle.get((ep.make, ep.model, ep.model_year, ep.comp_system))
+        related_recalls = rec_by_vehicle.get((ep.make, ep.model, ep.model_year))
+        if related_recalls is not None:
+            names = {ep.comp_system} | recall_systems.get(ep.comp_system, set())
+            related_recalls = related_recalls[related_recalls["comp_system"].isin(names)]
+            related_recalls = related_recalls if len(related_recalls) else None
         prior_recall = False
         later_campnos: list[str] = []
         if related_recalls is not None:
@@ -394,7 +423,9 @@ def run(con: duckdb.DuckDBPyConnection, cfg: dict[str, Any]) -> pd.DataFrame:
     episodes = load_episodes(con, config_hash)
     families = load_families(con)
     pairs = all_pairs(con, episodes, load_family_vehicles(con, families), families, cfg)
-    matches = match_episodes(episodes, pairs, families, load_recalls(con), outcome_horizon(con, families), cfg)
+    matches = match_episodes(
+        episodes, pairs, families, load_recalls(con), outcome_horizon(con, families), cfg, recall_system_names(cfg)
+    )
     for r in matches.to_dict("records"):
         to_outcome(r)
     con.execute("BEGIN")

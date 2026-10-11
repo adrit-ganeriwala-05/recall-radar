@@ -4,12 +4,12 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 18:40 ET (clock times before 17:10 in this file were estimates; `git log` has the true times)
-- Branch / HEAD: b/method, pushed to origin (first push 15:00 ET; code tip 0cc27a9, docs after it — check `git log`)
-- Last origin/main merged: 8ef4d3f (PR #6: full ingest, alias table, API), merged 18:35 ET, no conflicts
+- Updated: 2026-10-10 20:20 ET (clock times before 17:10 in this file were estimates; `git log` has the true times)
+- Branch / HEAD: b/method, pushed to origin (pre-freeze PR #8; check `git log` for the tip)
+- Last origin/main merged: dc05d35 (PR #7: A's test-real fix + 16 development labels), merged 20:13 ET, no conflicts
 - Contract version: 1.0.0
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a (hero rule text changed at b93a89e; was 419a39bbf60b) / LDATE_PLUS_7
-- Mode: waiting(A's review of PR #2 at its new head and D's merge; A's tier-3 labels — since 18:40)
+- Mode: waiting(A's re-review of PR #8 at its new head and D's merge; then the human's approval to push tag freeze-v1 — since 20:20)
 
 ## Done (task id → commit → evidence)
 - B1 → fe38661 → `tests/fixtures/method/*.csv` + hand calculations in `docs/METHOD_NOTES.md` §4
@@ -48,15 +48,25 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 
 - Test helpers renamed to `tests/method/method_support.py` (commit after b93a89e): with conftest.py files in tests/api, tests/data and tests/method, a bare `from conftest import …` resolves to whichever loaded last. `uv run pytest` → 270 passed, 8 deselected; `uv run pytest tests/method tests/api` → passes. A's tests still use the bare import and fail to collect in some non-default orders (not in `make test`).
 
+- PR #2 merged to main at c70db51 (A: "Reviewed 454d8b3: ok"). **freeze-v1 deliberately not tagged yet**, see `docs/handoffs/20261010-1930-B-to-A-D-prefreeze-fixes.md`.
+- Review of A's PR #7 at aad9b77 (test-real fix + 16 labels) → posted "Reviewed aad9b77: ok"; one-process `pytest -m real_data` → 8 passed in a scratch merge with main.
+- Pre-freeze fixes (commits after 454d8b3): pipeline revision in provenance, freeze covers method code + newest freeze tag, recall campaigns under older system names, top-25 notes, text hashing of the tagged config. `uv run pytest` → 274 passed, 8 deselected.
+- Dress rehearsal (scratch clone without a remote, development year as stand-in held-out, local tag): pipeline + export OK; `make repro` → MATCH ×4.
+
+- Review of A's PR #7 at its new head 4425bb2 → posted "Reviewed 4425bb2: ok" (only new code: DuckDB memory cap 79f76bc; label file byte-identical to aad9b77; scratch clone: `uv run pytest` → 292 passed; real_data tests/data + tests/api in one process → 7 passed). Merged by D → main dc05d35.
+- A: "Reviewed f7606e1: ok" on PR #8. Agreed order: PR #7 → PR #8 → `freeze-v1` on the commit that merges PR #8 (the development labels are a pipeline input, so they are in main before the tag).
+- main dc05d35 merged into b/method at 038e473 (20:13): `make check` → 296 passed, 29 deselected; web 72 passed; secrets, claims, fill_numbers: 0 problems; ownership: 0 violations. `uv run pytest -m real_data tests/method` → 1 passed.
+- Development run with A's 16 labels at 038e473: `make match evaluate SCOPE=full PERIOD=development` → exit 0, log `logs/full_dev_labels.log`. Tier 1–2 counts unchanged; the seeded sample metric is no longer pending. Still PRELIMINARY (no freeze). Held-out: `evaluate` and `candidates --period held_out` → exit 2.
+
 ## In progress
 - none
 
 ## Next (in order)
-1. PR #2 now carries the freeze content. A reviews its head ("Reviewed <sha7>: ok"), D merges.
-2. When A's `review/match_labels_dev.csv` is on main: merge, re-run `make evaluate SCOPE=full PERIOD=development`; `early_coverage_sample` should become measured.
-3. After A approves the freeze PR and D merges it: `git tag -a freeze-v1 -m "frozen config <hash>"` on that main commit and push the tag (asks the human).
-4. B9: `RR_RAW_DIR=~/rr-raw make pipeline` (held-out once), `python -m recall_radar.method.candidates --period held_out` for A8, `make export`, commit `exports/demo/` only; hand off to A, C, D.
-5. 8:30 PM review of A's data/API follow-ups; B10 `make repro` after rc1.
+1. A re-reviews PR #8 at the new head (only change since f7606e1: main merged in + this file), D merges it. Then `git fetch && git switch main && git merge --ff-only origin/main`.
+2. Tag: `git tag -a freeze-v1 -m "frozen config <hash>"` on the main commit that merges PR #8; push the tag only after the human says yes.
+3. B9: `RR_RAW_DIR=~/rr-raw make pipeline` (held-out once; tree must be clean), `python -m recall_radar.method.candidates --period held_out` for A8, commit `exports/demo/` and `review/candidates_heldout.csv`; hand off to A, C, D.
+4. After A's held-out labels (A8) reach main: re-run evaluate + export and commit the refreshed bundle (the pipeline revision changes with the label file, by design).
+5. Review items for A; B10 `make repro` on rc1 (rehearsed: works).
 
 ## Last passing commands (exact)
 - `uv run pytest` → 127 passed, 1 deselected (the deselected one is the real_data test) at the tip after A's review changes @ 02263ed
