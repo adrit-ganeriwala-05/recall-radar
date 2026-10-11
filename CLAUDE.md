@@ -2,6 +2,9 @@
 
 # Claude Code specifics (owner: D)
 
+v2: read `docs/PRD_v2.md` (FINAL) and `docs/FEATURES_V2.md` before any v2 task; AGENTS.md §1 has the
+verbatim-text, scoped-exception and privacy rules for v2.
+
 AGENTS.md (imported above) holds the shared rules. This file adds only what is specific to
 Claude Code sessions. If the two ever disagree, stop and tell your human; D fixes the files.
 

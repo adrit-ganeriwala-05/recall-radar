@@ -42,6 +42,22 @@ Before sleeping, each worker's session updates `docs/status/<L>.md` and pushes i
 Waits: if blocked, take the "independent task" listed in your prompt; never invent another
 worker's subsystem. Short waits (< 15 min) are cheaper than speculative work.
 
+## 1b. v2 timeline (2026-10-11, PRD_v2 §8 — that table wins)
+| Time (ET) | Step | Owner | Exit |
+| --- | --- | --- | --- |
+| 00:10–00:35 | Gate A | D | certificate committed, `baseline-v1` tagged, `GATE A PASS` posted |
+| 00:35–00:55 | Spec PR (PRD_v2, FEATURES_V2, ownership, rules) + contract v1.1.0 | D, A | merged; `GATE B-SPEC published <sha7>` |
+| 00:55–03:45 | Build | all | merge windows **01:45 · 02:30 · 03:15 · 03:45** (03:45 = cutoff; unmerged = not shipped) |
+| 03:45–04:20 | Gate B | D | `docs/GATE_B.md`: per-feature status + evidence; protected outputs = certificate |
+| 04:20–04:45 | Deploy `rc2` | D | `/healthz` = Gate B SHA; smoke; else rollback to `baseline-v1` |
+| 04:45–05:15 | Gate P (only if every input exists) | D, A | else F9 `blocked(<input>)` |
+| 05:15–06:30 | Docs, shots | D, C | README, Devpost, LEDGER with real statuses |
+| 07:30 | Submit | D | — |
+
+Window rules are §5 below. Order inside a window: contract → A data → B → A API → C UI → D features.
+Cut order if behind: F9 live → F2 generation → F7 → F6 decode → F8 → F3. Never cut Gate A, Gate B,
+protected-output checks or rollback. D records each cut in `docs/LEDGER.md` at the window it happens.
+
 ## 2. Gates
 Each gate records a one-line result in `docs/TASKBOARD.md` (D) with the main SHA it ran on.
 
