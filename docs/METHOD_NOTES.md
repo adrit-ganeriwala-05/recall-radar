@@ -99,7 +99,7 @@ Wilson check (`test_evaluation.py`): 8 of 20 with z = 1.959964 → centre
 `(0.4 + 3.841459/40) / 1.192073 = 0.416113`, half-width
 `1.959964 · sqrt(0.012 + 0.0024009) / 1.192073 = 0.197306`.
 
-## 5. Matching (`match.py`) — tier 1 only so far
+## 5. Matching (`match.py`, `candidates.py`) — tiers 1 to 3
 - A family is one make + model + component system (A's `inv_family`); one investigation is
   usually several families. A family's vehicles = `inv_vehicle` rows of its actions with the
   family's own make, model and system. Only a family with no such row falls back to its
@@ -122,6 +122,16 @@ Wilson check (`test_evaluation.py`): 8 of 20 with z = 1.959964 → centre
   same vehicle and system has `report_date < alert_date`.
 - `recall_campnos`: the matched family's campaigns (deduplicated, sorted); for unmatched
   episodes, campaigns for the same vehicle and system reported inside the follow-up window.
+- **Recall campaigns and system names.** Recall files use the older system names too, so a
+  campaign counts for an episode when its system name is the episode's or a `same_system`
+  partner in `review/system_map.csv` (column `kind`). `cross_filing` pairs are used for tier 2
+  only, where a shared keyword confirms them; a campaign has no text here to do that.
+- **How wide `after_official_action` is.** It is true when *any* related investigation family
+  opened before the alert, or *any* campaign for the same vehicle and system was reported
+  before it, with no limit on how long before. It says "an earlier investigation or recall
+  exists for this vehicle and component system", not that the alert was caused by it. Many
+  episodes carry it. The top-25 audit and the hero use only episodes without it, and the
+  top-25 note states how many episodes of the period that leaves.
 - A leaves RQ/AQ-only families out of `inv_family`, so rule 1 and the `after_official_action`
   flag cannot see a Recall Query or Audit Query that stands alone; a related recall campaign
   reported before the alert still sets the flag. Their file-wide count is quoted in the note
@@ -192,12 +202,18 @@ Wilson check (`test_evaluation.py`): 8 of 20 with z = 1.959964 → centre
 - `ingestion_retained_share` = rows retained / rows read inside the configured received-date
   range. The loaded files also contain years outside the range; those rows are counted in the
   note and left out of the denominator.
-- **Held-out seal.** `--period held_out` exits with code 2 unless tag `freeze-v1` exists, the
-  hash of its `config.yaml` equals the working config hash, and `review/system_map.csv` and
-  `review/keywords.txt` are byte-identical to the tagged versions. The candidate list for the
-  held-out sample is sealed the same way.
+- **Held-out seal.** `--period held_out` exits with code 2 unless a `freeze-v<N>` tag exists and,
+  compared with the newest such tag: the hash of `config.yaml` is the same, `review/system_map.csv`
+  and `review/keywords.txt` are byte-identical, and nothing under `recall_radar/method/` differs
+  (committed or not, including new untracked files). The eligibility, matching, evaluation and
+  hero rules are code, so the freeze covers the code. A change after the freeze needs A's review
+  and the next tag (`freeze-v2`); results then carry that tag name, and the earlier frozen
+  results are kept beside them. The candidate list for the held-out sample is sealed the same way.
 - **Evaluation B (held-out):** episodes starting in the period, not `after_official_action`,
   top `top_k_audit` by `peak_score` (ties by episode id), each with its `alert_match` outcome.
+  `top25_matched` counts early and late outcomes, `top25_unmatched` the unmatched; the note of
+  each lists every outcome in the audit (an `outside_window` episode is in neither count), the
+  size of the pool, and how many unmatched episodes had a recall campaign in the follow-up window.
 - Results on a database whose `snapshot_id` starts with `synthetic` are labeled
   `synthetic_fixture`, never `measured_evaluation`. Before `freeze-v1` every note starts with
   "PRELIMINARY, UNREVIEWED".
@@ -210,8 +226,23 @@ complaint have a count of 0 and no score. Markers: alerts of the same group insi
 then the matched investigation opening and dated recall campaigns, flagged `is_outcome`.
 
 ## 8. Reproducibility
-`provenance.generated_at` is the committer time of `HEAD`, not the wall clock, so the same
-snapshot + config + seed + commit writes identical bytes. JSON floats are rounded to 6 decimals.
+- `provenance.git_sha` is the **pipeline revision**, not `HEAD`: the last commit that changed any
+  input of a result (`config.yaml`, `recall_radar/contracts.py`, `recall_radar/data`,
+  `recall_radar/method`, the two tier-2 review files, the two label files,
+  `snapshots/SNAPSHOT.lock.json`, `uv.lock`). When nothing in that list changed since the freeze
+  tag, it is the tagged commit. `generated_at` is that commit's committer time, and `run_id` ends
+  with its first seven characters.
+- Why: the committed `exports/demo/` files are checked by re-running the pipeline in a clean clone
+  at a *later* commit (`scripts/repro.sh`). A commit that touches only web, docs or the exports
+  themselves must not change a byte, and with this rule it does not. A commit that does touch an
+  input changes the revision, which is correct: the committed results are then stale.
+- A real-data result must come from committed code. With uncommitted changes in those paths the
+  run stops; `RR_ALLOW_DIRTY=1` permits a development-only look and marks the sha `-dirty`. The
+  held-out run never accepts it.
+- JSON floats are rounded to 6 decimals. Row order of the input does not matter (tested).
+- Rehearsed before the freeze in a scratch clone with a development year standing in for the
+  held-out year: pipeline, export, then `make repro` (clean clone, full re-ingest) compared the
+  bundle byte for byte. The rehearsal's numbers are not results and are not recorded.
 
 ## 9. Threshold grid (`tune.py`) — development only
 For every `tuning.grid` setting of `c_min` × `s_star` (plus the config's own setting) the

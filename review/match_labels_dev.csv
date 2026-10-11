@@ -1,0 +1,17 @@
+family_id,group_id,start_month,label,reviewer,note
+F-PE16010~4fb51d,g_5cf08db4f6f5,2016-04,not_related,A,air bag complaints; investigation is the electronic parking brake
+F-PE16017~122e89,g_a510f707f0cf,2016-08,not_related,A,structure complaints; no braking-distance descriptions
+F-PE16017~122e89,g_af85f78859cd,2016-09,not_related,A,air bag complaints; no braking descriptions
+F-PE16017~122e89,g_c8efc0a24140,2016-09,not_related,A,"stalling / loss of power; stop mentions are stop lights, not braking distance"
+F-PE18012~b20ef8,g_20c7524f1a0f,2017-11,not_related,A,air bag complaints; investigation is the brake vacuum pump
+F-PE18012~b20ef8,g_7a7193d961aa,2017-11,not_related,A,air bag complaints; investigation is the brake vacuum pump
+F-PE18012~b20ef8,g_ead8a1f6880a,2017-11,not_related,A,air bag complaints; investigation is the brake vacuum pump
+F-PE19003~32a084,g_4c32a8767fdd,2017-06,unsure,A,"engine failure / noise; one burning-odor mention, no fire described"
+F-PE19003~32a084,g_ad03b8456a2d,2017-06,unsure,A,"engine knocking and failure; smoke from burning oil, no fire described"
+F-PE19003~32a084,g_0b7aa0286efc,2017-08,not_related,A,tail lamp bulbs and sockets; not the investigated fuel-system fires
+F-PE19003~32a084,g_066a230c8581,2018-07,not_related,A,air bag complaints; one melted tail-lamp socket mention
+F-PE19003~32a084,g_314f06fa5d5d,2018-07,not_related,A,air bag / seat belt complaints; no fire described
+F-PE19003~32a084,g_720b16397bfd,2018-08,not_related,A,seat belt complaints; no fire described
+F-PE19003~32a084,g_9c25c4db1817,2018-08,not_related,A,seat belt complaints; no fire described
+F-PE19003~32a084,g_be6ec5638196,2018-08,not_related,A,seat belt complaints; no fire described
+F-PE19003~32a084,g_7898a1fe3001,2018-11,related,A,several complaints describe non-crash engine-compartment fires while driving

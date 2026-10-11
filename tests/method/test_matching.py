@@ -156,3 +156,26 @@ def test_family_owns_only_its_own_make_and_model(db):
     fv = M.load_family_vehicles(db, lonely)
     fv = fv[fv["family_id"] == "F-RANGE"]
     assert fv[["model", "model_year"]].values.tolist() == [["NOWHERE", 2014], ["NOWHERE", 2015], ["NOWHERE", 2016]]
+
+
+def test_recall_under_an_older_name_of_the_same_system_counts(tmp_path):
+    cfg = fixture_config()
+    names = M.recall_system_names(cfg)
+    assert "SERVICE BRAKES, HYDRAULIC" in names["SERVICE BRAKES"] and "ENGINE AND ENGINE COOLING" in names["ENGINE"]
+    # cross-filings are for tier 2 (where a keyword confirms them), never for recalls
+    assert "FORWARD COLLISION AVOIDANCE" not in names.get("SERVICE BRAKES", set())
+    assert "EXTERIOR LIGHTING" not in names.get("ELECTRICAL SYSTEM", set())
+
+    vehicle = {"make": "SYNTHCO", "model": "SOLO", "model_year": 2017}
+    eps = pd.DataFrame([{**vehicle, "comp_system": "SERVICE BRAKES", "config_hash": FIXTURE_HASH, "episode_id": "E-0001", "alert_date": date(2018, 1, 1)}])
+
+    def flag(system, reported, use_names=True):
+        recalls = pd.DataFrame([{**vehicle, "comp_system": system, "campno": "17V900", "report_date": reported}])
+        row = M.match_episodes(eps, NO_PAIRS, NO_FAMILIES, recalls, date(2021, 6, 1), cfg, names if use_names else None).iloc[0]
+        return bool(row["after_official_action"]), list(row["recall_campnos"])
+
+    assert flag("SERVICE BRAKES, HYDRAULIC", date(2017, 12, 1)) == (True, [])  # older name, before the alert
+    assert flag("SERVICE BRAKES, HYDRAULIC", date(2017, 12, 1), use_names=False) == (False, [])
+    assert flag("SERVICE BRAKES, HYDRAULIC", date(2018, 6, 1)) == (False, ["17V900"])  # after the alert: recall-only outcome
+    assert flag("FORWARD COLLISION AVOIDANCE", date(2017, 12, 1)) == (False, [])  # cross-filing: not used for recalls
+    assert flag("STEERING", date(2017, 12, 1)) == (False, [])

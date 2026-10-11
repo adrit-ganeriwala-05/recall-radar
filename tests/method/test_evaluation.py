@@ -39,11 +39,11 @@ def test_wilson_matches_scipy(k, n):
 
 
 @pytest.fixture(scope="module")
-def result(tmp_path_factory, rows):
+def result(tmp_path_factory, rows, untagged_repo):
     con = build_db(tmp_path_factory.mktemp("eval") / "e.duckdb", rows)
     cfg = fixture_config()
     M.run(con, cfg)
-    summary, controls = E.evaluate(con, cfg, "development", "full", config_path=ROOT / "config.yaml")
+    summary, controls = E.evaluate(con, cfg, "development", "full", config_path=untagged_repo / "config.yaml", repo=untagged_repo)
     E.write_tables(con, summary)
     yield summary, controls, con
     con.close()
@@ -112,14 +112,14 @@ def test_synthetic_data_is_never_labeled_as_a_measured_result(result):
     assert con.execute("SELECT count(*) FROM eval_metric WHERE status = 'measured' AND value IS NULL").fetchone()[0] == 0
 
 
-def test_baseline_period_alerts_are_not_counted(tmp_path, rows):
+def test_baseline_period_alerts_are_not_counted(tmp_path, rows, untagged_repo):
     # same data, but call 2016-2017 "baseline only": the COOLDOWN alert of 2017-02-01 no longer counts,
     # so F-PE18003 is left with its alert 50 days after the opening
     con = build_db(tmp_path / "b.duckdb", rows)
     cfg = fixture_config()
     cfg["periods"] = {**cfg["periods"], "baseline_only": ["2016-01-01", "2017-12-31"], "development": ["2018-01-01", "2019-12-31"]}
     M.run(con, cfg)
-    summary, _ = E.evaluate(con, cfg, "development", "full", config_path=ROOT / "config.yaml")
+    summary, _ = E.evaluate(con, cfg, "development", "full", config_path=untagged_repo / "config.yaml", repo=untagged_repo)
     case = {c.family_id: c for c in summary.cases}["F-PE18003"]
     assert (case.status, case.lead_days) == ("after_official_action", -50)
     con.close()
@@ -256,6 +256,82 @@ def test_freeze_also_covers_the_tier2_review_files(repo):
         E.check_freeze(repo / "config.yaml", repo)
 
 
+def test_freeze_covers_the_method_code_and_a_newer_tag_reopens(repo):
+    code = repo / "recall_radar" / "method"
+    code.mkdir(parents=True)
+    (code / "match.py").write_text("RULE = 1\n")
+    run_git(repo, "add", "recall_radar")
+    run_git(repo, "commit", "-q", "-m", "method code")
+    run_git(repo, "tag", "-a", "freeze-v1", "-m", "frozen")
+    assert E.check_freeze(repo / "config.yaml", repo) == "freeze-v1"
+
+    (code / "match.py").write_text("RULE = 2\n")  # not even committed yet
+    with pytest.raises(E.FreezeError, match="recall_radar/method differs from freeze-v1"):
+        E.check_freeze(repo / "config.yaml", repo)
+    run_git(repo, "commit", "-q", "-am", "rule change after the freeze")
+    with pytest.raises(E.FreezeError, match="recall_radar/method differs from freeze-v1"):
+        E.check_freeze(repo / "config.yaml", repo)
+
+    # the reviewed change gets the next tag; the newest freeze tag is the one that counts
+    run_git(repo, "tag", "-a", "freeze-v2", "-m", "frozen again")
+    assert E.latest_freeze_tag(repo) == "freeze-v2"
+    assert E.check_freeze(repo / "config.yaml", repo) == "freeze-v2"
+    (code / "new_rule.py").write_text("X = 1\n")  # untracked file in the frozen folder
+    with pytest.raises(E.FreezeError, match="untracked files"):
+        E.check_freeze(repo / "config.yaml", repo)
+
+
+def head(repo) -> str:
+    return subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True).stdout.strip()
+
+
+def test_pipeline_revision_ignores_unrelated_commits_and_sees_uncommitted_changes(repo):
+    first = head(repo)
+    assert E.pipeline_revision(repo)[::2] == (first, False)
+    (repo / "README.md").write_text("docs\n")
+    run_git(repo, "add", "README.md")
+    run_git(repo, "commit", "-q", "-m", "docs only")
+    sha, stamp, dirty = E.pipeline_revision(repo)
+    assert (sha, dirty) == (first, False) and head(repo) != first  # HEAD moved, the revision did not
+
+    text = (repo / "config.yaml").read_text()
+    (repo / "config.yaml").write_text(text + "\n# edited\n")
+    assert E.pipeline_revision(repo)[2] is True  # uncommitted change to a pipeline input
+    run_git(repo, "commit", "-q", "-am", "config comment")
+    sha2, stamp2, dirty2 = E.pipeline_revision(repo)
+    assert (sha2, dirty2) == (head(repo), False) and sha2 != first and stamp2 >= stamp
+
+    (repo / "review").mkdir()
+    (repo / "review" / "match_labels_dev.csv").write_text("family_id,group_id,start_month,label\n")
+    assert E.pipeline_revision(repo)[2] is True  # a labels file that is not committed yet
+
+
+def test_real_data_results_must_come_from_committed_code(repo, tmp_path, rows, monkeypatch):
+    run_git(repo, "tag", "-a", "freeze-v1", "-m", "frozen")
+    con = build_db(tmp_path / "real.duckdb", rows)
+    con.execute("UPDATE source_snapshot SET snapshot_id = 'abc123def456'")  # looks like a real snapshot
+    cfg = fixture_config()
+    cfg["periods"] = {**cfg["periods"], "held_out": ["2018-01-01", "2018-12-31"]}
+    M.run(con, cfg)
+    clean = E.provenance(con, cfg, repo)
+    assert clean.data_label == C.DataLabel.measured_evaluation and clean.git_sha == head(repo)
+
+    # a comment does not change the config hash, so the freeze still holds, but the tree is dirty
+    (repo / "config.yaml").write_text((repo / "config.yaml").read_text() + "\n# edited\n")
+    with pytest.raises(RuntimeError, match="uncommitted changes in pipeline inputs"):
+        E.provenance(con, cfg, repo)
+    with pytest.raises(RuntimeError, match="uncommitted changes in pipeline inputs"):
+        E.evaluate(con, cfg, "development", "full", config_path=repo / "config.yaml", repo=repo)
+
+    # the override is for a development-only look and marks the result; held_out never accepts it
+    monkeypatch.setenv("RR_ALLOW_DIRTY", "1")
+    dev, _ = E.evaluate(con, cfg, "development", "full", config_path=repo / "config.yaml", repo=repo)
+    assert dev.provenance.git_sha == head(repo) + "-dirty"
+    with pytest.raises(RuntimeError, match="uncommitted changes in pipeline inputs"):
+        E.evaluate(con, cfg, "held_out", "full", config_path=repo / "config.yaml", repo=repo)
+    con.close()
+
+
 def test_held_out_runs_with_the_tag_and_audits_top_episodes(repo, tmp_path_factory, rows):
     run_git(repo, "tag", "-a", "freeze-v1", "-m", "frozen")
     con = build_db(tmp_path_factory.mktemp("held") / "h.duckdb", rows)
@@ -270,6 +346,12 @@ def test_held_out_runs_with_the_tag_and_audits_top_episodes(repo, tmp_path_facto
     ]  # fmt: skip
     m = {x.name: x for x in summary.metrics}
     assert (m["top25_matched"].numerator, m["top25_matched"].denominator) == (1, 2)
+    # WORKED: early. WARM: outside_window (next PE 884 days later), so it is neither matched nor unmatched;
+    # the note accounts for every audited episode. WARM's recall 19V777 is not "recall only": that label is for unmatched.
+    assert "outcomes: early 1, outside_window 1; 0 of the unmatched had a recall campaign" in m["top25_matched"].note
+    # 5 episodes start in 2018; RUN3 (recall before the alert), COOLDOWN 2018-02 and PARTIAL (investigation
+    # already open) are after official action, which leaves WORKED and WARM
+    assert "top 2 episodes by peak score among the 2 of 5 episodes of the period" in m["top25_matched"].note
     assert m["top25_unmatched"].numerator == 0
     assert math.isclose(m["top25_matched"].value, 0.5)
     con.close()

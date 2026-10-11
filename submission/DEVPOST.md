@@ -22,8 +22,8 @@ at the time.
 - **Search** any make, model and year and see its complaints by component, month by month.
 - **Issue page:** complaint counts against an expected baseline, a one-sentence explanation of the
   score, and the redacted complaint excerpts with links to each NHTSA record.
-- **Replay:** step through history month by month. The detector only sees complaints whose
-  records say they were available before each cutoff. ▲ marks the alert; ◆ marks the
+- **Replay:** step through history month by month. The detector only sees complaints that
+  counted as public (received date plus seven days) before each cutoff. ▲ marks the alert; ◆ marks the
   investigation opening, shown as a later reveal.
 - **Results:** how often the frozen detector raised an alert early for documented investigations,
   next to the rate expected by chance, with every miss and unmatched alert listed.
@@ -33,6 +33,11 @@ recall forecast, and not a claim that we noticed anything before NHTSA staff did
 specific car, use NHTSA's VIN lookup: https://www.nhtsa.gov/recalls.
 
 ## Results (held-out year, thresholds frozen before it was run)
+[verdict.held_out]
+
+What Recall Radar is for, whatever that comparison shows: reading a vehicle's full complaint
+history and seeing what was public before each NHTSA investigation.
+
 - Early alerts for [held_out.early_coverage_all] of eligible investigations ([held_out.early_coverage_all.numerator] of [held_out.early_coverage_all.denominator]; 95-percent Wilson interval [held_out.early_coverage_all.ci_low]–[held_out.early_coverage_all.ci_high]).
 - Chance comparison: matched control groups reached [held_out.chance_coverage].
 - Median lead time when early: [held_out.median_lead_days] days.
@@ -50,8 +55,10 @@ TypeScript) keep the four parts in agreement; CI checks drift. Release: tag `rc1
 hash <REPRO_HASH from B10>.
 
 ## Challenges
-Time-travel honesty: today's files contain later corrections, so the replay uses each complaint's
-"added to file" date as the availability proxy and says so on screen. Distinct counting: one
+Time-travel honesty: the "added to file" date equals the received date for almost all complaints
+(it looks rewritten by a later system update), so it could not show when a record became public.
+Instead each complaint counts as public seven days after NHTSA received it, and every screen says
+"received-date experiment". Distinct counting: one
 complaint can list several components. Evaluation discipline: thresholds were tuned on
 development years only and frozen (git tag `freeze-v1`) before the held-out year was run.
 
