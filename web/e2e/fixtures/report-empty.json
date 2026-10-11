@@ -1,0 +1,33 @@
+{
+ "provenance": {
+  "contract_version": "1.1.0",
+  "data_label": "synthetic_fixture",
+  "snapshot_id": null,
+  "data_as_of": null,
+  "config_hash": null,
+  "git_sha": null,
+  "availability_basis": null,
+  "generated_at": "2026-10-10T16:00:00Z"
+ },
+ "vehicle": {
+  "make": "EXAMPLE MOTORS",
+  "model": "ROADSTER",
+  "model_year": 2017
+ },
+ "complaint_date_range": {
+  "start": null,
+  "end": null
+ },
+ "snapshot_date": null,
+ "distinct_complaints": 0,
+ "counting_basis": "distinct NHTSA complaint IDs",
+ "top_groups": [],
+ "shown_n": 0,
+ "total_groups": 0,
+ "investigations": [],
+ "total_investigations": 0,
+ "campaigns": [],
+ "total_campaigns": 0,
+ "vin_lookup_url": "https://www.nhtsa.gov/recalls",
+ "selection_rule": "Top 5 issue groups by distinct complaints (ties by component name); up to 5 investigations, newest first; up to 6 recall campaigns, newest report date first."
+}
