@@ -102,6 +102,26 @@ describe("VinCheck component", () => {
     expect((await screen.findByTestId("vin-mismatch")).textContent).toMatch(/not the 2017 EXAMPLE MOTORS ROADSTER/);
   });
 
+  it("partial decode with year/make/model (bad check digit) still offers the confirmed path", async () => {
+    vpic({ Make: "FORD", Model: "F-150", ModelYear: "2019", ErrorCode: "1", ErrorText: "1 - Check Digit (9th position) does not calculate properly" });
+    show();
+    fireEvent.change(screen.getByLabelText(/Vehicle identification number/), { target: { value: VIN } });
+    fireEvent.click(screen.getByRole("button", { name: "Decode with NHTSA" }));
+    expect((await screen.findByTestId("vin-partial")).textContent).toMatch(/only part of this VIN \(2019 FORD F-150\)\. 1 - Check Digit/);
+    expect(screen.queryByTestId("where")).toBeNull(); // still needs the confirmation
+    fireEvent.click(screen.getByRole("button", { name: "Yes, show this vehicle" }));
+    expect((await screen.findByTestId("where")).textContent).toBe("/vehicle?make=FORD&model=F-150&year=2019");
+  });
+
+  it("partial decode without a model offers no vehicle link", async () => {
+    vpic({ Make: "BMW", Model: "", ModelYear: "2011", ErrorCode: "6", ErrorText: "6 - Incomplete VIN" });
+    show();
+    fireEvent.change(screen.getByLabelText(/Vehicle identification number/), { target: { value: VIN } });
+    fireEvent.click(screen.getByRole("button", { name: "Decode with NHTSA" }));
+    await screen.findByTestId("vin-partial");
+    expect(screen.queryByRole("button", { name: "Yes, show this vehicle" })).toBeNull();
+  });
+
   it.each([
     [{ Make: "", Model: "", ModelYear: "", ErrorCode: "5", ErrorText: "5 - VIN has errors" }, "vin-error"],
     [{ Make: "BMW", Model: "", ModelYear: "2011", ErrorCode: "6", ErrorText: "6 - Incomplete VIN" }, "vin-partial"],
