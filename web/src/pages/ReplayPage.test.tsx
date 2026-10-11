@@ -103,15 +103,21 @@ describe("agreement: cutoff rules hold for every replay we ship (fixtures + expo
     renderReplay(data);
     data.frames.forEach((frame, i) => {
       expect(barMonths()).toEqual(data.frames.slice(0, i + 1).map((f) => f.month));
-      const shown = [
-        ...screen.queryAllByTestId("marker-alert"),
-        ...screen.queryAllByTestId("marker-investigation"),
-        ...screen.queryAllByTestId("marker-recall"),
-      ].length;
-      const due = data.markers.filter(
-        (m) => m.date <= frame.cutoff && data.frames.some((f) => f.cutoff >= m.date),
-      ).length;
+      // every visible marker is listed under the chart (the SVG stacks at most 4 per month, PRD v2 F3)
+      const shown = screen.queryAllByTestId("legend-marker").length;
+      const due = data.markers.filter((m) => {
+        const linkedRecall = m.type === "recall_reported" && !!m.campno && !!m.link;
+        // PRD v2 F3.3: a linked recall marker appears only once the cutoff is past its date; others at cutoff >= date
+        return (linkedRecall ? frame.cutoff > m.date : m.date <= frame.cutoff) && data.frames.some((f) => f.cutoff >= m.date);
+      }).length;
       expect(shown).toBe(due);
+      // the SVG never shows more than 4 markers on one month
+      const perMonth = new Map<string, number>();
+      for (const el of [...screen.queryAllByTestId("marker-alert"), ...screen.queryAllByTestId("marker-investigation"), ...screen.queryAllByTestId("marker-recall")]) {
+        const k = el.getAttribute("x") ?? "";
+        perMonth.set(k, (perMonth.get(k) ?? 0) + 1);
+      }
+      expect(Math.max(0, ...perMonth.values())).toBeLessThanOrEqual(4);
       if (i < data.frames.length - 1) forward();
     });
   });
