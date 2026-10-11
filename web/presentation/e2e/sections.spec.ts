@@ -198,3 +198,16 @@ test("sections reflow at representative sizes (no overflow; 44 px targets)", asy
     expect(paragraphWidth, `${w}x${h} reading width`).toBeLessThanOrEqual(780);
   }
 });
+
+test("selected category survives foldable and orientation changes (no reload)", async ({ page }) => {
+  await page.setViewportSize({ width: 280, height: 653 });
+  await mockApi(page);
+  await page.goto(PAGE);
+  await explore(page).getByRole("button", { name: /SERVICE BRAKES/ }).click();
+  for (const [w, h] of [[653, 841], [841, 653], [280, 653], [844, 390], [390, 844]] as [number, number][]) {
+    await page.setViewportSize({ width: w, height: h });
+    await expect(explore(page).getByRole("button", { name: /SERVICE BRAKES/ }), `${w}x${h}`).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("#explore-panel-title"), `${w}x${h}`).toHaveText("SERVICE BRAKES");
+    expect(await horizontalOverflow(page), `${w}x${h} overflow`).toBeLessThanOrEqual(0);
+  }
+});
