@@ -276,9 +276,27 @@ the pre-written coverage rule, and the note of `early_coverage_all` says how man
 They are never eligible as the hero: `hero_rule` skips any family whose best episode has
 `after_official_action = true`.
 
-## 11. Open items
-- Development period, full data, tiers 1–2: early coverage is no higher than chance. Numbers:
-  `docs/handoffs/20261010-1825-B-to-A-D-full-dev-run.md`; Gate 1 on bounded data: the two
-  `…-B-to-D-gate1*.md` records. No detection claim is supported so far.
-- Tier-3 labels for the development sample are with A (`review/candidates_dev.csv`).
-- Freeze, held-out run, export bundle and hero come after PR #2 and A's review of the freeze diff.
+## 11. State after the freeze, and known limits
+- `freeze-v1` → main dd6b439 (config hash 0c26e23e0a3a). The held-out year was run once. Results are in
+  `exports/demo/results.csv`; record: `docs/handoffs/20261010-2035-B-to-A-C-D-frozen-run.md`. In words: on the
+  held-out year the early coverage is not above the matched-control rate, and on the development years it equals
+  it. No detection claim is supported.
+- Tier-3 labels: development and held-out candidate lists were both labeled by A (`review/match_labels_*.csv`).
+- Nothing under `recall_radar/method/`, `config.yaml`, `review/system_map.csv` or `review/keywords.txt` changes
+  without a new `freeze-v<N>` tag and a note that the held-out year had already been seen.
+
+Known limits found by the edge-case tests after the freeze (`tests/method/test_edge_cases.py`,
+`tests/method/test_committed_bundle.py`). None changes a committed number; each is left as it is because the code
+is frozen.
+- **A period in which no investigation family opened at all** stops in `select_controls` with a `KeyError`
+  instead of reporting `not_applicable`. Both configured periods have families. A period with families but nothing
+  eligible, and one with eligible families but no early alert, are handled (not_applicable, and a measured zero
+  with its interval). Tripwire: the strict `xfail` test `test_period_without_any_family_reports_not_applicable`.
+- **Interval limits are exact only to float precision.** At 0 of n or n of n the Wilson limit that should be
+  exactly 0 or 1 can be off by about 2e-16. Exports round to 6 decimals, so the files show 0.0 and 1.0.
+- **A replay shows the episode's own outcome, which is not always the family that selected it.** The bundle
+  exports the best episode of each early case. When that alert also followed an earlier related investigation of
+  another family, its replay says "after official action" with a negative lead (in the committed bundle this is
+  the case for a few tier-2 and tier-3 early cases; the hero is never one of them, by the frozen rule). The
+  results page counts the family as early under tiers 1–2; the replay page shows the earlier investigation. Both
+  are true, and the `early_coverage_all` note already counts how many early families this applies to.
