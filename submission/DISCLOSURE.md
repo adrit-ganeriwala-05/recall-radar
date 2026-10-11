@@ -4,8 +4,11 @@
 
 - **Created before Hacklanta:** nothing of ours. No code, data processing or design predates the
   event (Oct 9–11, 2026). We used open-source libraries (Python, DuckDB, SciPy, pandas, FastAPI,
-  Uvicorn, Pydantic, React, Vite, TypeScript, Recharts, Vitest, Playwright, Caddy) under their
-  licenses.
+  Uvicorn, Pydantic, React, Vite, TypeScript, visx, D3, Motion, Next.js, three.js, React Three Fiber,
+  GSAP, Vitest, Playwright, Caddy) and open fonts (Space Grotesk, Manrope) under their licenses.
+- **Third-party asset:** the car on the 3D page is "Car Concept" by Eric Chadwick (© Darmstadt
+  Graphics Group GmbH), Khronos glTF Sample Assets, CC BY 4.0, modified (licence plate and Khronos <!-- numbers-ok -->
+  logo removed); details in `web/presentation/public/models/ATTRIBUTION.md`.
 - **AI assistance:** planning documents, contracts, coordination files and code were written with
   Claude (Anthropic) via Claude Code during the event, starting 2026-10-10. Every change was
   committed to the public repository; the git history shows who and when.
