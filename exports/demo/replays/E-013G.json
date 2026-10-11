@@ -1,0 +1,513 @@
+{
+  "provenance": {
+    "contract_version": "1.0.0",
+    "data_label": "cached_real",
+    "snapshot_id": "e808281f001a",
+    "data_as_of": "2026-10-10",
+    "config_hash": "0c26e23e0a3a",
+    "git_sha": "dd6b4394f858051212d88c92599af6d2094c1e72",
+    "availability_basis": "LDATE_PLUS_7",
+    "generated_at": "2026-10-11T00:20:50Z"
+  },
+  "episode_id": "E-013G",
+  "group_id": "g_7898a1fe3001",
+  "vehicle": {
+    "make": "HYUNDAI",
+    "model": "SONATA",
+    "model_year": 2012
+  },
+  "comp_system": "ENGINE",
+  "frames": [
+    {
+      "cutoff": "2017-12-01",
+      "month": "2017-11",
+      "n_distinct": 3,
+      "baseline_lambda": 9.833333,
+      "score": 0.06601,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-01-01",
+      "month": "2017-12",
+      "n_distinct": 3,
+      "baseline_lambda": 9.0,
+      "score": 0.053396,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-02-01",
+      "month": "2018-01",
+      "n_distinct": 2,
+      "baseline_lambda": 7.166667,
+      "score": 0.074855,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-03-01",
+      "month": "2018-02",
+      "n_distinct": 5,
+      "baseline_lambda": 6.416667,
+      "score": 0.336947,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-04-01",
+      "month": "2018-03",
+      "n_distinct": 1,
+      "baseline_lambda": 6.416667,
+      "score": 0.208499,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-05-01",
+      "month": "2018-04",
+      "n_distinct": 2,
+      "baseline_lambda": 6.083333,
+      "score": 0.026112,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-06-01",
+      "month": "2018-05",
+      "n_distinct": 0,
+      "baseline_lambda": 5.666667,
+      "score": 0.010133,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-07-01",
+      "month": "2018-06",
+      "n_distinct": 2,
+      "baseline_lambda": 5.5,
+      "score": 0.011693,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-08-01",
+      "month": "2018-07",
+      "n_distinct": 4,
+      "baseline_lambda": 5.25,
+      "score": 0.368742,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-09-01",
+      "month": "2018-08",
+      "n_distinct": 6,
+      "baseline_lambda": 5.333333,
+      "score": 1.34116,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-10-01",
+      "month": "2018-09",
+      "n_distinct": 4,
+      "baseline_lambda": 5.166667,
+      "score": 1.416996,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-11-01",
+      "month": "2018-10",
+      "n_distinct": 10,
+      "baseline_lambda": 5.25,
+      "score": 2.957952,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2018-12-01",
+      "month": "2018-11",
+      "n_distinct": 8,
+      "baseline_lambda": 5.25,
+      "score": 4.985985,
+      "partial": false,
+      "alert_active": true
+    },
+    {
+      "cutoff": "2019-01-01",
+      "month": "2018-12",
+      "n_distinct": 13,
+      "baseline_lambda": 5.833333,
+      "score": 6.02597,
+      "partial": false,
+      "alert_active": true
+    },
+    {
+      "cutoff": "2019-02-01",
+      "month": "2019-01",
+      "n_distinct": 8,
+      "baseline_lambda": 6.333333,
+      "score": 5.480007,
+      "partial": false,
+      "alert_active": true
+    },
+    {
+      "cutoff": "2019-03-01",
+      "month": "2019-02",
+      "n_distinct": 7,
+      "baseline_lambda": 7.416667,
+      "score": 2.029101,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2019-04-01",
+      "month": "2019-03",
+      "n_distinct": 9,
+      "baseline_lambda": 7.916667,
+      "score": 2.124603,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2019-05-01",
+      "month": "2019-04",
+      "n_distinct": 4,
+      "baseline_lambda": 8.333333,
+      "score": 1.090486,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2019-06-01",
+      "month": "2019-05",
+      "n_distinct": 1,
+      "baseline_lambda": 8.833333,
+      "score": 0.027267,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2019-07-01",
+      "month": "2019-06",
+      "n_distinct": 7,
+      "baseline_lambda": 8.916667,
+      "score": 0.176361,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2019-08-01",
+      "month": "2019-07",
+      "n_distinct": 12,
+      "baseline_lambda": 8.75,
+      "score": 2.747671,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2019-09-01",
+      "month": "2019-08",
+      "n_distinct": 6,
+      "baseline_lambda": 9.0,
+      "score": 2.274123,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2019-10-01",
+      "month": "2019-09",
+      "n_distinct": 5,
+      "baseline_lambda": 9.916667,
+      "score": 0.390901,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2019-11-01",
+      "month": "2019-10",
+      "n_distinct": 4,
+      "baseline_lambda": 10.166667,
+      "score": 0.16391,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2019-12-01",
+      "month": "2019-11",
+      "n_distinct": 8,
+      "baseline_lambda": 10.5,
+      "score": 0.442162,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2020-01-01",
+      "month": "2019-12",
+      "n_distinct": 2,
+      "baseline_lambda": 10.5,
+      "score": 0.219778,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2020-02-01",
+      "month": "2020-01",
+      "n_distinct": 2,
+      "baseline_lambda": 10.916667,
+      "score": 0.002279,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2020-03-01",
+      "month": "2020-02",
+      "n_distinct": 3,
+      "baseline_lambda": 10.833333,
+      "score": 0.0074,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2020-04-01",
+      "month": "2020-03",
+      "n_distinct": 3,
+      "baseline_lambda": 10.833333,
+      "score": 0.018376,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2020-05-01",
+      "month": "2020-04",
+      "n_distinct": 5,
+      "baseline_lambda": 10.666667,
+      "score": 0.07886,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2020-06-01",
+      "month": "2020-05",
+      "n_distinct": 4,
+      "baseline_lambda": 10.833333,
+      "score": 0.123275,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2020-07-01",
+      "month": "2020-06",
+      "n_distinct": 5,
+      "baseline_lambda": 11.083333,
+      "score": 0.110513,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2020-08-01",
+      "month": "2020-07",
+      "n_distinct": 5,
+      "baseline_lambda": 11.416667,
+      "score": 0.153077,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2020-09-01",
+      "month": "2020-08",
+      "n_distinct": 4,
+      "baseline_lambda": 11.666667,
+      "score": 0.085183,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2020-10-01",
+      "month": "2020-09",
+      "n_distinct": 4,
+      "baseline_lambda": 11.75,
+      "score": 0.046244,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2020-11-01",
+      "month": "2020-10",
+      "n_distinct": 5,
+      "baseline_lambda": 11.583333,
+      "score": 0.088452,
+      "partial": false,
+      "alert_active": false
+    },
+    {
+      "cutoff": "2020-12-01",
+      "month": "2020-11",
+      "n_distinct": 2,
+      "baseline_lambda": 11.583333,
+      "score": 0.02577,
+      "partial": false,
+      "alert_active": false
+    }
+  ],
+  "markers": [
+    {
+      "type": "investigation_opened",
+      "date": "2018-08-21",
+      "label": "Investigation DP18003 opened (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": "DP18003",
+      "match_tier": "2",
+      "lead_days": -102
+    },
+    {
+      "type": "alert",
+      "date": "2018-12-01",
+      "label": "Alert: this complaint pattern deserves a closer look",
+      "is_outcome": false,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2018-12-19",
+      "label": "Recall campaign 18V907000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2018-12-28",
+      "label": "Recall campaign 18V934000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2019-02-22",
+      "label": "Recall campaign 19V120000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2019-03-14",
+      "label": "Recall campaign 19V204000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2020-02-04",
+      "label": "Recall campaign 20V061000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2020-02-28",
+      "label": "Recall campaign 20V121000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2020-07-02",
+      "label": "Recall campaign 20V393000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2020-08-27",
+      "label": "Recall campaign 20V520000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2020-09-04",
+      "label": "Recall campaign 20V543000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2020-12-01",
+      "label": "Recall campaign 20V746000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2021-04-28",
+      "label": "Recall campaign 21V303000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2021-09-17",
+      "label": "Recall campaign 21V727000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null
+    }
+  ],
+  "outcome": {
+    "episode_id": "E-013G",
+    "family_id": "F-DP18003~99c816",
+    "earliest_action_no": "DP18003",
+    "inv_type": "DP",
+    "investigation_open_date": "2018-08-21",
+    "tier": "2",
+    "basis": "Tier 2: investigation DP18003 (opened 2018-08-21) names the same make and model, a model year within the allowed range and the same or a paired component system; shared keywords: FIRE, STALL.",
+    "confidence": "medium",
+    "lead_days": -102,
+    "status": "after_official_action",
+    "recall_campnos": [
+      "18V907000",
+      "18V934000",
+      "19V120000",
+      "19V204000",
+      "20V061000",
+      "20V121000",
+      "20V393000",
+      "20V520000",
+      "20V543000",
+      "20V746000",
+      "21V303000",
+      "21V727000"
+    ],
+    "follow_up_end": "2020-11-30",
+    "follow_up_complete": true,
+    "reviewer": null
+  },
+  "banner": "Received-date experiment: this replay orders complaints by the date NHTSA received them plus 7 days, using today's records and labels. It is not an archive of what the website showed on each date."
+}
