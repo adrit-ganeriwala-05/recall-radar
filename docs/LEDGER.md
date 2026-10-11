@@ -5,7 +5,7 @@ disabled · blocked(<input>) · not started. **verified** needs: PR merged befor
 criterion with a named passing test or recorded inspection at the Gate B SHA, deployed `/healthz` =
 that SHA, and a deployed browser check.
 
-Updated 03:55 ET. GATE B PASS at b963d64 + DB a0bdcbbb (docs/GATE_B.md); deployed, tag rc2. Production = rc2.
+Updated 05:50 ET. GATE B PASS at b963d64 + DB a0bdcbbb (docs/GATE_B.md); tag rc2. Production = fd6323a (messaging/F6 changes after the cutoff; see RELEASE_MANIFEST.md).
 
 | task id | source | owner | deps | paths | acceptance check | verified commit | state | blocker |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -26,6 +26,10 @@ Updated 03:55 ET. GATE B PASS at b963d64 + DB a0bdcbbb (docs/GATE_B.md); deploye
 | F8 | PRD §4 F8 | B, A, D | C1.1 | report select/API/render | deployed 1-page PDF ×4 | b963d64 | verified | — |
 | F9 | PRD §4 F9 | A, D | Gate P | messaging/**, deploy/messaging/** | disabled deploy + health | b963d64 | disabled | Gate P: Adrit opts in + live run; documents fallback(link) unless reportlab |
 
+| F9-gateP | PRD §8 Gate P | D, A | Photon, tester | deploy/messaging/** | signed inbound 200 + reply delivered to Adrit (04:2x); bug found: X-Spectrum-Webhook-Id is constant → #59 per-message dedupe; kill switch auto-off 05:04 verified (webhook 503, sidecar + timer stopped) | c3baf25, fd6323a | implemented-unverified | STOP + queue-cancel with the real tester not yet recorded; documents fallback(link) |
+| F9.7-brain | PRD §4 F9.7 | A (by D) | key | recall_radar/messaging/brain.py | 22 mocked-model tests; live VM probe (vehicle extracted, reply reworded, numbers + links validated); merged after cutoff | fd6323a | implemented-unverified | post-cutoff (PRD §9) |
+| F9.6-alerts | PRD §4 F9.6 | A, D (by D) | Gate P | messaging/job.py, recall-radar-monitor.{service,timer} | 5 job tests (seed, daily diff, quiet hours, STOP, lock); first VM run seeded silently | fd6323a | implemented-unverified | no real NHTSA change observed yet; post-cutoff |
+| F6-partial | PRD §4 F6.4 | A (by D) | — | web/src/features/vin/** | live: 1FTFW1RG4KFA00412 (check digit wrong) decoded 2019 FORD F-150 but dead-ended → #63 confirm path; 2 tests | #63 | implemented-unverified | merge + deploy pending |
 
 ## Reproducibility
 B (B10): `git checkout baseline-v1 && make repro` → exit 0, MATCH ×4; results.csv sha256 7a469c93…c561321a unchanged.

@@ -12,3 +12,19 @@
 | Feature flags | all on (no VITE_FEATURES_OFF) |
 | Messaging | **disabled** (RR_MESSAGING_ENABLED=0; sidecar stopped; Caddy routes /spectrum-webhook → 503) |
 | Rollback | `bash deploy/rollback.sh` (previous = baseline-v1 release 45fd5ac) |
+
+## After Gate B — production now (owner D) · updated 05:50 ET
+
+Production is **not** the Gate B SHA. Every change since rc2 is in messaging (`recall_radar/messaging/**`,
+`deploy/messaging/**`) or F6 (`web/src/features/vin/**`); the analysis API, DB and other web features are
+unchanged. All of it merged **after the 03:45 feature cutoff** at the human's request, with self-review disclosed
+on each PR (not independent).
+
+| Item | Value |
+| --- | --- |
+| Production SHA | fd6323ab137340328fa3662889bd0362c60059ec (deployed 04:56 ET; `/healthz` git_sha matches) |
+| DB served | unchanged: recall_radar_v2.duckdb a0bdcbbb… · snapshot e808281f001a |
+| Since rc2 | #58 echo guard (rc3 dfe9caf) · #59 dedupe per message id (c3baf25) · #60 Gemini brain · #61 monitor job · #62 monitor timer + Gate P outbound · #63 F6 partial-decode confirm (pending merge/deploy) |
+| Messaging | Gate P window only (`gatep.sh on`, guarded: auto-off at the window end, kill on > 6 replies to one route in 60 s). Off = RR_MESSAGING_ENABLED=0, sidecar + monitor timer stopped, messaging loopback-only |
+| Gemini (chat) | `RR_GEMINI_MODEL=gemini-3.1-flash-lite`, free tier (not zero data retention); off with `RR_BRAIN=0` |
+| Rollback | `bash deploy/rollback.sh` → previous release (c3baf25) |
