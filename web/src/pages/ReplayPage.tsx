@@ -1,10 +1,12 @@
 // Owner: C. C3 replay: step month by month through what was public at each cutoff.
-import { useEffect, useState, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useState, type KeyboardEvent } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getHero, getReplay } from "../api/client";
+import { getHero, getReplay, getVehicle } from "../api/client";
 import { useApi } from "../api/useApi";
 import { BarChart } from "../components/BarChart";
 import { ProvenanceBar } from "../components/Provenance";
+import { RecallDrawer } from "../components/RecallDrawer";
+import { features } from "../features";
 import { Empty, ErrorState, Loading } from "../components/States";
 import { VIN_LOOKUP_URL } from "../components/VinBox";
 import type { OutcomeMatch, Replay } from "../contracts.gen";
@@ -75,6 +77,19 @@ export function ReplayView({ data }: { data: Replay }) {
   const last = frames.length - 1;
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
+  // PRD v2 F3: recall markers with campno/link open the F1 card; hidden until their date unless toggled
+  const linked = features.recallMarkers && data.markers.some((m) => m.type === "recall_reported" && m.campno && m.link);
+  const [showLater, setShowLater] = useState(false);
+  const [drawer, setDrawer] = useState<{ campno: string; link: "issue" | "vehicle" | null; el: Element } | null>(null);
+  const [veh] = useApi(
+    linked && drawer ? () => getVehicle(data.vehicle.make, data.vehicle.model, data.vehicle.model_year) : null,
+    [linked && drawer !== null],
+  );
+  const closeDrawer = useCallback(() => {
+    const el = drawer?.el as HTMLElement | SVGElement | undefined;
+    setDrawer(null);
+    setTimeout(() => el?.focus(), 0);
+  }, [drawer]);
 
   useEffect(() => {
     if (!playing) return;
@@ -158,11 +173,28 @@ export function ReplayView({ data }: { data: Replay }) {
         {frame.alert_active ? <strong>▲ Alert active.</strong> : "No alert."}
       </p>
 
+      {linked && (
+        <label className="small later-toggle">
+          <input type="checkbox" checked={showLater} onChange={(e) => setShowLater(e.target.checked)} /> Show later outcomes
+          (recall campaigns reported after the current replay date)
+        </label>
+      )}
+      {drawer && (
+        <RecallDrawer
+          campno={drawer.campno}
+          link={drawer.link}
+          campaign={veh.state === "done" && veh.ok ? veh.data.recall_campaigns.find((c) => c.campno === drawer.campno) : undefined}
+          loading={veh.state === "loading"}
+          vehicle={data.vehicle}
+          dataAsOf={veh.state === "done" && veh.ok ? veh.data.provenance.data_as_of : null}
+          onClose={closeDrawer}
+        />
+      )}
       <BarChart
         title="Distinct complaints per month, as known at the replay date"
         valueLabel="Distinct complaints"
         points={framePoints(frames, index)}
-        markers={frameMarkers(frames, data.markers, index)}
+        markers={frameMarkers(frames, data.markers, index, linked ? { showLater, onRecall: (campno, el) => setDrawer({ campno, el, link: data.markers.find((m) => m.campno === campno)?.link ?? null }) } : {})}
         extraHeaders={["Expected (2-month window)", "Surprise score"]}
       />
       <p className="small">
