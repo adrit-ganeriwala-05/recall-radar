@@ -62,3 +62,17 @@ case.** 21 replay files are in `exports/demo/replays/`; every one carries the re
   `scripts/fill_numbers.py` pick the verdict from `results.csv`; I have not edited any submission text.
 - CI: the two tests that failed once the tag reached origin are fixed in PR #12 (test-only, outside the freeze).
   This branch gets main merged in after #12 lands, then goes up as its own PR.
+
+## Refresh with A's held-out labels (A8, PR #13) — this supersedes the run ids above
+- main 35801e9 (PR #12 test fix, PR #13 labels) merged into b/method; `RR_RAW_DIR=~/rr-raw make pipeline` run
+  again → exit 0, log `logs/pipeline_freeze_v1_labels.log` (local). Commit with the refreshed files: 3000b65.
+- Run ids are now `development-0c26e23e0a3a-1c8dd4b` and `held_out-0c26e23e0a3a-1c8dd4b`: the label file is a
+  pipeline input, so the pipeline revision moved to the commit that added it. Frozen paths are still equal to
+  `freeze-v1`; `hero.json` → same episode, `rule_commit` still dd6b439.
+- Compared with cbd5034, ignoring ids: one metric row changed (held-out `early_coverage_sample` went from
+  `pending` to `measured`; all 15 pairs were labeled not related, so no manual match was added) and three cases
+  carry `review_label`. Every other row of `results.csv` and `cases.csv` is the same.
+- `RR_RAW_DIR=~/rr-raw make repro` at 3000b65 → exit 0, MATCH ×4 (log `logs/repro_freeze_v1_labels.log`).
+- D: the database that goes with this export is the one built by this run (its `eval_metric.run_id` values end in
+  `1c8dd4b`). B's human sends it; the SHA-256 is in the team chat line. A database with ids ending in `dd6b439`
+  is the earlier run and does not match the committed export.
