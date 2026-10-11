@@ -42,6 +42,24 @@ and alerts sent. Incoming message text is not stored, but each question's text i
 tier, which Google may keep and review), so don't send personal details. Replying DELETE removes every stored
 row for the chat; only a one-way hash remains, to keep a late message from re-enrolling it.
 
+## How we built it: spec-driven
+Four Claude Code agents (A data and API, B detection and evaluation, C frontend, D integration and
+delivery) worked in parallel from written specs, following the specify → plan → tasks → implement
+pattern of spec-driven development. We wrote our own documents for each step; we did not use GitHub's
+Spec Kit tool itself.
+
+| Step | Files | What they hold |
+| --- | --- | --- |
+| Rules | [`AGENTS.md`](AGENTS.md), [`CLAUDE.md`](CLAUDE.md), [`docs/OWNERSHIP.md`](docs/OWNERSHIP.md) | Rules every agent follows: wording limits, privacy, who owns which paths, merge rules |
+| Specify | [`docs/PROJECT_SPEC.md`](docs/PROJECT_SPEC.md) (v1), [`docs/PRD_v2.md`](docs/PRD_v2.md) (v2), [`docs/FEATURES_V2.md`](docs/FEATURES_V2.md) | What each feature must do, with acceptance criteria and non-goals. The PRD wins over any prompt |
+| Plan | [`docs/EXECUTION_PLAN.md`](docs/EXECUTION_PLAN.md), [`docs/CONTRACTS.md`](docs/CONTRACTS.md), [`docs/METHOD_NOTES.md`](docs/METHOD_NOTES.md) | Stack, gates and timeline; API contracts (Pydantic → JSON Schema → TypeScript) all four parts share; the exact detector math |
+| Tasks | [`docs/TASKBOARD.md`](docs/TASKBOARD.md), [`docs/LEDGER.md`](docs/LEDGER.md), [`docs/status/`](docs/status/) | Task id, owner, paths, acceptance check and the commit that verified it |
+| Implement and verify | GitHub pull requests, CI, [`docs/GATE_B.md`](docs/GATE_B.md), [`docs/RELEASE_MANIFEST.md`](docs/RELEASE_MANIFEST.md) | One pull request per task, green CI and a second reviewer on the exact commit; release gates re-check each spec criterion on the deployed site |
+
+A feature counts as verified only when every criterion in the PRD has a passing test or recorded
+check at the deployed commit. Work added after the feature cutoff is marked implemented-unverified in
+the status table above.
+
 ## Run it
 ```bash
 make setup                          # Python 3.11 via uv + web deps (uv.lock, web/package-lock.json)
