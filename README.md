@@ -36,6 +36,12 @@ Outbound calls: the analysis app serves precomputed data and calls nothing. Your
 only when you press "Decode with NHTSA". The iMessage service (off by default) calls Photon, Gemini and
 api.nhtsa.gov.
 
+What the iMessage service stores, per chat: the chat id (the phone number or Apple ID handle), the watched
+vehicle with the consent time, the vehicle from the last 30 minutes of conversation, and the texts of replies
+and alerts sent. Incoming message text is not stored, but each question's text is sent to Google Gemini (free
+tier, which Google may keep and review), so don't send personal details. Replying DELETE removes every stored
+row for the chat; only a one-way hash remains, to keep a late message from re-enrolling it.
+
 ## Run it
 ```bash
 make setup                          # Python 3.11 via uv + web deps (uv.lock, web/package-lock.json)
