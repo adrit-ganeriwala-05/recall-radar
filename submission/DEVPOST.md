@@ -5,8 +5,8 @@ A line whose number is not measured is cut (`fill_numbers.py --cut-unmeasured`),
 # Recall Radar
 
 **Main track:** <TRACK: Social Good (PRD default) or AI/ML — humans decide, docs/SOURCES.md>
-**Sponsor challenges:** Best Use of Vultr (deployed on a Vultr VM) <add Gemini only if P1-2 shipped; GoDaddy only if a domain was registered>
-**Live demo:** <RR_PUBLIC_BASE_URL> · **Video:** <VIDEO_URL> · **Code:** https://github.com/adrit-ganeriwala-05/recall-radar (tag `rc1`)
+**Sponsor challenges:** Best Use of Vultr (deployed on a Vultr VM)
+**Live demo:** https://recall-radar.us · **Video:** <VIDEO_URL> · **Code:** https://github.com/adrit-ganeriwala-05/recall-radar (tag `rc1`)
 **Team:** <name (GitHub)> ×4
 
 ## Inspiration
@@ -57,7 +57,9 @@ investigation families → seeded evaluation with chance controls. FastAPI serve
 React + Vite + Recharts render them. One Vultr VM with Caddy and systemd; the app makes no network
 calls at request time and runs offline on a laptop. Contracts (Pydantic → JSON Schema →
 TypeScript) keep the four parts in agreement; CI checks drift. Release: tag `rc1`, reproducibility
-hash <REPRO_HASH from B10>.
+hash (SHA-256 of `exports/demo/results.csv`,
+reproduced by `git checkout baseline-v1 && make repro` from a clean clone)
+`7a469c93a4097df1bb3d3f28a97772d20e58aa9ed106338cde6b67a3c561321a`.
 
 ## Challenges
 Time-travel honesty: the "added to file" date equals the received date for almost all complaints
@@ -72,7 +74,8 @@ We asked a narrow question and answered it with rules fixed in advance: on the h
 simple complaint-growth detector did not raise alerts earlier for vehicles NHTSA later
 investigated than for comparable vehicles it never investigated. We report that as the result.
 Freezing the thresholds, the hero rule and the method code under a git tag before the held-out
-run is what makes the negative result trustworthy, and a clean clone reproduces the result files
+run is what makes the negative result trustworthy, and a clean clone at the tag `baseline-v1` reproduces
+the result files
 (both period summaries, results.csv and cases.csv) byte for byte.
 Most held-out investigation families were excluded because their first action was an
 engineering analysis, almost all of them from a single analysis that names several hundred

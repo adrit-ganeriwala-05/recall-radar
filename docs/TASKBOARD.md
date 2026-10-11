@@ -86,6 +86,9 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | 21:00 | D5 real data: DB 412 MB sha256 5d708042133c (snapshot e808281f001a) → VM via sync_data (sha verified on VM). Local proof first: main f324b00 + this DB → integration RR_RELEASE=1 21 passed / 0 skipped, Playwright 2/2 | D |
 | 21:05 | **Deployed main f324b00 (cached, real data)** at http://64.177.53.230: integration RR_RELEASE=1 RR_EXPECT_SHA=f324b00 21 passed / 0 skipped (displayed = exported), Playwright 2/2, outage check RELEASE=1 0 FAIL 0 WARN | D |
 | 21:10 | **G3** on main f324b00: `make check` exit 0 (296 python, 95 web, secrets/claims/fill 0); `make test-real` data 2/3, method 1/1, api 4/4 — the 1 failure is test_real_raw_dir_matches_committed_lock (no raw zips on D's machine; B's `make repro` full re-ingest MATCH ×4 covers it). A or B: run `make test-real` with RR_RAW_DIR at f324b00; then lkg-g3 | D |
+| 21:30 | Merged PR #10 (C: hero period label; D ok 6fd7b35) → 90f454c, deployed; A ran `make test-real` with RR_RAW_DIR (raw-lock passes) → **lkg-g3** → 90f454c. Merged PR #11 (D submission copy; C stand-in ok 09414f2) → ed6e7bf | D |
+| 23:00 | A9: live excerpt scan found a titled name → PR #15 serve-time `scrub_names` (B ok 1a50a58) → 2d3b0a1, deployed. B: mixed-case titles still pass (13 served) = rc1 blocker. PR #16 (C capture holds on the verdict; D ok) → 0f56762. PR #18 (C9 captures recorded at 2d3b0a1; hero page 0 mixed-case name matches over 149 excerpts — D scan) → c50560d | D |
+| 00:30 | PR #17 (A: street-address scrub + B's mixed-case title pattern; B ok 9d2e7c1, full scan 346 → 0 served) → **bb1852f, deployed**: integration RR_RELEASE=1 21/21, Playwright 2/2, outage 0/0. rc1 privacy blocker closed; B's ≈9 residual shapes documented, not blocking | D |
 
 ## Gate log
 | Gate | Time | Main SHA | Result | Decision |
