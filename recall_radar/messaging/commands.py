@@ -47,6 +47,11 @@ def run(con: sqlite3.Connection, route: str, text: str, a: Analysis) -> str | No
                     [T.CONSENT_VERSION, time.time(), route])
         s = con.execute("SELECT * FROM subscriber WHERE route = ?", [route]).fetchone()
         return f"You're watching the {s['model_year']} {s['make']} {s['model']}. At most one update a day. Reply STOP to stop."
+    if cmd == "DELETE":  # before the "not watching" check: a chat that never subscribed still has rows
+        for table in ("outbox", "convo_ctx", "subscriber"):
+            con.execute(f"DELETE FROM {table} WHERE route = ?", [route])
+        con.execute("INSERT OR REPLACE INTO tombstone VALUES (?, ?)", [route_hash(route), time.time()])
+        return T.DELETE_ACK  # its own outbox row is removed once sent (outbox.process, kind delete_ack)
     if not sub:
         return "You're not watching a vehicle. Reply WATCH <year make model> to start, or HELP."
     if cmd == "STOP":
@@ -61,12 +66,6 @@ def run(con: sqlite3.Connection, route: str, text: str, a: Analysis) -> str | No
             return "You stopped updates. Reply WATCH <year make model> to start again."
         con.execute("UPDATE subscriber SET status = 'active' WHERE route = ? AND make IS NOT NULL", [route])
         return "Resumed."
-    if cmd == "DELETE":
-        for table in ("outbox", "convo_ctx", "subscriber"):
-            con.execute(f"DELETE FROM {table} WHERE route = ?", [route])
-        con.execute("INSERT OR REPLACE INTO tombstone VALUES (?, ?)", [route_hash(route), time.time()])
-        return ("Deleted the records Recall Radar kept about this chat. Copies held by Apple, Photon or your device "
-                "are outside our control.")
     if cmd == "STATUS":
         snap = con.execute("""SELECT fetched_at t, source_updated u, coverage c FROM monitor_snapshot
                               WHERE make = ? AND model = ? AND model_year = ? ORDER BY id DESC LIMIT 1""",

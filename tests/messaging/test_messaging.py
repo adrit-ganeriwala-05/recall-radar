@@ -97,6 +97,25 @@ def test_kill_switch_default_off_and_webhook_end_to_end(tmp_path, monkeypatch):
     assert len(prov.sent) == 1
 
 
+def test_every_message_counts_although_the_webhook_id_header_never_changes(tmp_path, monkeypatch):
+    """Gate P finding: X-Spectrum-Webhook-Id is the subscription id (same on every delivery); dedupe is per message id."""
+    prov = MockProvider()
+    client = TestClient(app_mod.create_app(FakeAnalysis(), prov, tmp_path / "m.sqlite"))
+    monkeypatch.setenv("RR_MESSAGING_ENABLED", "1")
+    monkeypatch.setenv("IMESSAGE_WEBHOOK_SECRET", "s3cret")
+
+    def post(text, mid):
+        body = json.dumps(ev(text, mid=mid)).encode()
+        ts = str(int(time.time()))
+        h = {"X-Spectrum-Signature": security.sign("s3cret", ts, body), "X-Spectrum-Timestamp": ts, "X-Spectrum-Webhook-Id": "wh-same"}
+        return client.post("/spectrum-webhook", content=body, headers=h).status_code
+
+    assert post("HELP", "m-1") == 200 and len(prov.sent) == 1
+    assert post("WATCH 2017 Example Motors Roadster", "m-2") == 200 and len(prov.sent) == 2
+    assert post("WATCH 2017 Example Motors Roadster", "m-2") == 200 and len(prov.sent) == 2  # a retried delivery
+    assert post("STATUS", "m-3") == 200 and len(prov.sent) == 3
+
+
 # ---------------------------------------------------------------- enrollment and commands
 
 
@@ -119,6 +138,19 @@ def test_group_chats_refused_and_echoes_ignored(con):
     assert "one-to-one" in say(con, "WATCH 2017 Example Motors Roadster", "e1", type="group")
     prov = MockProvider()
     assert say(con, "HELP", "e2", prov=prov, extra={"isFromMe": True}) is None and prov.sent == []
+
+
+def test_agent_sender_and_text_we_just_sent_are_never_answered(con):
+    """Gate P safety: an echo of our own message must not start a reply loop, whatever the provider flags."""
+    prov = MockProvider()
+    assert say(con, "HELP", "a1", prov=prov, extra={"sender": {"kind": "agent", "id": "line"}}) is None
+    assert prov.sent == []
+    reply = say(con, "HELP", "a2", prov=prov)  # a real user message gets the HELP text
+    assert reply and len(prov.sent) == 1
+    # that exact reply text arriving back on the same route (no flags at all) is ignored
+    assert say(con, reply, "a3", prov=prov) is None and len(prov.sent) == 1
+    # the same text on another route is a different person: still answered normally
+    assert say(con, "HELP", "a4", route="space-2", prov=prov) is not None
 
 
 def test_one_vehicle_per_subscriber_and_routes_are_isolated(con):
@@ -342,3 +374,47 @@ def test_vehicle_unknown_to_nhtsa_is_labelled_not_silent(con):
     enroll(con)
     monitor.run(con, snap({}), now=at(9))
     assert "NHTSA returned no complaints or recalls under this name" in say(con, "STATUS", "st-e")
+
+
+def _tables_holding(con, needle):
+    hits = []
+    for (t,) in con.execute("SELECT name FROM sqlite_master WHERE type = 'table'").fetchall():
+        for row in con.execute(f"SELECT * FROM {t}").fetchall():
+            if any(needle in str(v) for v in tuple(row)):
+                hits.append(t)
+    return hits
+
+
+def test_delete_leaves_the_handle_in_no_table(con):
+    route = "any;-;+15550100999"  # Photon-shaped chat id (made-up number)
+    prov = MockProvider()
+    for i, t in enumerate(["WATCH 2017 Example Motors Roadster", "YES", "how many complaints?", "STOP", "DELETE"]):
+        say(con, t, f"d-{i}", route, prov=prov)
+    assert prov.sent[-1][1] == service.T.DELETE_ACK  # the acknowledgement was sent ...
+    assert _tables_holding(con, "+15550100999") == []  # ... and nothing still names the chat
+    assert service.handle(con, ev(service.T.DELETE_ACK, route, mid="echo"), FakeAnalysis(), prov, "echo") is None
+
+
+def test_delete_ack_that_must_be_retried_is_removed_once_sent(con):
+    route = "any;-;+15550100998"
+    prov = MockProvider(script=[SendResult("accepted", "a1"), SendResult("failed", detail="HTTP 429")])
+    say(con, "HELP", "r-0", route, prov=prov)
+    say(con, "DELETE", "r-1", route, prov=prov)
+    assert _tables_holding(con, "+15550100998") == ["outbox"]  # queued for a retry: still needed to send it
+    outbox.process(con, prov)
+    assert _tables_holding(con, "+15550100998") == []
+
+
+def test_delete_works_for_a_chat_that_never_subscribed(con):
+    route, prov = "any;-;+15550100997", MockProvider()
+    say(con, "how many complaints for the 2017 example motors roadster", "n-0", route, prov=prov)
+    assert _tables_holding(con, "+15550100997")  # reply + conversation context
+    say(con, "DELETE", "n-1", route, prov=prov)
+    assert prov.sent[-1][1] == service.T.DELETE_ACK and _tables_holding(con, "+15550100997") == []
+
+
+def test_legacy_delete_ack_rows_are_removed_on_the_next_run(con):
+    outbox.enqueue(con, "reply:old", "any;-;+15550100996", "reply", service.T.DELETE_ACK)
+    con.execute("UPDATE outbox SET status = 'accepted' WHERE idempotency_key = 'reply:old'")
+    outbox.process(con, MockProvider())
+    assert _tables_holding(con, "+15550100996") == []

@@ -1,5 +1,5 @@
-"""Questions in chat (PRD v2 F9.7). Deterministic keyword routing (no GEMINI_API_KEY / google-genai here),
-only allowlisted tools, ≤ 3 tool calls, and every number in a reply must appear in tool output (validated).
+"""Questions in chat (PRD v2 F9.7). Keyword routing, optionally planned/reworded by Gemini (brain.py; the model
+never fetches data and its rewording must keep the same numbers and links), only allowlisted tools, ≤ 3 tool calls, and every number in a reply must appear in tool output (validated).
 Retrieved complaint text is data: replies cite complaint ids and links, never quote text as instructions."""
 
 from __future__ import annotations
@@ -8,10 +8,13 @@ import json
 import re
 import time
 from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from . import templates as T
 from .analysis import Analysis, find_vehicle
+
+if TYPE_CHECKING:
+    from .brain import Gemini
 
 CONTEXT_S = 30 * 60
 MAX_TOOL_CALLS = 3
@@ -80,34 +83,58 @@ class Tools:
 
 
 def answer(text: str, ctx: dict | None, a: Analysis, router: Callable[[str], str | None] = route_intent,
-           timeout_s: float = 15) -> tuple[str, dict | None]:
+           timeout_s: float = 15, brain: Gemini | None = None) -> tuple[str, dict | None]:
     """→ (reply, new context). Context = vehicle + last campno, expires after 30 minutes."""
     now = time.time()
     if ctx and ctx.get("expires_at", 0) < now:
         ctx = None
     started = time.time()
+    plan = None
+    if brain is not None:
+        try:
+            plan = brain.plan(text, ctx)
+        except Exception:  # noqa: BLE001 — the model is optional
+            plan = None
     try:
-        intent = router(text)
+        intent = (plan or {}).get("intent") or router(text)
     except Exception:  # noqa: BLE001 — a model/router failure falls back to keywords
         intent = None
     if intent is None or time.time() - started > timeout_s:
         intent = route_intent(text)
+    if route_intent(text) in ("vin", "diagnosis"):
+        intent = route_intent(text)  # hard guards: the keywords win over the model
     if intent == "vin":
         return T.VIN_HANDOFF, ctx
     if intent == "diagnosis":
         return T.NO_DIAGNOSIS, ctx
     if intent == "how_to_report":
         return T.REPORT_HOWTO, ctx
+    if intent == "claim_help":
+        return T.CLAIM_HELP, ctx
+    if intent == "greeting":
+        return T.SCOPE, ctx
     found = find_vehicle(text, a)
+    if found is None and plan and plan.get("year") and plan.get("make") and plan.get("model"):
+        found = find_vehicle(f"{plan['year']} {plan['make']} {plan['model']}", a)  # only vehicles the data has
+    if plan and plan.get("campno") and re.fullmatch(r"\d{2}V\d{3,6}", str(plan["campno"]).upper()):
+        text = f"{text} {str(plan['campno']).upper()}"
     vehicle = found or ((ctx["make"], ctx["model"], ctx["model_year"]) if ctx else None)
     if vehicle is None:
+        if intent == "other":
+            return T.SCOPE, ctx
         return "Which vehicle? Reply with the model year, make and model, for example: 2019 Jeep Cherokee.", ctx
     mk, md, yr = vehicle
     new_ctx = {"make": mk, "model": md, "model_year": yr, "campno": (ctx or {}).get("campno"), "expires_at": now + CONTEXT_S}
     tools = Tools(a)
-    reply = _reply(intent or "problems", text, vehicle, tools, new_ctx)
-    if not numbers_grounded(reply, " ".join(tools.used) + f" {yr}"):
-        reply = f"I couldn't check those numbers, so here is the source instead: {T.link(yr, mk, md)}"
+    reply = _reply("problems" if intent in (None, "other") else intent, text, vehicle, tools, new_ctx)
+    # the vehicle's own name grounds its digits too (F-150, CX-5, 300): it came from the data via find_vehicle
+    if not numbers_grounded(reply, " ".join(tools.used) + f" {yr} {mk} {md}"):
+        return f"I couldn't check those numbers, so here is the source instead: {T.link(yr, mk, md)}", new_ctx
+    if brain is not None and tools.calls and time.time() - started < timeout_s:
+        try:
+            reply = brain.phrase(text, reply) or reply  # brain.phrase returns None unless acceptable()
+        except Exception:  # noqa: BLE001
+            pass
     return reply, new_ctx
 
 
