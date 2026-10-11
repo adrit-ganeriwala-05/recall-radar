@@ -104,3 +104,19 @@ def test_vehicle_page_shows_redacted_excerpts(client):
             assert len(c["excerpt"]) <= 400
             for rx in (email, phone, vin):
                 assert not rx.search(c["excerpt"]), c["odino"]
+
+
+def test_every_alert_episode_has_a_replay(client):
+    """B's request 2306: replay links on vehicle/issue/results pages work for non-exported episodes;
+    exported ones are served from the bundle byte-for-byte."""
+    store = client.app.state.store  # the app's own connection (a second one with other settings is refused)
+    if "alert_episode" not in store.tables:
+        pytest.skip("no detector output in this DB")
+    cur = store.cursor()
+    ids = sorted(r[0] for r in cur.execute("SELECT DISTINCT episode_id FROM alert_episode").fetchall())
+    cur.close()
+    exported = {p.stem for p in (Path(__file__).resolve().parents[2] / "exports" / "demo" / "replays").glob("*.json")}
+    others = [i for i in ids if i not in exported]
+    for episode_id in random.Random(20261011).sample(others, min(25, len(others))):
+        r = C.Replay.model_validate(_json(client, f"/api/replay/{episode_id}"))
+        assert r.episode_id == episode_id and r.provenance.data_label == C.DataLabel.cached_real
