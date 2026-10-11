@@ -4,12 +4,12 @@ Restart memory for session rr-C. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 20:00 ET (by a stand-in session on Person A's Mac while C's session was out of quota; C resumes 22:30)
+- Updated: 2026-10-10 21:30 ET (by a stand-in session on Person A's Mac while C's session was out of quota; C resumes 22:30)
 - Branch / HEAD: c/web @ see `git log -1` (stand-in commits: ca03073 merge main, 738e88a fixes, status; PR #5 merged at 22e781a; then main f4eac57 fast-forward + verdict margin fix) · PR #10
-- Last origin/main merged: f4eac57 (PR #3 D delivery; PR #5 C already in main)
+- Last origin/main merged: 82ba637 (PR #12; freeze-v1 = dd6b439)
 - Contract version: 1.0.0
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a (main) / LDATE_PLUS_7
-- Mode: waiting(freeze-v1 → B9 exports/demo + hero; rc1 deploy for C8/C9) since 19:15
+- Mode: waiting(B's export PR → exports/demo on main; rc1 deploy for C8/C9) since 21:30
 
 ## Done (task id → commit → evidence)
 - Contract review §6–7 → 295e435 → `docs/handoffs/20261010-1610-C-to-A-contract-review-ack.md` (no change requested; B item 12 acked)
@@ -29,6 +29,7 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 
 - Stand-in 19:30 → PR #3 review `Reviewed e69d362: ok` + 5 follow-ups (posted on GitHub): D's integration on real data 13 passed / 8 skipped; Caddy-layout API-down browser check (static dist, 502 on /api) desktop + phone 16/16 — this is the offline /demo check with the real bundle
 - Stand-in 20:00 → PR #9 review (D's submission copy) + verdict margin fix in `web/src/format.ts`: `(0.3 - 0.2) * 100` is 9.999999999999998 in JS, so a gap of exactly 10 points read "10.0 points above chance … do not show"; the gap is now rounded to 6 decimals first (same answer as the Decimal rule in `scripts/fill_numbers.py`). New hand-derived test in `web/src/reframe.test.tsx`. `npm --prefix web run test` → 73 passed; typecheck clean
+- Stand-in 21:30 → hero period label (B's handoff 20261010-2035: hero E-0167 is a development-period case): `heroPeriodNote` in format.ts, shown on the landing hero card and on the hero's replay page (`data-testid=hero-period`); not_applicable metrics now read "Not applicable" (was a dash), as B asked. New `web/src/hero-period.test.tsx`. With B's exports/demo from cbd5034 copied in (not committed): `npm --prefix web run test` → 100 passed (agreement over the real results files + 21 replays). Browser, real DB + those exports, desktop + phone: live 38/38, API down (Caddy layout) 38/38 — held-out verdict "0.0% … 3.1% … 3.1 percentage points below chance … do not show", coverage 0 of 161 shown as measured, development tab not PRELIMINARY
 - Stand-in 19:10 → 738e88a: Gate 1 reframe (results verdict from JSON coverage vs chance + 10-point margin; PRELIMINARY note on development until freeze-v1; landing reframe line linking Results); hero note no longer matches D's `SYNTHETIC TEST DATA` locator; live build ships no fixture JSON (D's note); "Try again" only for 503/500; rates read "n over d". New `web/src/reframe.test.tsx` (hand-derived strings). `npm --prefix web run test` → 72 passed.
 - Real-data check by the stand-in (scratch, nothing committed): main's API (c70db51) on the full 2014–2023 DB with B's detect/match at config 0c26e23e0a3a + B's real development export (20 replays): C's agreement tests 93 passed (real results + 20 replays); browser check 18/18 PASS (2011 HYUNDAI SONATA vehicle with 6 episode markers, episode evidence 13 == window_count 13, replay ▲@12 before ◆@35, verdict "8.9% vs 8.9% … same as chance … do not show …", PRELIMINARY note, config hash, held-out not-run, no Try again on 404). D's smoke: "2 skipped" (its replay step skips the whole test while /api/hero is 503 — expected until freeze).
 

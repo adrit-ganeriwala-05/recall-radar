@@ -47,13 +47,13 @@ describe("results page, development fixture (expected strings hand-derived from 
     expect(card("chance_coverage").textContent).toContain("CI 0.5% to 9.6%");
   });
 
-  it("renders pending as 'Not yet measured' and not_applicable as a dash, never a number", () => {
+  it("renders pending as 'Not yet measured' and not_applicable as 'Not applicable', never a number", () => {
     renderResults(resultsFixture("development"));
     for (const n of ["early_coverage_sample", "ingestion_retained_share", "pipeline_runtime_s"]) {
       expect(value(n)).toBe("Not yet measured");
     }
     for (const n of ["top25_matched", "top25_unmatched", "top25_ambiguous"]) {
-      expect(value(n)).toBe("—");
+      expect(value(n)).toBe("Not applicable");
     }
   });
 
@@ -89,7 +89,7 @@ describe("agreement: rendered results equal every results JSON we ship (fixtures
       const kind = METRICS[m.name].kind;
       const text = card(m.name).textContent ?? "";
       if (m.status === "pending") expect(value(m.name)).toBe("Not yet measured");
-      if (m.status === "not_applicable") expect(value(m.name)).toBe("—");
+      if (m.status === "not_applicable") expect(value(m.name)).toBe("Not applicable");
       if (m.status === "measured") {
         expect(value(m.name)).toBe(fmtNumber(kind, m.value!));
         if (m.ci_low !== null && m.ci_high !== null) {
