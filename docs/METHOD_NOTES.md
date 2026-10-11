@@ -410,7 +410,7 @@ judged ids equal the current top results: yes
   matching and are left as measured. The UI line "A match is not a diagnosis" is accurate.
 
 ### 12.5 F2 recall explanations (`b_v2/recall_explain.py`)
-- Status: **fallback only**. `recall_explanation` has one `fallback` row for each of the 13,673 campaigns. No model
+- Status until 03:00 ET on 2026-10-11: fallback only. `recall_explanation` had one `fallback` row for each of the 13,673 campaigns. No model
   has been called: B's machine has no `GEMINI_API_KEY`, `google-genai` is not installed, and no model name is set
   (`RR_GEMINI_MODEL` has no default, so none is invented). Accepted explanations read by B: none exist.
 - If generation is ever run, an output is shown only when `validate` accepts it: strict JSON of 1–2 sentences of at
@@ -419,6 +419,20 @@ judged ids equal the current top results: yes
   the official text or in a short plain-word list that has no remedies, actors, consequences or conditions; no
   urgency the text lacks; no dropped may / some / certain / if equipped; no banned word; no claim about the
   reader's own car. A rejected output is not retried; timeouts and errors get one retry; everything else is fallback.
+- **Generation run by D, 2026-10-11 03:00–03:08 ET** (D's handoff `20261011-0310-D-to-B-f2-review-sheet.md`; I did not
+  run it and have not seen the tables file): `recall_explain --generate --only <300 campaigns: 123 demo-vehicle
+  campaigns first, then top vehicles by complaints>` on the v2 database, model `gemini-3.1-flash-lite`, prompt
+  `f2-v1`, key supplied by a human. The validator accepted 72; everything else stayed fallback.
+- **B's reading (PRD F2.6), 03:13 ET:** all 72 read against the three official fields. Verdicts in
+  `review/explanation_verdicts.csv`: 58 accept, 14 reject. Reasons for the 14 (each is in the file's note): a
+  condition of the official sentence was dropped (park pawl, parking brake applied, "for an extended period",
+  "without depressing the brake pedal", "in combination with debris and corrosion", "released again and … not
+  engaged": 8); "serious injury or death" was left out of a consequence that was otherwise paraphrased (2); a
+  consequence was attributed to the wrong cause (2); "can not" became "may not" (1); the sentence said in our own
+  words that the vehicles "have a defect" (1). The validator cannot see any of these: every word is in the official
+  text. That is why the reading is a gate and not a formality.
+- What ships as accepted is whatever `--finalize --verdicts review/explanation_verdicts.csv` leaves on the serving
+  database: at most the 58. Status wording per PRD F2.8 comes from that command's last line.
 - Cache key: campno | sha256(summary, consequence, remedy) | model | prompt version.
 - **Nothing is served as accepted on the strength of the batch run alone** (PRD F2.6). The API checks only the
   contract shape, so the last step before a tables file goes into a serving database is
