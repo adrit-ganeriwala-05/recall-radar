@@ -13,7 +13,7 @@ export const PROMISE =
   "Recall Radar shows when owner complaints about the same vehicle and problem started growing unusually fast, and whether NHTSA later opened an investigation, using only data that was public at the time.";
 
 export const PENDING_TEXT = "Not yet measured";
-export const NOT_APPLICABLE_TEXT = "—";
+export const NOT_APPLICABLE_TEXT = "Not applicable";
 export const HELD_OUT_NOT_RUN = "Not yet run (thresholds frozen at freeze-v1)";
 
 type MetricKind = "count" | "share" | "days" | "rate" | "seconds";
@@ -193,13 +193,23 @@ export function coverageVerdict(cov: Metric | undefined, chance: Metric | undefi
       ? "That is the same as chance."
       : `That is ${diff} percentage points ${cov.value > chance.value ? "above" : "below"} chance.`;
   const margin = `The margin set before the evaluation was ${MARGIN_POINTS} points above chance`;
-  if ((cov.value - chance.value) * 100 < MARGIN_POINTS) {
+  // Exports carry 6 decimals; rounding the gap there drops binary noise ((0.3 - 0.2) * 100 is
+  // 9.999999999999998), so the comparison agrees with the Decimal one in scripts/fill_numbers.py.
+  if (Number(roundDecimal((cov.value - chance.value) * 100, 6)) < MARGIN_POINTS) {
     return `${head} ${gap} ${margin}, so these results do not show that alerts came earlier for investigated vehicles than for comparable vehicles that were never investigated.`;
   }
   if (overlap) {
     return `${head} ${gap} ${margin}, and it is met, but the two 95% intervals overlap, so the difference is uncertain.`;
   }
   return `${head} ${gap} ${margin}, and it is met. It compares the timing of alerts with chance and says nothing about any single vehicle.`;
+}
+
+/** Which period the hero replay comes from (hero.json `period`). The frozen rule falls back to a
+ *  development case when no held-out case qualifies; it must then be labelled so wherever it is shown. */
+export function heroPeriodNote(period: "development" | "held_out"): string {
+  return period === "development"
+    ? "Development-period case: no held-out case qualified under the frozen hero rule, so this example comes from the development years, which were used to choose the detector settings."
+    : "Held-out-period case, chosen by the hero rule frozen before the held-out run.";
 }
 
 /** Development results are PRELIMINARY until the thresholds are frozen (EXECUTION_PLAN §2, Gate 2). */

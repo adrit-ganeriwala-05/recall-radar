@@ -5,7 +5,7 @@ import { getHero, getMakes, getModels, getYears } from "../api/client";
 import { useApi } from "../api/useApi";
 import { ProvenanceBar } from "../components/Provenance";
 import { ErrorState, Loading } from "../components/States";
-import { PROMISE } from "../format";
+import { heroPeriodNote, PROMISE } from "../format";
 
 export default function SelectorPage() {
   const navigate = useNavigate();
@@ -115,6 +115,9 @@ export default function SelectorPage() {
           <Link className="button" to={`/replay/${encodeURIComponent(hero.data.episode_id)}`}>
             Open replay {hero.data.episode_id}
           </Link>
+          <p className="small" data-testid="hero-period">
+            {heroPeriodNote(hero.data.period)}
+          </p>
           {hero.data.provenance.data_label === "synthetic_fixture" && (
             <p className="small">This example is built from made-up test records, not real complaints.</p>
           )}
