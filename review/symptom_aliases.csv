@@ -1,0 +1,53 @@
+phrase,concept_id,reviewer,note
+brakes make noise,brake_noise,B,PRD example
+brakes are noisy,brake_noise,B,
+squeaky brakes,brake_noise,B,
+squealing brakes,brake_noise,B,
+grinding when braking,brake_noise,B,
+grinding brakes,brake_noise,B,
+metal on metal when stopping,brake_noise,B,no brake word: alias carries the meaning
+screeching when i stop,brake_noise,B,no brake word
+brakes failed,brake_failure,B,
+brakes went out,brake_failure,B,
+no brakes,brake_failure,B,
+car won't stop,brake_failure,B,no brake word
+could not stop the car,brake_failure,B,no brake word
+pedal goes to the floor,brake_failure,B,no brake word
+brake pedal is soft,brake_failure,B,
+brakes not working,brake_failure,B,
+steering wheel shakes,steering_vibration,B,PRD example
+steering wheel vibrates,steering_vibration,B,
+steering wheel wobbles,steering_vibration,B,
+death wobble,steering_vibration,B,no steering word
+front end shakes,steering_vibration,B,
+car shakes at highway speed,steering_vibration,B,no steering word
+shimmy,steering_vibration,B,single word used for this symptom
+power steering went out,power_steering_loss,B,
+lost power steering,power_steering_loss,B,
+power steering failed,power_steering_loss,B,
+steering is hard to turn,power_steering_loss,B,
+hard to steer,power_steering_loss,B,
+steering wheel is stiff,power_steering_loss,B,
+steering locked up,power_steering_loss,B,
+door doesn't lock properly,door_wont_lock,B,PRD example
+door won't lock,door_wont_lock,B,
+door will not lock,door_wont_lock,B,
+door lock broken,door_wont_lock,B,
+power locks not working,door_wont_lock,B,
+locks stopped working,door_wont_lock,B,
+door opens while driving,door_opens_while_driving,B,
+door flew open,door_opens_while_driving,B,
+door came open,door_opens_while_driving,B,
+door won't stay closed,door_opens_while_driving,B,
+door pops open,door_opens_while_driving,B,
+engine stalls while driving,stall_while_driving,B,PRD example
+car stalls while driving,stall_while_driving,B,
+car shuts off while driving,stall_while_driving,B,
+engine dies while driving,stall_while_driving,B,
+car died on the highway,stall_while_driving,B,
+engine cut out,stall_while_driving,B,
+car won't start,wont_start,B,
+engine won't start,wont_start,B,
+will not crank,wont_start,B,
+no start,wont_start,B,
+won't turn over,wont_start,B,
