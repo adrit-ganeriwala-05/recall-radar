@@ -4,13 +4,13 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 21:05 ET (clock times before 17:10 in this file were estimates; `git log` has the true times)
-- Branch / HEAD: b/method, export PR open (check `git log` for the tip; refreshed export at 3000b65)
-- Last origin/main merged: 35801e9 (PR #12 CI fix, PR #13 A8 held-out labels), merged 20:55 ET, no conflicts
+- Updated: 2026-10-10 23:35 ET (clock times before 17:10 in this file were estimates; `git log` has the true times)
+- Branch / HEAD: b/method = main 0f56762 + status/handoff commits (check `git log`). PR #14 (frozen export) merged → main f324b00.
+- Last origin/main merged: 0f56762 (PRs #10, #11, #14, #16), fast-forward 23:05 ET
 - Contract version: 1.0.0
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a / LDATE_PLUS_7
 - **Freeze: tag `freeze-v1` → dd6b439, pushed 20:22 ET (Saketh approved the tag push). The held-out year has been run once. Nothing under `recall_radar/method/`, `config.yaml`, `review/system_map.csv`, `review/keywords.txt` may change without `freeze-v2`.**
-- Mode: waiting(A's review + D's merge of the export PR; the human sends the database to D — since 21:05)
+- Mode: waiting(D tags rc1 → B10 final `make repro` on it; A's follow-up to PR #15 for mixed-case names — since 23:35)
 
 ## Done (task id → commit → evidence)
 - B1 → fe38661 → `tests/fixtures/method/*.csv` + hand calculations in `docs/METHOD_NOTES.md` §4
@@ -71,13 +71,18 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - **B9 refresh → 3000b65.** main 35801e9 merged into b/method; `RR_RAW_DIR=~/rr-raw make pipeline` → exit 0 in 128 s, log `logs/pipeline_freeze_v1_labels.log`; run ids `development-0c26e23e0a3a-1c8dd4b`, `held_out-0c26e23e0a3a-1c8dd4b`. Versus cbd5034, ignoring ids: held-out `early_coverage_sample` pending → measured, three cases carry a review label, nothing else.
 - `RR_RAW_DIR=~/rr-raw make repro` at 3000b65 → exit 0, MATCH ×4; log `logs/repro_freeze_v1_labels.log`.
 
+- PR #14 merged by D → main f324b00 (A: "Reviewed 715aae3: ok"). Database for D: clean-clone build from the repro at 3000b65, `data/for_D_1c8dd4b/recall_radar.duckdb` (local, gitignored), SHA-256 5d708042…a438663 (full value in the handoff chat line); sent by the human.
+- D's release test run locally against that database + committed exports: server on a local port in cached mode, `RR_RELEASE=1 RR_BASE_URL=http://127.0.0.1:8137 uv run pytest tests/integration -m real_data` → 21 passed (after `npm --prefix web run build`; with a web build older than the export one test failed on `/demo/hero.json` 404).
+- **B10 on main → `RR_RAW_DIR=~/rr-raw make repro` at 0f56762 → exit 0, MATCH ×4**, log `logs/repro_main_0f56762.log`. Hashes printed by the script equal `shasum -a 256` of the committed `exports/demo` files. Record: `docs/handoffs/20261010-2335-B-to-D-b10-repro.md`. Still to do on `rc1`.
+- Review of A's PR #15 at 1a50a58 (A9: titled names scrubbed from served excerpts) → posted "Reviewed 1a50a58: ok" with a required follow-up: the pattern is uppercase-only; a scan of all stored texts through that head's `scrub_names` leaves 53 mixed-case texts with a title + capitalised word (13 inside the first 400 characters). Suggested pattern posted on the PR. No pipeline input changed; `uv run pytest` there → 307 passed, 29 deselected.
+
 ## In progress
 - none
 
 ## Next (in order)
-1. Export PR from b/method: A reviews, D merges, then D deploys. The human sends `data/recall_radar.duckdb` (run ids ending 1c8dd4b) to D.
-2. B10 on rc1: `make repro` again on D's release candidate.
-3. Review items for A, C, D when asked. No change under the freeze without `freeze-v2` and a new held-out disclosure.
+1. B10 on `rc1` (due 2:45 AM): after D's notice, `git fetch --tags && git switch --detach rc1` is NOT needed — fast-forward b/method to the tagged commit if it is on main, then `RR_RAW_DIR=~/rr-raw make repro`; post the MATCH lines and the hash to D; add the result to the B10 handoff record.
+2. Review A's follow-up to PR #15 (mixed-case titled names) when A posts it.
+3. No change under the freeze without `freeze-v2` and a new held-out disclosure.
 
 ## Last passing commands (exact)
 - `uv run pytest` → 127 passed, 1 deselected (the deselected one is the real_data test) at the tip after A's review changes @ 02263ed
