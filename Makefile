@@ -13,7 +13,7 @@ PERIOD ?= development
 .PHONY: help setup whoami contracts contracts-check fetch verify-snapshot ingest investigations \
         detect match evaluate tune export gate1 pipeline lint test test-real check claims serve \
         serve-fixture web-build e2e e2e-install integration repro submission deploy vm-setup \
-        sync-data rollback outage-check
+        sync-data rollback outage-check protected
 
 help: ## list targets
 	@grep -E '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*## "}{printf "  %-16s %s\n",$$1,$$2}'
@@ -131,6 +131,9 @@ sync-data: ## D: upload the DuckDB file (default $RR_DATA_DIR/recall_radar.duckd
 
 rollback: ## D: VM back to the previous release (or REF=<sha prefix>); asks first
 	bash deploy/rollback.sh $(REF)
+
+protected: ## D: Gate B — protected exports and frozen inputs vs baseline-v1 (PRD_v2 §1, F3.5)
+	$(PY) scripts/check_protected.py
 
 outage-check: ## D: VM serves every screen with outbound traffic blocked (RELEASE=1 at gates)
 	bash deploy/outage_check.sh $(if $(RELEASE),--release)
