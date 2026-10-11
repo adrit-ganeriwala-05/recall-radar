@@ -27,8 +27,33 @@ export const DESTINATIONS = {
   nhtsaRecalls: { href: "https://www.nhtsa.gov/recalls", external: true },
 } as const satisfies Record<string, Destination>;
 
-/** In-page section ids. Phase 1 renders only `top` and `how-it-works`. */
+export type VehicleRef = { make: string; model: string; model_year: number };
+
+const vehicleQuery = (v: VehicleRef) => new URLSearchParams({ make: v.make, model: v.model, year: String(v.model_year) }).toString();
+
+/** Product routes that take parameters; built exactly like the product's own links (web/src). */
+export const ROUTES = {
+  /** Vehicle page (web/src/pages/VehiclePage.tsx). */
+  vehicle: (v: VehicleRef): Destination => ({ href: appUrl(`/vehicle?${vehicleQuery(v)}`), external: false }),
+  /** Issue page with the evidence list (web/src/pages/IssuePage.tsx). */
+  issue: (groupId: string): Destination => ({ href: appUrl(`/issue/${encodeURIComponent(groupId)}`), external: false }),
+  /** Month-by-month replay (web/src/pages/ReplayPage.tsx). */
+  replay: (episodeId: string): Destination => ({ href: appUrl(`/replay/${encodeURIComponent(episodeId)}`), external: false }),
+  /** F8 buyer report (buyerReportHref in web/src/features/buyer-report/BuyerReportRoute.tsx). */
+  buyerReport: (v: VehicleRef): Destination => ({ href: appUrl(`/vehicle/report?${vehicleQuery(v)}`), external: false }),
+  /** F5 report-a-problem helper (reportHref in web/src/features/report/ReportRoute.tsx). */
+  reportProblem: (): Destination => ({ href: appUrl("/report"), external: false }),
+  /** F6 VIN identification (web/src/features/vin). */
+  vin: (): Destination => ({ href: appUrl("/vin"), external: false }),
+};
+
+/** In-page section ids, in page order. */
 export const SECTION_IDS = {
   top: "top",
   howItWorks: "how-it-works",
+  explore: "explore",
+  record: "follow-the-record",
+  official: "official-information",
+  evidence: "evidence",
+  continue: "continue",
 } as const;

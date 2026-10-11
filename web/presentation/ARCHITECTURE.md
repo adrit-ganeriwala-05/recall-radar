@@ -1,6 +1,6 @@
 # Recall Radar — The Automotive Observatory (presentation) · architecture
 
-Owner: C. Status: **Phases 1 (architecture + shell) and 2 (3D scene) implemented; Phases 3–4 planned, not built.**
+Owner: C. Status: **Phases 1–3 implemented (architecture + shell, 3D scene, HTML UI); Phase 4 (scroll choreography) planned, not built.**
 Authority: `docs/PRD_v2.md` (scope, copy, data semantics, gates) > this document > the master prompt's
 visual direction. The presentation reads approved artifacts and APIs; it never changes the
 detector, matching, evaluation, frozen config, protected exports or databases.
@@ -157,3 +157,26 @@ model is parsed and shaders compile; after a live layout switch the first frame 
 previous stage (corrected on the next frame); `@react-three/fiber` 9.8.1 logs a THREE.Clock deprecation
 notice; on slow networks the 3D car arrives late (page fully usable meanwhile); the bare
 `/observatory/` URL still needs the release-time redirect decision (§3).
+
+## 10. HTML sections (Phase 3) and the F1–F9 treatment
+Data: one published example (`/api/hero` → `/api/replay/{id}` → `/api/vehicle`), loaded once in the
+browser (`src/data/FeaturedVehicle.tsx`) with an 8 s timeout, JSON check and shape guards
+(`src/data/api.ts`); types generated from the contract schema (`npm run gen:contracts`). Every section
+shows the payload's data label and data-as-of, and loading / empty / error / timeout states.
+Feature availability: `docs/LEDGER.md`, parsed at build time (`src/content/ledger.ts`); only `verified`
+counts as shipped. At the time of writing every F1–F9 row is not verified, so:
+
+| Feature | Ledger state (build time) | Treatment on this page |
+| --- | --- | --- |
+| F1 recall cards | implemented-unverified | Official information lists baseline campaign fields (campno, component, report date) + note + VIN handoff; F1 card status stated |
+| F2 explanations | fallback | Status only; no AI text anywhere |
+| F3 replay markers | implemented-unverified | Status only; "Follow the record" links the product replay and reveals no outcome |
+| F4 My car | implemented-unverified | Status only (lives in the product) |
+| F5 report a problem | implemented-unverified | Status only; "Report a problem to NHTSA" link appears only when verified |
+| F6 VIN | implemented-unverified (in-app status blocked) | Status only; NHTSA "Check open recalls" handoff always shown; "Identify a vehicle by VIN" link only when verified |
+| F7 symptom search | implemented-unverified | Status only; never inside the replay |
+| F8 buyer report | implemented-unverified | "Not offered on this page" + status; "Print / Save as PDF" link only when verified |
+| F9 iMessage | disabled | Status only; never offered |
+
+The table on the page is generated from the ledger, so it changes when D updates the ledger and the
+page is rebuilt; nothing is typed by hand.

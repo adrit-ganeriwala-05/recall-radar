@@ -31,7 +31,9 @@ test("axe: no violations in the static-fallback state", async ({ page }) => {
 test("keyboard: skip link first, logical order, visible focus on every stop", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await gotoSettled(page);
-  const expected = [
+  // The fixed opening sequence; after it, every remaining stop (sections, footer) must still be visible
+  // and show a focus indicator, until focus wraps back to the top.
+  const opening = [
     "Skip to content",
     "Recall Radar",
     "Explore",
@@ -41,24 +43,24 @@ test("keyboard: skip link first, logical order, visible focus on every stop", as
     "Explore vehicle records",
     "See how it works",
     "See the measured results",
-    "Check open recalls on NHTSA (opens in a new tab)",
-    "CC BY 4.0 (opens in a new tab)",
-    "Source (opens in a new tab)",
   ];
   const seen: string[] = [];
-  for (let i = 0; i < expected.length; i++) {
+  for (let i = 0; i < 60; i++) {
     await page.keyboard.press("Tab");
     const info = await page.evaluate(() => {
       const el = document.activeElement as HTMLElement;
+      if (!el || el === document.body) return null;
       const cs = getComputedStyle(el);
       const r = el.getBoundingClientRect();
-      return { name: (el.textContent ?? "").replace(/\s+/g, " ").trim(), outline: cs.outlineStyle, width: parseFloat(cs.outlineWidth), visible: r.width > 0 && r.height > 0 };
+      return { name: (el.textContent ?? "").replace(/\s+/g, " ").replace("↓", "").trim(), outline: cs.outlineStyle, width: parseFloat(cs.outlineWidth), visible: r.width > 0 && r.height > 0 };
     });
-    seen.push(info.name.replace("↓", "").trim());
+    if (!info || (seen.length > 0 && info.name === "Skip to content")) break;
+    seen.push(info.name);
     expect(info.visible, `${info.name} is on screen when focused`).toBe(true);
     expect(info.outline !== "none" && info.width >= 2, `${info.name} focus indicator`).toBe(true);
   }
-  expect(seen).toEqual(expected);
+  expect(seen.slice(0, opening.length)).toEqual(opening);
+  expect(seen, "footer links are reachable").toContain("Source (opens in a new tab)");
 });
 
 test("skip link moves focus to the main content", async ({ page }) => {

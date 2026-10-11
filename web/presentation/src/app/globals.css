@@ -97,3 +97,21 @@
     }
   }
 }
+
+/* Printing this page: no fixed canvas layer, no sticky header, plain paper colours. (The one-page buyer
+   report is a separate product route with its own print layout; nothing here can reach it.) */
+@media print {
+  [data-scene-state] {
+    display: none !important;
+  }
+  header {
+    position: static !important;
+  }
+  html,
+  body,
+  section,
+  footer {
+    background: #fff !important;
+    color: #000 !important;
+  }
+}

@@ -69,7 +69,7 @@ test.describe("loading and failure paths", () => {
     await expect(page.locator("#hero-title")).toBeVisible();
     await page.waitForTimeout(1500);
     await expect(page.locator("[data-scene-state]")).toHaveAttribute("data-scene-state", "loading");
-    await expect(page.getByRole("link", { name: "Open app" })).toBeEnabled();
+    await expect(page.getByRole("navigation").getByRole("link", { name: "Open app" })).toBeEnabled();
     await expect(page.locator("[data-scene-state]")).toHaveAttribute("data-scene-state", "ready", { timeout: 60_000 });
     const cls = await page.evaluate(() => (window as unknown as { __cls: number }).__cls);
     expect(cls, "cumulative layout shift").toBeLessThan(0.01);
@@ -163,7 +163,7 @@ test("cleanup: leaving and returning leaves one canvas and one pointer listener"
   await page.setViewportSize({ width: 1440, height: 900 });
   const watch = watchConsole(page);
   expect(await gotoSettled(page)).toBe("ready");
-  await page.getByRole("link", { name: "Open app" }).click();
+  await page.getByRole("navigation").getByRole("link", { name: "Open app" }).click();
   await expect(page).toHaveURL(/127\.0\.0\.1:4173\/$/);
   await page.goBack();
   await expect(page.locator("[data-scene-state]")).toHaveAttribute("data-scene-state", "ready", { timeout: 60_000 });

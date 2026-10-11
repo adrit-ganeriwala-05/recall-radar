@@ -18,7 +18,7 @@ for (const vp of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
     expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
     await expect(page.getByText("Illustrative vehicle", { exact: true }).filter({ visible: true })).toHaveCount(1);
     const hrefs = await page.locator("a").evaluateAll((as) => as.map((a) => a.getAttribute("href")));
-    for (const h of ["#main", "#top", "/", "#how-it-works", "/results", "https://www.nhtsa.gov/recalls"]) expect(hrefs).toContain(h);
+    for (const h of ["#main", "#top", "/", "#explore", "#how-it-works", "#evidence", "/results", "https://www.nhtsa.gov/recalls"]) expect(hrefs).toContain(h);
     await page.getByRole("link", { name: "See how it works" }).click();
     await expect(page.locator("#how-it-works")).toBeInViewport();
     await page.screenshot({ path: info.outputPath(`${browserName}-${vp.width}x${vp.height}.png`) });

@@ -1,5 +1,6 @@
 // Owner: C. Compact header (z-30 in the presentation stacking order). Every item goes to a real
-// destination: a product route or a section rendered on this page. Targets are at least 44 px tall.
+// destination: a section on this page (Explore, How it works, Evidence) or the product (Open app).
+// Targets are at least 44 px tall.
 // Sticky only where there is room (≥ 640 px wide and ≥ 500 px tall): on phones and short landscape
 // screens a wrapped, sticky header would cover too much of the page, so it scrolls away instead.
 import { NAV } from "@/content/copy";
@@ -36,12 +37,12 @@ export function SiteHeader() {
         </a>
         <nav aria-label="Presentation">
           <ul className="flex flex-wrap items-center gap-x-1 gap-y-0 sm:gap-x-3">
-            {/* Below 360 px "Explore" is dropped: it goes to the same place as "Open app", and keeping both
-                wrapped the header onto three rows. */}
+            {/* Below 360 px "Explore" is dropped to keep the header on two rows; the section is the next one
+                after "How it works" and "Open app" reaches the same records in the app. */}
             <li className="hidden min-[360px]:block">
-              <SmartLink to={DESTINATIONS.vehicleSearch} className={linkClass}>
+              <a href={`#${SECTION_IDS.explore}`} className={linkClass}>
                 {NAV.explore}
-              </SmartLink>
+              </a>
             </li>
             <li>
               <a href={`#${SECTION_IDS.howItWorks}`} className={linkClass}>
@@ -49,9 +50,9 @@ export function SiteHeader() {
               </a>
             </li>
             <li>
-              <SmartLink to={DESTINATIONS.results} className={linkClass}>
+              <a href={`#${SECTION_IDS.evidence}`} className={linkClass}>
                 {NAV.evidence}
-              </SmartLink>
+              </a>
             </li>
             <li>
               <SmartLink
