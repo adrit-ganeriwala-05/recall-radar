@@ -202,3 +202,18 @@ def test_real_judgments_cover_the_current_top_results():
         pytest.skip(f"{db} not found")
     lines, ok = E.report(str(db))
     assert ok, "\n".join(lines)
+
+
+def test_parity_file_for_the_browser_port_is_current(concepts, aliases):
+    """review/symptom_parity.json is what C's TypeScript search is tested against; it must match this code."""
+    committed = (ROOT / "review" / "symptom_parity.json").read_text(encoding="utf-8")
+    assert committed == SI.parity_text(concepts, aliases), "run: python -m recall_radar.b_v2.symptom_index --parity"
+    import json
+
+    cases = json.loads(committed)
+    # 52 alias phrases + 6 free texts + 30 evaluation queries - 11 evaluation queries that are alias rows = 77
+    assert len(cases["queries"]) == 77 and all(len(q["concepts"]) == 1 for q in cases["queries"][:52])  # every alias reaches one concept
+    by_query = {q["query"]: q["concepts"] for q in cases["queries"]}
+    assert by_query["door doesn't lock properly"] == ["door_wont_lock"] and by_query["sunroof leaks"] == []
+    hits = {s["query"]: [h["doc"] for h in s["hits"]] for s in cases["search"]}
+    assert hits["brakes make noise"] == [0, 1] and hits["door won't lock"] == [6, 11] and hits["radio flickering"] == [10]
