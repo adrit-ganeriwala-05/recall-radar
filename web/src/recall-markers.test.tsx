@@ -1,7 +1,7 @@
 // PRD v2 F3 (C side): recall markers hidden until the cutoff is past their date (unless "Show later outcomes"),
 // distinct labels for issue / vehicle links, keyboard buttons opening the F1 card, Esc returns focus,
 // a missing campaign says "Record unavailable", and replays without linked recalls are unchanged.
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitForElementToBeRemoved, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import type { Replay, ReplayMarker } from "./contracts.gen";
@@ -55,16 +55,21 @@ describe("recall drawer", () => {
     expect(card.textContent).toContain("NHTSA campaign 18V000000");
     expect(document.activeElement?.textContent).toBe("Close");
     fireEvent.keyDown(document, { key: "Escape" });
-    expect(screen.queryByTestId("recall-drawer")).toBeNull();
-    await new Promise((r) => setTimeout(r, 5));
+    // the drawer animates out (0.25 s), then is gone; focus is back on the marker that opened it
+    await waitForElementToBeRemoved(() => screen.queryByTestId("recall-drawer"));
     expect(document.activeElement).toBe(btn);
   });
 
-  it("SVG markers are keyboard buttons (Enter)", async () => {
+  it("chart markers are real buttons (keyboard-operable natively) and open the campaign card", async () => {
     show(withRecalls());
     fireEvent.click(screen.getByLabelText(/Show later outcomes/));
-    const svgMarker = screen.getAllByRole("button").find((b) => b.tagName.toLowerCase() === "text" && /19V111000/.test(b.getAttribute("aria-label") ?? ""))!;
-    fireEvent.keyDown(svgMarker, { key: "Enter" });
+    const marker = (await screen.findAllByTestId("marker-recall")).find((b) => /19V111000/.test(b.getAttribute("aria-label") ?? ""))!;
+    // a native <button>: Enter and Space activate it in every browser, and it is in the tab order
+    expect(marker.tagName).toBe("BUTTON");
+    expect(marker.getAttribute("type")).toBe("button");
+    marker.focus();
+    expect(document.activeElement).toBe(marker);
+    fireEvent.click(marker);
     expect(await within(await screen.findByTestId("recall-drawer")).findByTestId("recall-card")).toBeTruthy();
   });
 

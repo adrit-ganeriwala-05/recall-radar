@@ -20,6 +20,10 @@
   @page { size: Letter; margin: 0.5in; }
   body * { visibility: hidden !important; }
   .br, .br * { visibility: visible !important; }
+  /* one page (PR #72): a route-transition wrapper keeps a transform, which would make it the containing block of
+     the absolutely placed report (pushed down, narrowed to the content column). Clear it on the report's ancestors. */
+  *:has(.br) { transform: none !important; filter: none !important; }
+  .br, .br * { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif !important; letter-spacing: normal !important; }
   .br { position: absolute; left: 0; top: 0; width: 100%; max-width: none; font-size: 10pt; color: #000; }
   .br a { color: #000; }
   .br h1 { font-size: 15pt; }

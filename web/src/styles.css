@@ -1,39 +1,87 @@
-/* Owner: C. Colors chosen for WCAG AA (>= 4.5:1 text, >= 3:1 graphics) on both themes. */
-:root {
-  --bg: #ffffff;
-  --surface: #f4f5f7;
-  --text: #1a1d23;
-  --muted: #4a515c; /* 7.9:1 on white */
-  --border: #c9ced6;
-  --link: #0a55b5; /* 6.6:1 on white */
-  --accent: #0a55b5;
-  --bar: #3b6ea8; /* 5.1:1 on white */
-  --alert: #a3460a; /* 6.0:1 on white */
-  --alert-bg: #f6dcc8;
-  --outcome: #5b2a86; /* 9.4:1 on white */
-  --partial: #8a9099; /* 3.2:1 graphic */
-  --danger-bg: #b3261e; /* white text 6.1:1 */
-  --notice-bg: #fff4d6;
-  --focus: #ffbf47;
-  color-scheme: light;
+/* Owner: C. Dark product theme (one theme; the chart design tokens): every text colour >= 4.5:1 and
+   every control border >= 3:1 on both --bg #111315 and --surface #1C2024 (WCAG 2.1 ratios computed):
+     text #F5F2EB 16.65/14.66 · muted #AEB6BE 9.07/7.99 · link/accent #638FFF 6.12/5.39
+     border #7A838F 4.85/4.27 · alert #F0A36B 9.01/7.93 · outcome #C9A4EF 8.90/7.83 · focus #FFBF47 11.35
+     button text #111315 on accent #638FFF 6.12 · white on danger #B3261E 6.54
+   Typography: Space Grotesk for headings, navigation, buttons, labels and important numbers; Manrope
+   for body copy, forms, tables, cards and longer explanations. Both are SIL OFL variable fonts served
+   from /fonts (public/fonts/README.md); index.html preloads the two Latin files so they are usually in
+   place before the app first renders. If they are late or blocked, the fallback faces below are
+   metric-matched to each web font (the values next/font computes for the same files), so text keeps
+   roughly its size and line breaks when the web font swaps in. */
+@font-face {
+  font-family: "Space Grotesk Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url("/fonts/space-grotesk-latin-ext-wght-normal.woff2") format("woff2-variations"), url("/fonts/space-grotesk-latin-ext-wght-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #14161a;
-    --surface: #1f2329;
-    --text: #e9ebef;
-    --muted: #b4bac4;
-    --border: #3a4049;
-    --link: #8cbcff;
-    --accent: #8cbcff;
-    --bar: #7aa7dc;
-    --alert: #f0a36b;
-    --alert-bg: #4a2a14;
-    --outcome: #c9a4ef;
-    --partial: #7d838c;
-    --notice-bg: #3a3215;
-    color-scheme: dark;
-  }
+@font-face {
+  font-family: "Space Grotesk Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url("/fonts/space-grotesk-latin-wght-normal.woff2") format("woff2-variations"), url("/fonts/space-grotesk-latin-wght-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: "Manrope Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url("/fonts/manrope-latin-ext-wght-normal.woff2") format("woff2-variations"), url("/fonts/manrope-latin-ext-wght-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: "Manrope Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url("/fonts/manrope-latin-wght-normal.woff2") format("woff2-variations"), url("/fonts/manrope-latin-wght-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: "Space Grotesk Fallback";
+  src: local("Arial");
+  ascent-override: 88.78%;
+  descent-override: 26.34%;
+  line-gap-override: 0%;
+  size-adjust: 110.84%;
+}
+@font-face {
+  font-family: "Manrope Fallback";
+  src: local("Arial");
+  ascent-override: 106.45%;
+  descent-override: 29.96%;
+  line-gap-override: 0%;
+  size-adjust: 100.14%;
+}
+:root {
+  --font-display: "Space Grotesk Variable", "Space Grotesk Fallback", ui-sans-serif, sans-serif;
+  --font-body: "Manrope Variable", "Manrope Fallback", ui-sans-serif, sans-serif;
+  --leading-body: 1.6;
+  --leading-heading: 1.2;
+  --tracking-heading: -0.02em;
+  --weight-heading: 600;
+  --weight-label: 600;
+  --bg: #111315;
+  --surface: #1c2024;
+  --text: #f5f2eb;
+  --muted: #aeb6be;
+  --border: #7a838f;
+  --hairline: rgba(174, 182, 190, 0.14);
+  --link: #638fff;
+  --accent: #638fff;
+  --bar: #638fff;
+  --alert: #f0a36b;
+  --alert-bg: #4a2a14;
+  --outcome: #c9a4ef;
+  --partial: #7d838c;
+  --danger-bg: #b3261e;
+  --notice-bg: #3a3215;
+  --focus: #ffbf47;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -41,8 +89,27 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: var(--leading-body);
 }
+/* Structure in the display face: headings, navigation, buttons, labels, table headers, important
+   numbers. Forms and table cells stay in the body face. */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-heading);
+  letter-spacing: var(--tracking-heading);
+  line-height: var(--leading-heading);
+}
+nav, .brand, label, legend, th, caption, dt, summary, .badge, .chip-name, .metric-label, .chart-title,
+.tabs [role="tab"], .header-meta, .verdict {
+  font-family: var(--font-display);
+}
+.metric-value, .big-number, .tick, .marker, .hist-count {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+input, select, textarea, td { font-family: var(--font-body); }
 a { color: var(--link); }
 a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible,
 [tabindex]:focus-visible {
@@ -50,6 +117,10 @@ a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible
   outline-offset: 2px;
 }
 main { max-width: 72rem; margin: 0 auto; padding: 1rem 1rem 3rem; }
+/* On screen, at least a screen tall, so the footer starts below the fold: content that arrives after
+   the first paint (data, lazy routes) grows the page downward instead of shifting a visible footer.
+   Screen only: in print it would add a blank page after the one-page buyer report. */
+@media screen { main { min-height: 100svh; } }
 h1 { font-size: 1.6rem; margin: 0.5rem 0; }
 h2 { font-size: 1.25rem; margin-top: 2rem; }
 .subtle, .small, .metric-help, .metric-note { color: var(--muted); }
@@ -86,7 +157,8 @@ nav a.active { font-weight: 700; }
 .badge-offline { background: var(--notice-bg); }
 
 button, .button {
-  font: inherit; cursor: pointer; border-radius: 6px; padding: 0.4rem 0.8rem;
+  font-size: inherit; line-height: inherit; font-family: var(--font-display); font-weight: var(--weight-label);
+  cursor: pointer; border-radius: 6px; padding: 0.4rem 0.8rem;
   border: 1px solid var(--accent); background: var(--accent); color: var(--bg); text-decoration: none;
   display: inline-block;
 }
@@ -96,7 +168,7 @@ button[aria-pressed="false"], .view-toggle button[aria-pressed="false"] { backgr
 
 .selector { display: flex; flex-wrap: wrap; gap: 1rem; align-items: end; margin: 1rem 0; }
 .selector .field { display: flex; flex-direction: column; gap: 0.25rem; }
-.selector label { font-weight: 600; }
+.selector label { font-weight: var(--weight-label); }
 select { font: inherit; padding: 0.35rem; min-width: 12rem; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; }
 .hero-card, .vin-box, .episode, .outcome, .summary {
   background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin: 1rem 0;
@@ -180,8 +252,8 @@ blockquote { margin: 0.4rem 0; padding-left: 0.75rem; border-left: 3px solid var
 .recall-card { border: 1px solid var(--border, #c9ccd1); border-radius: 6px; padding: 0.75rem 1rem; min-width: 0; overflow-wrap: anywhere; }
 .recall-card h3 { margin-top: 0; }
 .recall-banner { font-weight: 700; padding: 0.4rem 0.6rem; border-radius: 4px; border: 2px solid; }
-.banner-do-not-drive { border-color: #b00020; background: #fdecee; color: #6d0014; }
-.banner-park-outside { border-color: #8a5a00; background: #fff4de; color: #4d3300; }
+.banner-do-not-drive { border-color: #b00020; background: #3a0a12; color: #ffd6dc; }
+.banner-park-outside { border-color: #8a5a00; background: #3a2a00; color: #ffe7b3; }
 .recall-explain { border-left: 3px solid #5a6ec2; padding-left: 0.75rem; }
 .recall-explain h4, .official h4 { margin: 0.5rem 0 0.25rem; font-size: 0.95rem; }
 .official-text { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 0.5rem; }
@@ -189,10 +261,6 @@ blockquote { margin: 0.4rem 0; padding-left: 0.75rem; border-left: 3px solid var
 .official dd { margin-left: 0; }
 .link-button { background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; font: inherit; }
 .mycar { margin: 0.25rem 0 0.75rem; }
-@media (prefers-color-scheme: dark) {
-  .banner-do-not-drive { background: #3a0a12; color: #ffd6dc; }
-  .banner-park-outside { background: #3a2a00; color: #ffe7b3; }
-}
 
 /* PRD v2 F3 recall markers + drawer */
 .marker-button { cursor: pointer; }
@@ -203,3 +271,86 @@ blockquote { margin: 0.4rem 0; padding-left: 0.75rem; border-left: 3px solid var
   background: var(--bg, #fff); border: 1px solid var(--border, #c9ccd1); box-shadow: 0 -4px 24px rgba(0,0,0,.25);
   padding: 0.75rem 1rem; z-index: 20; }
 .drawer-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+
+/* ---- Interface motion support ---------------------------------------------------------------- */
+/* Buttons: hover is a brightness increase only (motion adds the tap scale). */
+button:not([disabled]):hover, .button:hover { filter: brightness(1.12); }
+.site-header { border-bottom-color: var(--hairline); }
+.summary-metrics {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 1fr));
+  gap: 0.75rem; margin: 1rem 0;
+}
+.summary-metrics dd { margin: 0; }
+.metric { border-color: var(--hairline); }
+.rr-tab { position: relative; }
+.rr-tab-indicator { position: absolute; left: 0.5rem; right: 0.5rem; bottom: -1px; height: 2px; background: var(--text); border-radius: 2px; }
+.drawer { z-index: 20; }
+.drawer-backdrop { position: fixed; inset: 0; z-index: 19; background: rgba(0, 0, 0, 0.55); }
+
+/* ---- Charts (Bklit) ----------------------------------------------------------------------------- */
+.rr-chart {
+  margin: 1.5rem 0; padding: 1rem; max-width: 72rem; min-width: 0;
+  background: var(--chart-surface); border: 1px solid var(--hairline); border-radius: 12px;
+}
+.rr-chart-head { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+.rr-chart-heading { flex: 1 1 20rem; min-width: 0; }
+.rr-chart-heading .chart-title { margin: 0; }
+.rr-chart-desc { margin: 0.25rem 0 0; color: var(--muted); font-size: 0.875rem; max-width: 48rem; }
+.rr-chart-summary { margin: 0.75rem 0 0; color: var(--muted); font-size: 0.875rem; }
+.rr-chart-state { margin: 0.5rem 0; }
+.rr-chart-plot { width: 100%; min-height: 280px; }
+.rr-chart-skeleton { aspect-ratio: 2.6 / 1; border-radius: 8px; background: rgba(174, 182, 190, 0.06); }
+@media (prefers-reduced-motion: no-preference) {
+  .rr-chart-skeleton { animation: rr-skeleton 1.6s ease-in-out infinite; }
+}
+@keyframes rr-skeleton { 50% { background: rgba(174, 182, 190, 0.12); } }
+.rr-chart-scroll { overflow-x: auto; overflow-y: hidden; }
+.rr-explorer { position: absolute; pointer-events: none; border-radius: 6px; }
+.rr-explorer:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+/* SVG text inside charts (the SVG is aria-hidden; values are in the table, tooltips and explorer). */
+.rr-axis-tick { fill: var(--muted); font-family: var(--font-display); font-size: 11px; font-variant-numeric: tabular-nums; }
+.rr-axis-title { fill: var(--muted); font-family: var(--font-display); font-size: 11px; font-weight: 600; }
+.rr-bar-note { fill: var(--text); font-family: var(--font-display); font-size: 10px; }
+.rr-bar-value { fill: var(--text); font-family: var(--font-display); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.rr-bar-category { fill: var(--text); font-family: var(--font-display); font-size: 12px; font-weight: 600; }
+
+/* Replay markers: real buttons over the plot; shape = glyph colour by kind; >= 44 px targets on phones. */
+.rr-marker-layer { position: absolute; inset: 0; pointer-events: none; }
+.rr-marker-wrap { position: absolute; transform: translateX(-50%); pointer-events: auto; }
+.rr-marker {
+  display: grid; place-items: center; width: 28px; height: 26px; padding: 0; margin: 0;
+  background: transparent; border: 0; border-radius: 50%; font: 18px/1 var(--font-display); cursor: pointer;
+}
+.rr-marker:hover { background: rgba(174, 182, 190, 0.12); }
+@media (max-width: 639px) { .rr-marker { width: 44px; height: 44px; } }
+.rr-marker-alert, .rr-legend-alert { color: var(--chart-cobalt); }
+.rr-marker-investigation, .rr-legend-investigation { color: var(--chart-amber); }
+.rr-marker-recall-issue, .rr-legend-recall-issue { color: var(--chart-recall); font-weight: 700; }
+.rr-marker-recall-vehicle, .rr-marker-recall, .rr-legend-recall-vehicle, .rr-legend-recall { color: var(--chart-text-secondary); font-weight: 700; }
+.rr-legend-glyph { display: inline-block; min-width: 1em; text-align: center; }
+.rr-marker-more { position: absolute; transform: translateX(-50%); color: var(--muted); font: 600 11px var(--font-display); }
+
+/* Tooltips: Bklit's box holds .rr-tip; marker tooltips are our own and flip toward the chart centre. */
+.rr-tip { display: flex; flex-direction: column; gap: 2px; color: var(--chart-text); font-size: 0.8125rem; line-height: 1.4; max-width: min(18rem, 72vw); }
+.rr-tip strong { font-family: var(--font-display); }
+.rr-tip-marker { color: var(--chart-text-secondary); }
+.rr-tip-hint { color: var(--chart-text-secondary); font-size: 0.75rem; }
+.rr-marker-tip {
+  position: absolute; top: 100%; margin-top: 6px; z-index: 6; width: max-content; padding: 0.5rem 0.6rem;
+  background: var(--chart-tooltip-background); border: 1px solid var(--chart-tooltip-border); border-radius: 8px;
+}
+.rr-tip-right .rr-marker-tip { left: 0; }
+.rr-tip-left .rr-marker-tip { right: 0; }
+
+.rr-chart-legend { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; margin-top: 0.5rem; font-size: 0.875rem; color: var(--text); }
+.rr-legend-item { display: inline-flex; align-items: center; gap: 0.5rem; }
+.rr-legend-note { margin: 0.25rem 0 0; color: var(--muted); font-size: 0.8125rem; }
+.rr-marker-list { margin-top: 0.75rem; }
+@media (max-width: 639px) {
+  .rr-chart { padding: 0.75rem; }
+  .rr-chart-plot { min-height: 240px; }
+  .rr-chart-head { flex-direction: column; }
+  .legend, .rr-chart-legend { flex-direction: column; }
+  .view-toggle button { min-height: 44px; min-width: 44px; }
+}

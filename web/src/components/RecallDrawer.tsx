@@ -1,5 +1,9 @@
 // Owner: C. PRD v2 F3.4: the F1 card for a recall marker, in a dialog; Esc/close returns focus to the marker.
+// Motion: the drawer slides in from the right and the modal backdrop fades (ui/motion.ts); the parent
+// wraps it in AnimatePresence so both also animate out. Clicking the backdrop closes it like Esc.
+import { motion } from "motion/react";
 import { useEffect, useRef } from "react";
+import { backdropMotion, useMotionPresets } from "../ui/motion";
 import type { RecallCampaign, VehicleKey } from "../contracts.gen";
 import { RecallCard } from "./RecallCard";
 
@@ -20,6 +24,7 @@ export function RecallDrawer({
   dataAsOf?: string | null;
   onClose: () => void;
 }) {
+  const mp = useMotionPresets();
   const closeRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     closeRef.current?.focus();
@@ -28,12 +33,14 @@ export function RecallDrawer({
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
   return (
-    <div className="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-h" data-testid="recall-drawer">
+    <>
+      <motion.div className="drawer-backdrop" aria-hidden="true" onClick={onClose} {...backdropMotion} />
+      <motion.div className="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-h" data-testid="recall-drawer" {...mp.drawer}>
       <div className="drawer-head">
         <h2 id="drawer-h">Recall campaign {campno}</h2>
-        <button type="button" ref={closeRef} onClick={onClose}>
+        <motion.button type="button" ref={closeRef} onClick={onClose} {...mp.buttonTap}>
           Close
-        </button>
+        </motion.button>
       </div>
       {loading ? (
         <p className="state">Loading the campaign…</p>
@@ -55,6 +62,7 @@ export function RecallDrawer({
           {vehicle.model}.
         </p>
       )}
-    </div>
+      </motion.div>
+    </>
   );
 }
