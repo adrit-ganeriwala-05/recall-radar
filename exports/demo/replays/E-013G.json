@@ -354,6 +354,83 @@
   ],
   "markers": [
     {
+      "type": "recall_reported",
+      "date": "2012-07-24",
+      "label": "Other recall for this model: campaign 12V352000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "12V352000",
+      "link": "vehicle"
+    },
+    {
+      "type": "recall_reported",
+      "date": "2014-07-18",
+      "label": "Other recall for this model: campaign 14V434000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "14V434000",
+      "link": "vehicle"
+    },
+    {
+      "type": "recall_reported",
+      "date": "2015-09-10",
+      "label": "Other recall for this model: campaign 15V568000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "15V568000",
+      "link": "vehicle"
+    },
+    {
+      "type": "recall_reported",
+      "date": "2015-11-16",
+      "label": "Other recall for this model: campaign 15V759000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "15V759000",
+      "link": "vehicle"
+    },
+    {
+      "type": "recall_reported",
+      "date": "2017-03-08",
+      "label": "Other recall for this model: campaign 17V152000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "17V152000",
+      "link": "vehicle"
+    },
+    {
+      "type": "recall_reported",
+      "date": "2017-10-04",
+      "label": "Other recall for this model: campaign 17V617000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "17V617000",
+      "link": "vehicle"
+    },
+    {
+      "type": "recall_reported",
+      "date": "2018-02-27",
+      "label": "Other recall for this model: campaign 18V137000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "18V137000",
+      "link": "vehicle"
+    },
+    {
       "type": "investigation_opened",
       "date": "2018-08-21",
       "label": "Investigation DP18003 opened (shown as a later reveal)",
@@ -378,7 +455,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "18V907000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -387,7 +466,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "18V934000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -396,7 +477,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "19V120000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -405,7 +488,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "19V204000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -414,7 +499,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "20V061000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -423,7 +510,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "20V121000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -432,7 +521,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "20V393000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -441,7 +532,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "20V520000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -450,7 +543,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "20V543000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -459,7 +554,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "20V746000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -468,7 +565,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "21V303000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -477,7 +576,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "21V727000",
+      "link": "issue"
     }
   ],
   "outcome": {

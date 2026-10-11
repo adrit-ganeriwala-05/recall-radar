@@ -7,8 +7,8 @@ named teammate's posted result. Anything not measured says so.
 ## Identity
 | Item | Value |
 | --- | --- |
-| Baseline code SHA | `195ad4561b4e1b3c157371bddf40f93cbaa44edf` (main after PR #21) |
-| Tag | `baseline-v1` → 195ad45 (pushed only after the human approves) |
+| Baseline code SHA | **`45fd5ac8ba36e95505c2e842146e67c3273c3db6`** (main after PR #23, the Gate A fix; first measured at 195ad45) |
+| Tag | **`baseline-v1` → 45fd5ac**, pushed 01:06 after A's line (human approved the condition) |
 | Excluded from the baseline | `d/release` (PR #19: README, Devpost repro hash, gate log, domain script quoting) — unreviewed at Gate A; merges through C's review in the Stage B window |
 | Freeze | `freeze-v1` → dd6b439, config hash `0c26e23e0a3a` |
 | Snapshot | `e808281f001a` (availability basis LDATE_PLUS_7) |
@@ -35,6 +35,17 @@ named teammate's posted result. Anything not measured says so.
 
 The checks ran against `https://www.recall-radar.us` because D's laptop still had a cached negative
 DNS answer for the apex; the apex was checked separately with `curl --resolve` (200, valid certificate).
+
+## Gate A re-run at 45fd5ac (01:02–01:06) — GATE A PASS
+| Check | Result |
+| --- | --- |
+| `make check` | exit 0: 344 passed + 1 xfailed (python), 106 (web), secrets/claims/fill 0 |
+| Deploy + `/healthz` | `make deploy REF=origin/main` → git_sha 45fd5ac |
+| Integration (`https://recall-radar.us`, RR_RELEASE=1, RR_EXPECT_SHA=45fd5ac) | 21 passed |
+| e2e / outage | 2 passed / 0 FAIL 0 WARN |
+| Protected exports | 27 files sha256 identical to the table below |
+| A: `RR_RAW_DIR=~/rr-raw make test-real` | data 3 (incl. raw lock + alias test) · method 5 · api 4 → exit 0; `verify-snapshot` ok; `pytest tests/data tests/api` 174 passed |
+| B (PR #23 review) | real_data tests/data with RR_RAW_DIR on this tree → 3 passed |
 
 ## Protected artifacts — sha256 of `exports/demo/**` at 195ad45 (27 files)
 Gate B compares these byte for byte (PRD_v2 §1 "Frozen science").

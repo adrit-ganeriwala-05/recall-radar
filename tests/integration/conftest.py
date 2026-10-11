@@ -31,6 +31,15 @@ RELEASE = os.environ.get("RR_RELEASE", "0") == "1"
 M = TypeVar("M", bound=BaseModel)
 
 
+def compatible(version: str) -> bool:
+    """Contract changes are additive within a major version (CONTRACTS.md), and the frozen exports keep the
+    version they were written with (PRD_v2 §1: hero.json, results*.json byte-identical). So a payload is
+    valid when its major equals ours and its minor is not newer than ours."""
+    have = tuple(int(x) for x in version.split(".")[:2])
+    want = tuple(int(x) for x in C.CONTRACT_VERSION.split(".")[:2])
+    return have[0] == want[0] and have[1] <= want[1]
+
+
 class Api:
     """GET helpers that validate status, headers, contract shape and data label together."""
 
@@ -53,7 +62,7 @@ class Api:
         obj = schema.model_validate(r.json())
         prov = getattr(obj, "provenance", None)
         if prov is not None:
-            assert prov.contract_version == C.CONTRACT_VERSION, f"{path}: server runs another contract"
+            assert compatible(prov.contract_version), f"{path}: contract {prov.contract_version} vs {C.CONTRACT_VERSION}"
             synthetic = prov.data_label == C.DataLabel.synthetic_fixture
             assert synthetic == (self.mode == "fixture"), f"{path}: {prov.data_label} in {self.mode} mode"
         return obj
