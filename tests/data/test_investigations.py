@@ -8,7 +8,7 @@ from datetime import date
 import duckdb
 import pytest
 import yaml
-from conftest import CONFIG, ZIP_NAME, make_raw
+from data_support import CONFIG, ZIP_NAME, make_raw
 
 from recall_radar.data import ingest, investigations, snapshot
 

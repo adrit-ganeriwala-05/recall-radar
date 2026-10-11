@@ -10,6 +10,8 @@ Environment (all optional):
     RR_CONFIG       config.yaml path (default: repo config.yaml)
     RR_WEB_DIST     built web app (default: web/dist); served at / with SPA fallback
     RR_GIT_SHA      deployed commit; else the REVISION file at the repo root; else git; else null
+    RR_DUCKDB_MEMORY_LIMIT  DuckDB memory cap per API process (default 1GB). DuckDB's own default
+                    is 80% of RAM per process; with `--workers 2` on the 4 GB VM that oversubscribes.
 
 The DuckDB file is opened read-only with extension auto-install/auto-load disabled, and no code
 path makes a network call. Responses are built as contract models and dumped with
@@ -26,6 +28,8 @@ import math
 import os
 import subprocess
 import threading
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from datetime import UTC, date, datetime
 from functools import cached_property
 from pathlib import Path
@@ -154,6 +158,7 @@ class Settings:
         self.exports = Path(os.environ.get("RR_EXPORTS_DIR", REPO_ROOT / "exports"))
         self.config_path = Path(os.environ.get("RR_CONFIG", REPO_ROOT / "config.yaml"))
         self.web_dist = Path(os.environ.get("RR_WEB_DIST", REPO_ROOT / "web" / "dist"))
+        self.duckdb_memory_limit = os.environ.get("RR_DUCKDB_MEMORY_LIMIT", "").strip() or "1GB"
         self.git_sha = git_sha()
 
     def export_file(self, name: str) -> Path | None:
@@ -186,9 +191,20 @@ class Store:
                     self._con = duckdb.connect(
                         str(self.s.db_path),
                         read_only=True,
-                        config={"autoinstall_known_extensions": False, "autoload_known_extensions": False},
+                        config={
+                            "autoinstall_known_extensions": False,
+                            "autoload_known_extensions": False,
+                            "memory_limit": self.s.duckdb_memory_limit,
+                        },
                     )
         return self._con.cursor()
+
+    def close(self) -> None:
+        """Release the DuckDB file (app shutdown). Lookups stay cached; a later request reopens it."""
+        with self._lock:
+            if self._con is not None:
+                self._con.close()
+                self._con = None
 
     def rows(self, sql: str, params: list | None = None) -> list[dict]:
         cur = self.cursor()
@@ -362,7 +378,14 @@ def issue_summary(store: Store, gid: str, group_odinos: set[str]) -> C.IssueSumm
 def create_app(settings: Settings | None = None) -> FastAPI:
     s = settings or Settings()
     store = Store(s)
-    app = FastAPI(title="Recall Radar API", version=C.CONTRACT_VERSION, docs_url=None, redoc_url=None, openapi_url=None)
+
+    @asynccontextmanager
+    async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+        yield
+        store.close()
+
+    app = FastAPI(title="Recall Radar API", version=C.CONTRACT_VERSION, docs_url=None, redoc_url=None,
+                  openapi_url=None, lifespan=lifespan)
     app.state.settings, app.state.store = s, store
 
     @app.exception_handler(ApiError)

@@ -5,7 +5,7 @@ import re
 
 import duckdb
 import pytest
-from conftest import run_ingest
+from data_support import run_ingest
 
 from recall_radar.data import ingest
 

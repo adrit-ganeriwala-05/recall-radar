@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import duckdb
 import pytest
-from conftest import CONFIG, ROADSTER, STEERING_GID, build_db, fixture_json
+from api_support import CONFIG, ROADSTER, STEERING_GID, build_db, fixture_json
 from fastapi.testclient import TestClient
 
 from recall_radar import contracts as C
@@ -268,6 +268,26 @@ def test_db_opened_read_only_without_extension_downloads(client):
         cur.close()
 
 
+def _memory_limit(app) -> str:
+    cur = app.state.store.cursor()
+    try:
+        return cur.execute("SELECT current_setting('memory_limit')").fetchone()[0]
+    finally:
+        cur.close()
+
+
+def test_duckdb_memory_is_capped_per_process(client):
+    # DuckDB's default is 80% of RAM in every process; two uvicorn workers on the 4 GB VM would
+    # each be allowed 3.2 GB. The cap is 1 GB (10^9 bytes = 953.6 MiB, as DuckDB prints it).
+    assert _memory_limit(client.app) == "953.6 MiB"
+
+
+def test_duckdb_memory_limit_from_env(env, monkeypatch):
+    monkeypatch.setenv("RR_DUCKDB_MEMORY_LIMIT", "512MiB")
+    with TestClient(api.create_app(), raise_server_exceptions=False) as c:
+        assert _memory_limit(c.app) == "512.0 MiB"
+
+
 def test_git_sha_prefers_env(monkeypatch):
     monkeypatch.setenv("RR_GIT_SHA", "feedbeef")
     assert api.git_sha() == "feedbeef"
@@ -335,3 +355,11 @@ def test_fixture_mode_health_csv_and_missing_replay(fixture_client):
 
 def test_config_fixture_is_consistent():
     assert CONFIG["detector"]["window_months"] == 2
+
+
+def test_shutdown_releases_the_database_file(env):
+    db = env / "data" / "recall_radar.duckdb"
+    with TestClient(api.create_app()) as c:
+        assert c.get("/api/makes").status_code == 200
+    # after shutdown a plain connection (other settings) can open the same file
+    duckdb.connect(str(db), read_only=True).close()
