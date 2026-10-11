@@ -10,14 +10,31 @@ anything before NHTSA staff did. To check a specific car, use NHTSA's VIN lookup
 https://www.nhtsa.gov/recalls.
 
 ## Status
-Release `rc1`. Live demo: https://recall-radar.us (one Vultr VM; the app makes no outbound calls).
-Detector settings were frozen under the git tag `freeze-v1` before the held-out year was run once.
-On that year the alerts did not come earlier for investigated vehicles than for comparable vehicles
-that were never investigated; the results page states the comparison with chance in one sentence.
-All numbers live in `exports/demo/results.csv`; this README contains none.
+Live demo: https://recall-radar.us (one Vultr VM). v1 detector settings were frozen under the git tag
+`freeze-v1` before the held-out year was run once. On that year the alerts did not come earlier for
+investigated vehicles than for comparable vehicles that were never investigated; the results page states
+the comparison with chance in one sentence. All numbers live in `exports/demo/results.csv`; this README
+contains none. v2 (tag `rc2`, Gate B record in `docs/GATE_B.md`) added the features below without changing
+any v1 result file (`make protected`).
 
-What the app is for: reading a vehicle's full complaint history and seeing what was public before
-each NHTSA investigation.
+What the app is for: reading a vehicle's full complaint history, its recalls and investigations, and
+seeing what was public before each NHTSA investigation.
+
+| Feature | Status |
+| --- | --- |
+| Recall campaigns on every vehicle page, with official NHTSA text | verified |
+| Plain-language recall explanations (Gemini, each sentence tied to the official text; only reviewed ones shown) | verified (shown only where a reviewed explanation exists; most recalls show the official text alone) |
+| Recall markers on the investigation replays | verified |
+| "Remember this car" (stored only in your browser) | verified |
+| Report a problem: draft in the page, copy it, continue on NHTSA's own form (nothing is sent by us) | verified |
+| Check by VIN: decode with NHTSA's vPIC from your browser, then open that model | verified (decode + handoff). A specific car's open recalls: blocked (no documented authorized interface), so we link to https://www.nhtsa.gov/recalls |
+| Everyday-symptom search ("grinding when braking") | verified |
+| One-page used-car summary, printable to PDF | verified |
+| iMessage assistant via Photon (questions in chat with a Gemini planner whose replies are checked against the data; daily alerts for a watched vehicle) | implemented-unverified: built after the feature cutoff and switched on only in supervised test windows |
+
+Outbound calls: the analysis app serves precomputed data and calls nothing. Your browser calls NHTSA's vPIC
+only when you press "Decode with NHTSA". The iMessage service (off by default) calls Photon, Gemini and
+api.nhtsa.gov.
 
 ## Run it
 ```bash
@@ -45,8 +62,10 @@ to file" date equals the received date for almost all complaints), and every scr
 replay a "received-date experiment". Current files reflect later corrections.
 
 ## Disclosure
-Planning documents, contracts and coordination files were generated with Claude (Anthropic)
-on 2026-10-10 during the event. No code or data predates the event except open-source libraries.
+Planning documents, contracts, coordination files and much of the code were written with Claude
+(Anthropic) during the event. Google Gemini generates the recall explanations (reviewed before
+publishing) and plans/rewords iMessage replies (every number and link is checked against our data
+before sending). No code or data predates the event except open-source libraries.
 
 ## Team
 Hacklanta '26 team. Workstreams: data & API, detection & evaluation, frontend, integration & delivery.
