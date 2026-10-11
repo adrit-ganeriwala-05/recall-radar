@@ -30,6 +30,8 @@ def handle(con: sqlite3.Connection, event: dict, a: Analysis, provider: Provider
     text = str(((msg.get("content") or {}).get("text")) or "").strip()
     if not text:
         return None
+    if text == T.DELETE_ACK:
+        return None  # our own DELETE acknowledgement echoing back (its outbox row, the usual echo check, is gone)
     if is_recent_echo(con, route, text, sent_at):
         return None  # provider-independent: our own text coming back must never be answered (no reply loop)
     if space.get("type") == "group":
@@ -43,7 +45,7 @@ def handle(con: sqlite3.Connection, event: dict, a: Analysis, provider: Provider
             con.execute("INSERT OR REPLACE INTO convo_ctx VALUES (?, ?, ?, ?, ?, ?, ?)",
                         [route, ctx["make"], ctx["model"], ctx["model_year"], ctx.get("campno"), None, ctx["expires_at"]])
     if reply:
-        kind = "stop_ack" if text.upper().startswith("STOP") else "reply"
+        kind = "stop_ack" if text.upper().startswith("STOP") else "delete_ack" if reply == T.DELETE_ACK else "reply"
         enqueue(con, f"reply:{event_id}", route, kind, reply)
         process(con, provider)
     return reply

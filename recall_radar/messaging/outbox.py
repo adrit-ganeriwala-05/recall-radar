@@ -9,6 +9,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from .provider import Provider
+from .templates import DELETE_ACK
 
 MAX_RETRIES = 3
 
@@ -55,6 +56,10 @@ def process(con: sqlite3.Connection, provider: Provider, now: float | None = Non
             retries = row["retries"] + 1
             con.execute("UPDATE outbox SET status = ?, retries = ?, updated_at = ? WHERE idempotency_key = ?",
                         ["failed" if retries >= MAX_RETRIES else "queued", retries, now, row["idempotency_key"]])
+    # PRD F9.4: after DELETE nothing may keep the chat's route. The acknowledgement is queued after the sweep,
+    # so its own row goes as soon as it is final (accepted, uncertain or failed); a queued one waits for a retry.
+    # Rows from before kind 'delete_ack' existed are matched by their text.
+    con.execute("DELETE FROM outbox WHERE status != 'queued' AND (kind = 'delete_ack' OR body = ?)", [DELETE_ACK])
     return done
 
 
