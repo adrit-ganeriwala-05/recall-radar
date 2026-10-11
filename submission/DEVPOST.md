@@ -6,7 +6,7 @@ A line whose number is not measured is cut (`fill_numbers.py --cut-unmeasured`),
 
 **Main track:** <TRACK: Social Good (PRD default) or AI/ML — humans decide, docs/SOURCES.md>
 **Sponsor challenges:** Best Use of Vultr (deployed on a Vultr VM)
-**Live demo:** https://recall-radar.us · **Video:** <VIDEO_URL> · **Code:** https://github.com/adrit-ganeriwala-05/recall-radar (tag `rc1`)
+**Live demo:** https://recall-radar.us · **Video:** <VIDEO_URL> · **Code:** https://github.com/adrit-ganeriwala-05/recall-radar (tag `rc2`; live site at `da1324b`)
 **Team:** <name (GitHub)> ×4
 
 ## Inspiration
@@ -29,6 +29,24 @@ at the time.
   before the held-out run) fell back to the development period.
 - **Results:** how often the frozen detector raised an alert early for documented investigations,
   next to the rate expected by chance, with every miss and unmatched alert listed.
+
+**Added in v2** (none of it changes a v1 result file; `make protected` checks that byte for byte):
+- **Recalls on every vehicle page**, with the official NHTSA text, and recall markers on the replays.
+- **Plain-language recall explanations** written by Google Gemini, each sentence tied to the official
+  words it came from and published only after a human review; most recalls show the official text alone.
+- **Everyday-symptom search:** type "grinding when braking" and get the matching complaint groups.
+- **Check by VIN:** your browser asks NHTSA's vPIC decoder for the year, make and model, then opens that
+  vehicle. A specific car's open recalls are not checked by us (no documented authorized interface); we
+  link to NHTSA's own lookup instead.
+- **Report a problem:** draft the complaint in the page and continue on NHTSA's form. Nothing is sent by us.
+- **One-page used-car summary** that prints to a one-page PDF, and **Remember this car** (kept only in
+  your browser).
+- **iMessage assistant via Photon (built after our feature cutoff; switched on only in supervised test
+  windows, so not described as shipped):** ask "what problems are reported for the 2019 Jetta?" or "any
+  recalls on it?" Gemini works out the question and the vehicle; every number in a reply is checked against
+  our data before it is sent, and it never diagnoses a car or says whether it is safe. WATCH a vehicle to
+  get at most one alert a day when NHTSA publishes new complaints or recalls for it; STOP and DELETE work
+  at any time.
 
 An alert means a complaint pattern deserves a closer look. It is not a defect finding, not a
 recall forecast, and not a claim that we noticed anything before NHTSA staff did. To check a
@@ -54,9 +72,11 @@ Development-period results are on the results page, labeled separately. Full tab
 Python + DuckDB pipeline (ingest, dedup by complaint number, redaction) → a component-level
 Poisson detector scored month by month with an availability cutoff → post-hoc matching to
 investigation families → seeded evaluation with chance controls. FastAPI serves cached results;
-React + Vite + Recharts render them. One Vultr VM with Caddy and systemd; the app makes no network
-calls at request time and runs offline on a laptop. Contracts (Pydantic → JSON Schema →
-TypeScript) keep the four parts in agreement; CI checks drift. Release: tag `rc1`, reproducibility
+React + Vite + Recharts render them. One Vultr VM with Caddy and systemd; the analysis app makes no network
+calls at request time and runs offline on a laptop. The iMessage assistant is a separate service behind a
+kill switch: Photon Spectrum (iMessage) → signed webhook → our service → Gemini plans and rewords →
+allowlisted data lookups → number check → reply through Photon. Contracts (Pydantic → JSON Schema →
+TypeScript) keep the four parts in agreement; CI checks drift. Release: tag `rc2`, reproducibility
 hash (SHA-256 of `exports/demo/results.csv`,
 reproduced by `git checkout baseline-v1 && make repro` from a clean clone)
 `7a469c93a4097df1bb3d3f28a97772d20e58aa9ed106338cde6b67a3c561321a`.
@@ -83,10 +103,14 @@ vehicle and system combinations ([held_out.excluded_families.numerator] of
 [held_out.excluded_families.denominator] families excluded for any reason).
 Next: evaluate at the level of those engineering analyses, with a new freeze and a new held-out
 year, rather than tuning against this one.
+Also next: a specific car's recall status by VIN through an authorized source; with a licensed vehicle-history
+source, VIN-based "what to have inspected" suggestions in the chat (inspection points from complaint data,
+never a diagnosis); and a full independent review and verification of the iMessage assistant.
 
 ## Built with
 Python, DuckDB, SciPy, FastAPI, React, Vite, TypeScript, Recharts, Playwright, Vultr, Caddy,
-NHTSA ODI public datasets (complaints, investigations, recalls), Claude Code.
+NHTSA ODI public datasets (complaints, investigations, recalls), NHTSA vPIC, Google Gemini, Photon Spectrum
+(iMessage), Claude Code.
 
 ## Disclosure
 See `submission/DISCLOSURE.md` (pasted below).
