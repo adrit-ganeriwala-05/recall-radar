@@ -423,16 +423,17 @@ judged ids equal the current top results: yes
   run it and have not seen the tables file): `recall_explain --generate --only <300 campaigns: 123 demo-vehicle
   campaigns first, then top vehicles by complaints>` on the v2 database, model `gemini-3.1-flash-lite`, prompt
   `f2-v1`, key supplied by a human. The validator accepted 72; everything else stayed fallback.
-- **B's reading (PRD F2.6), 03:13 ET:** all 72 read against the three official fields. Verdicts in
-  `review/explanation_verdicts.csv`: 58 accept, 14 reject. Reasons for the 14 (each is in the file's note): a
-  condition of the official sentence was dropped (park pawl, parking brake applied, "for an extended period",
-  "without depressing the brake pedal", "in combination with debris and corrosion", "released again and … not
-  engaged": 8); "serious injury or death" was left out of a consequence that was otherwise paraphrased (2); a
-  consequence was attributed to the wrong cause (2); "can not" became "may not" (1); the sentence said in our own
-  words that the vehicles "have a defect" (1). The validator cannot see any of these: every word is in the official
-  text. That is why the reading is a gate and not a formality.
+- **B's reading (PRD F2.6), finished 03:45 ET:** all 72 read against the three official fields. Verdicts in
+  `review/explanation_verdicts.csv`: **44 accept, 28 reject**, each with its reason. First pass: 14 rejects (a
+  condition of the official sentence dropped: 8; "serious injury or death" left out of a paraphrased consequence:
+  2; a consequence attributed to the wrong cause: 2; "can not" became "may not": 1; our own words said the vehicles
+  "have a defect": 1). A's review of that file found three more of the same kinds that I had let through (a
+  changed modal, a dropped "when …" clause). I then applied one rule to every row and rejected 14 more: any change
+  of certainty against the official wording, in either direction (may / can / could / definite), any dropped
+  "when / if / while" condition, any causal link the official text does not state. The validator cannot see any
+  of these: every word is in the official text. The reading is the gate, and a second reader improved it.
 - What ships as accepted is whatever `--finalize --verdicts review/explanation_verdicts.csv` leaves on the serving
-  database: at most the 58. Status wording per PRD F2.8 comes from that command's last line.
+  database: at most the 44. Status wording per PRD F2.8 comes from that command's last line.
 - Cache key: campno | sha256(summary, consequence, remedy) | model | prompt version.
 - **Nothing is served as accepted on the strength of the batch run alone** (PRD F2.6). The API checks only the
   contract shape, so the last step before a tables file goes into a serving database is
