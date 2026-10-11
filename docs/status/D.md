@@ -4,9 +4,9 @@ Restart memory for session rr-D. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 21:10 ET
+- Updated: 2026-10-11 00:35 ET
 - Branch / HEAD: d/delivery @ (see `git log -1`; this commit) — checkout `~/recall-radar`; integration checkout `~/rr-int`
-- Last origin/main merged: f324b00 (freeze-v1 = dd6b439); VM runs f324b00 cached, DB sha256 5d708042133c
+- Last origin/main merged: bb1852f (freeze-v1 = dd6b439, lkg-g3 = 90f454c); VM runs bb1852f cached, DB sha256 5d708042133c
 - Contract version: 1.0.0 (tag `contract-v1` → 5dca3a3)
 - Snapshot id / config hash / availability basis: n/a / 0c26e23e0a3a (after PR #2) / LDATE_PLUS_7
 - Mode: implementing (regular phase; D0 open only for the contract-v1 tag)

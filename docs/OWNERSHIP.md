@@ -22,7 +22,9 @@ recall_radar/__init__.py             A
 recall_radar/data/**                 A
 recall_radar/api/**                  A
 recall_radar/method/**               B
+recall_radar/b_v2/**                 B     # v2: protect, recall_markers, recall_explain, symptom_index, report_select (outside the freeze)
 recall_radar/ml/**                   D
+recall_radar/messaging/**            A     # v2 F9 service (PRD_v2 §4 F9)
 contracts/**                         A
 tests/api/**                         A
 tests/data/**                        A
@@ -31,6 +33,7 @@ tests/method/**                      B
 tests/fixtures/method/**             B
 tests/integration/**                 D
 tests/ml/**                          D
+tests/messaging/**                   A
 tests/conftest.py                    D
 review/match_labels*.csv             A     # tier-3 labels by someone who did not write the matcher
 review/cluster_qa*.csv               A
@@ -46,7 +49,11 @@ scripts/fetch_sources.sh             A
 scripts/**                           D
 web/e2e/**                           D
 web/playwright.config.ts             D
+web/src/features/report/**           D     # v2 F5
+web/src/features/buyer-report/**     D     # v2 F8
+web/src/features/vin/**              A     # v2 F6
 web/**                               C
+deploy/messaging/**                  D     # v2 F9 deploy, Gate P
 deploy/**                            D
 submission/**                        D
 .github/**                           D
