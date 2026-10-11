@@ -37,6 +37,7 @@ from datetime import UTC, date, datetime
 from functools import cached_property
 from pathlib import Path
 from typing import Annotated, Any, Literal
+from urllib.parse import urlencode
 
 import duckdb
 import yaml
@@ -54,6 +55,7 @@ FIXTURES = REPO_ROOT / "contracts" / "fixtures" / "api"
 ALIASES = REPO_ROOT / "recall_radar" / "data" / "aliases.csv"
 CACHE_OK = "public, max-age=3600"
 EXCERPT_CHARS = 400
+SYMPTOM_DOCS = 2000  # PRD v2 F7.4: newest 2,000 distinct complaints per vehicle
 NHTSA_COMPLAINT_URL = "https://api.nhtsa.gov/complaints/odinumber?odinumber={}"
 RECALL_NOTE = (
     "Recall campaigns are listed by make, model and model year. They do not tell you whether a "
@@ -613,6 +615,85 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return ok(C.VehicleResponse(provenance=store.provenance, vehicle=key, distinct_complaints=sum(counts.values()),
                                     components=components, monthly=monthly, recall_campaigns=recalls,
                                     note=RECALL_NOTE))
+
+    # ---- PRD v2 F7: symptom search index (the query itself never reaches this server)
+    @app.get("/api/symptom-index")
+    def symptom_index(make: Annotated[str, Query(min_length=1)], model: Annotated[str, Query(min_length=1)],
+                      year: Annotated[int, Query(ge=1949, le=2030)]) -> JSONResponse:
+        if s.mode == "fixture":
+            return fixture("symptom_index.json")
+        if not {"symptom_alias", "symptom_concept"} <= store.tables:
+            raise unavailable("Symptom search is not built into this database.")
+        mk = normalize(make)
+        md = store.resolve_model(mk, normalize(model))
+        docs = store.rows(
+            """SELECT d.odino, d.avail_date, d.descr_redacted,
+                      list(DISTINCT r.comp_system ORDER BY r.comp_system) AS systems
+               FROM complaint_doc d JOIN complaint_row r USING (odino)
+               WHERE d.make = ? AND d.model = ? AND d.model_year = ?
+               GROUP BY d.odino, d.avail_date, d.descr_redacted
+               ORDER BY d.avail_date DESC, CAST(d.odino AS BIGINT) DESC LIMIT ?""", [mk, md, year, SYMPTOM_DOCS])
+        if not docs:
+            raise not_found("No complaints for this vehicle in the data range.", make=mk, model=md, year=year)
+
+        def group_of(systems: list[str]) -> str | None:
+            named = [x for x in systems if x and x != "UNKNOWN OR OTHER"]
+            return make_group_id(mk, md, year, named[0]) if named else None
+
+        idx = C.SymptomIndex(
+            provenance=store.provenance, vehicle=C.VehicleKey(make=mk, model=md, model_year=year),
+            docs=[C.SymptomDoc(odino=str(r["odino"]), comp_systems=list(r["systems"]), avail_date=r["avail_date"],
+                               excerpt=excerpt(r["descr_redacted"]), group_id=group_of(list(r["systems"])),
+                               nhtsa_url=NHTSA_COMPLAINT_URL.format(r["odino"])) for r in docs],
+            aliases=[C.SymptomAlias(phrase=r["phrase"], concepts=list(r["concepts"]))
+                     for r in store.rows("SELECT phrase, concepts FROM symptom_alias ORDER BY phrase")],
+            concepts=[C.SymptomConcept(id=r["id"], label=r["label"], comp_systems=list(r["comp_systems"] or []),
+                                       terms=list(r["terms"] or []),
+                                       require_all=[list(g) for g in (r["require_all"] or [])],
+                                       exclude=list(r["exclude"] or []))
+                      for r in store.rows("SELECT * FROM symptom_concept ORDER BY id")],
+        )
+        return ok(idx)
+
+    # ---- PRD v2 F8: one-page buyer report data (B's selection, same counts as /api/vehicle)
+    @app.get("/api/report")
+    def report(make: Annotated[str, Query(min_length=1)], model: Annotated[str, Query(min_length=1)],
+               year: Annotated[int, Query(ge=1949, le=2030)]) -> JSONResponse:
+        if s.mode == "fixture":
+            return fixture("report.json")
+        try:
+            from recall_radar.b_v2.report_select import select_report_data
+        except ImportError as e:
+            raise unavailable("Report selection is not installed.") from e
+        mk = normalize(make)
+        md = store.resolve_model(mk, normalize(model))
+        sel = select_report_data(store.cursor(), mk, md, year)
+        if sel is None or sel.distinct_complaints == 0:
+            raise not_found("No complaints for this vehicle in the data range.", make=mk, model=md, year=year)
+        key = C.VehicleKey(make=mk, model=md, model_year=year)
+        vehicle_link = f"/vehicle?{urlencode({'make': mk, 'model': md, 'year': year})}"
+        cards = {c.campno: c for c in recall_cards(store, mk, md, year)}
+        groups = []
+        for g in sel.issue_groups:
+            gid = make_group_id(mk, md, year, g.comp_system)
+            groups.append(C.ReportGroup(
+                group=C.IssueGroup(group_id=gid, vehicle=key, comp_system=g.comp_system, sub_issue=None,
+                                   distinct_complaints=g.distinct_complaints, first_month=g.first_month,
+                                   last_month=g.last_month),
+                distinct_complaints=g.distinct_complaints, link=f"/issue/{gid}"))
+        data = C.ReportData(
+            provenance=store.provenance, vehicle=key,
+            complaint_date_range=C.DateRange(start=sel.complaint_date_first, end=sel.complaint_date_last),
+            snapshot_date=store.provenance.data_as_of, distinct_complaints=sel.distinct_complaints,
+            top_groups=groups, shown_n=len(groups), total_groups=sel.issue_groups_total,
+            investigations=[C.ReportInvestigation(action_no=i.action_no, inv_type=i.inv_type, open_date=i.open_date,
+                                                  subject=i.subject, link=vehicle_link) for i in sel.investigations],
+            total_investigations=sel.investigations_total,
+            campaigns=[cards.get(c.campno) or C.RecallCampaign(campno=c.campno, component=c.component,
+                                                               report_date=c.report_date) for c in sel.campaigns],
+            total_campaigns=sel.campaigns_total, selection_rule=sel.selection_rule,
+        )
+        return ok(data)
 
     # ---- issue
     @app.get("/api/issue/{group_id}")
