@@ -82,6 +82,10 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | 20:30 | CI red on every PR once freeze-v1 reached origin (2 method tests read the real checkout's tag). B fixed in PR #12 (test-only, outside the freeze); A ok 7f9968c → D merged → main 82ba637 | D |
 | 20:35 | B: held-out run done once at freeze-v1; exports/demo committed on b/method (cbd5034); `make repro` MATCH ×4. Held-out early coverage measured at zero, below chance (see exports/demo/results.csv); hero = development-period case | B/D |
 | 20:45 | D: submission copy for the measured result: verdict lines for both periods, hero labeled development period, "what we learned" filled; dry fill from cbd5034 results.csv → 0 unfilled (median-lead line cut: not_applicable). In PR #11 | D |
+| 20:55 | Merged PR #13 (A8 held-out labels; B ok 1c8dd4b) → main 35801e9; merged PR #14 (B9 exports, run ids *-1c8dd4b; A ok 715aae3) → main f324b00 | D |
+| 21:00 | D5 real data: DB 412 MB sha256 5d708042133c (snapshot e808281f001a) → VM via sync_data (sha verified on VM). Local proof first: main f324b00 + this DB → integration RR_RELEASE=1 21 passed / 0 skipped, Playwright 2/2 | D |
+| 21:05 | **Deployed main f324b00 (cached, real data)** at http://64.177.53.230: integration RR_RELEASE=1 RR_EXPECT_SHA=f324b00 21 passed / 0 skipped (displayed = exported), Playwright 2/2, outage check RELEASE=1 0 FAIL 0 WARN | D |
+| 21:10 | **G3** on main f324b00: `make check` exit 0 (296 python, 95 web, secrets/claims/fill 0); `make test-real` data 2/3, method 1/1, api 4/4 — the 1 failure is test_real_raw_dir_matches_committed_lock (no raw zips on D's machine; B's `make repro` full re-ingest MATCH ×4 covers it). A or B: run `make test-real` with RR_RAW_DIR at f324b00; then lkg-g3 | D |
 
 ## Gate log
 | Gate | Time | Main SHA | Result | Decision |
@@ -90,5 +94,5 @@ Gate log at the bottom. Due times are ET (Sat → Sun).
 | G1 | 17:40 (due 3:30) | b/method 4c4a4b8 (contains main 5dca3a3) | DATA PASS (rejected 0%, availability LDATE_PLUS_7, reconciled); METHOD FAIL: tiers 1-2 early coverage 12.4% (22/177) vs chance 9.7% (60/620), gap 2.8 pp < 10 pp needed; PRELIMINARY, development only (B handoff 20261010-1740) | unsupported claim → keep pipeline + schedule; product = full complaint history + what was public before each investigation; results page reports the weak result plainly; no held-out tuning; freeze still happens before held-out |
 | G2 | 18:45 (due 6:00) | 8ef4d3f | NOT PASSED: API on main (PR #6) and full stack verified on the VM in fixture mode, but no real-data slice: main's config.yaml is still the bootstrap one (B's config is in PR #2, unreviewed head) and the DB must be built with the deployed config (A's note) | pipeline: slip > 45 min → all P1 cancelled (D8 cut). Next: A reviews PR #2 → merge → B rebuilds DB with main's config → D runs Gate 2 on real data |
 | Freeze | | | | |
-| G3 | | | | |
+| G3 | 21:10 (due 9:00) | f324b00 (freeze-v1 = dd6b439; exports run *-1c8dd4b) | PASS on the release path: real data deployed, integration RR_RELEASE=1 21/21, Playwright 2/2, outage 0/0, `make check` green. Held-out result measured once: early coverage at zero, below chance (exports/demo/results.csv) — the method claim is not supported; hero is a development-period case. Pending: test_real_raw_dir_matches_committed_lock needs RR_RAW_DIR (A/B) | product stays "full complaint history + what was public before each investigation"; submission states the verdict from results.csv (PR #11); lkg-g3 after A/B run test-real with raw zips |
 | G4 | | | | |
