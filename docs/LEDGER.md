@@ -5,7 +5,7 @@ disabled · blocked(<input>) · not started. **verified** needs: PR merged befor
 criterion with a named passing test or recorded inspection at the Gate B SHA, deployed `/healthz` =
 that SHA, and a deployed browser check.
 
-Updated 01:45 ET. Merge train #39 (11 reviewed PRs) → main faa12f9 at 01:35. Production = baseline-v1 until Gate B + Stage C.
+Updated 05:50 ET. GATE B PASS at b963d64 + DB a0bdcbbb (docs/GATE_B.md); tag rc2. Production = fd6323a (messaging/F6 changes after the cutoff; see RELEASE_MANIFEST.md).
 
 | task id | source | owner | deps | paths | acceptance check | verified commit | state | blocker |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -16,16 +16,20 @@ Updated 01:45 ET. Merge train #39 (11 reviewed PRs) → main faa12f9 at 01:35. P
 | BASE-tag | PRD §8 Gate A | D | BASE-* | — | tag `baseline-v1` → 45fd5ac; GATE A PASS 01:06 | 45fd5ac | verified | — |
 | SPEC | PRD §8 | D | Gate A | docs/PRD_v2.md, FEATURES_V2.md, OWNERSHIP, CLAUDE/AGENTS, EXECUTION_PLAN | PR #24 merged (C ok 288e958); GATE B-SPEC published | 9d9936c | verified | — |
 | C1.1 | PRD §5 | A | SPEC | recall_radar/contracts.py, contracts/** | contract v1.1.0 additive; acks B, C; drift check | ba839ba | verified | — |
-| F1 | PRD §4 F1 | A, C | C1.1 | recall_radar/data, recall_radar/api, web/src/components/RecallCard.tsx | F1.1–F1.6 tests (A #28, C #29) | faa12f9 (merged) | implemented-unverified | v2 DB; Gate B browser check |
-| F2 | PRD §4 F2 | B | F1, Gemini key | recall_radar/b_v2/recall_explain.py | F2.1–F2.8 | faa12f9 (merged) | fallback(no GEMINI_API_KEY; google-genai not in uv.lock) | key + SDK |
-| F3 | PRD §4 F3 | B, C | F1 | recall_radar/b_v2/recall_markers.py, exports/demo/replays (markers only), web replay | F3.1–F3.5; frames + non-recall markers byte-identical (D check on train) | B side faa12f9; C UI #36 | implemented-unverified | #36 merge (02:30) |
-| F4 | PRD §4 F4 | C | — | web/src/mycar.ts, components/MyCar.tsx | F4.1–F4.5 tests (#29) | faa12f9 (merged) | implemented-unverified | Gate B browser check |
-| F5 | PRD §4 F5 | D | SPEC | web/src/features/report/**, web/e2e/report.spec.ts | Vitest 16 (13/13 mutants caught); Playwright 2/2 local mount | faa12f9 (merged) | implemented-unverified | C mount PR; NHTSA URL human browser check (403 to automation) |
-| F6 | PRD §4 F6 | A | SPEC | web/src/features/vin/** | F6.1–F6.8 (#31) | faa12f9 (merged) | implemented-unverified | C mount; in-app status = blocked(no documented authorized interface) |
-| F7 | PRD §4 F7 | B, A, C | C1.1 | review/symptom_*.csv, b_v2/symptom_index.py, /api/symptom-index, web search | F7.1–F7.8 (B 30/30 queries, p@5 73/110; TS=Python 26,185 hits) | faa12f9 (merged) | implemented-unverified | v2 DB (endpoint 503 on baseline DB) |
-| F8 | PRD §4 F8 | B, A, D | C1.1 | b_v2/report_select.py, /api/report, web/src/features/buyer-report/** | Vitest 6; 1-page Letter PDF ×4 fixtures | faa12f9 (merged) | implemented-unverified | C mount; real /api/report + deployed check |
-| F9 | PRD §4 F9 | A, D | Gate P | recall_radar/messaging/** (#34), deploy/messaging/** | 25 mocked tests; disabled health check (D) | faa12f9 (service merged) | disabled | Gate P inputs: Photon project + sender line, sidecar, HTTPS webhook + secret, opted-in teammate; reportlab not installed → documents fallback(link); F9.5 detector-alert events not produced |
+| F1 | PRD §4 F1 | A, C | C1.1 | recall_radar/data/recall_v2.py, api, web RecallCard | see GATE_B.md | b963d64 | verified | — |
+| F2 | PRD §4 F2 | B (run: D) | F1, key | recall_radar/b_v2/recall_explain.py, review/explanation_verdicts.csv | accepted 44 of 13,673 (B read 72; finalize) | b963d64 | verified (accepted 44 of 13,673) | verdict file merged 03:48 under D's grace |
+| F3 | PRD §4 F3 | B, C | F1 | b_v2/recall_markers.py, replays, web replay | see GATE_B.md | b963d64 | verified | — |
+| F4 | PRD §4 F4 | C | — | web/src/mycar.ts | see GATE_B.md | b963d64 | verified | — |
+| F5 | PRD §4 F5 | D | SPEC | web/src/features/report/** | deployed Playwright report.spec | b963d64 | verified | NHTSA URL human browser check |
+| F6 | PRD §4 F6 | A | SPEC | web/src/features/vin/** | decode + handoff | b963d64 | verified (decode + handoff); VIN status blocked(no verified authorized interface) | — |
+| F7 | PRD §4 F7 | B, A, C | C1.1 | symptom index/API/UI | see GATE_B.md | b963d64 | verified | — |
+| F8 | PRD §4 F8 | B, A, D | C1.1 | report select/API/render | deployed 1-page PDF ×4 | b963d64 | verified | — |
+| F9 | PRD §4 F9 | A, D | Gate P | messaging/**, deploy/messaging/** | disabled deploy + health | b963d64 | disabled | Gate P: Adrit opts in + live run; documents fallback(link) unless reportlab |
 
+| F9-gateP | PRD §8 Gate P | D, A | Photon, tester | deploy/messaging/** | signed inbound 200 + reply delivered to Adrit (04:2x); bug found: X-Spectrum-Webhook-Id is constant → #59 per-message dedupe; kill switch auto-off 05:04 verified (webhook 503, sidecar + timer stopped) | c3baf25, fd6323a | implemented-unverified | STOP + queue-cancel with the real tester not yet recorded; documents fallback(link) |
+| F9.7-brain | PRD §4 F9.7 | A (by D) | key | recall_radar/messaging/brain.py | 22 mocked-model tests; live VM probe (vehicle extracted, reply reworded, numbers + links validated); merged after cutoff | fd6323a | implemented-unverified | post-cutoff (PRD §9) |
+| F9.6-alerts | PRD §4 F9.6 | A, D (by D) | Gate P | messaging/job.py, recall-radar-monitor.{service,timer} | 5 job tests (seed, daily diff, quiet hours, STOP, lock); first VM run seeded silently | fd6323a | implemented-unverified | no real NHTSA change observed yet; post-cutoff |
+| F6-partial | PRD §4 F6.4 | A (by D) | — | web/src/features/vin/** | live: 1FTFW1RG4KFA00412 (check digit wrong) decoded 2019 FORD F-150 but dead-ended → #63 confirm path; 2 tests | #63 | implemented-unverified | merge + deploy pending |
 
 ## Reproducibility
 B (B10): `git checkout baseline-v1 && make repro` → exit 0, MATCH ×4; results.csv sha256 7a469c93…c561321a unchanged.

@@ -97,9 +97,23 @@ export function VinCheck({ selected, decodeEnabled = true }: { selected?: Select
             </>
           )}
           {state.kind === "partial" && (
-            <p>
-              NHTSA's vPIC decoded only part of this VIN ({[state.year, state.make, state.model].filter(Boolean).join(" ") || "no vehicle fields"}). {state.errorText}
-            </p>
+            <>
+              <p>
+                NHTSA's vPIC decoded only part of this VIN ({[state.year, state.make, state.model].filter(Boolean).join(" ") || "no vehicle fields"}). {state.errorText}
+              </p>
+              {state.make && state.model && state.year && (
+                <>
+                  {/* the warning stays visible; the user decides (PRD v2 F6.4: confirm before navigating) */}
+                  <p>Is this your vehicle?</p>
+                  <button type="button" onClick={() => goTo(state.make!, state.model!, state.year!)}>
+                    Yes, show this vehicle
+                  </button>{" "}
+                  <button type="button" className="link-button" onClick={() => setState(null)}>
+                    No
+                  </button>
+                </>
+              )}
+            </>
           )}
           {state.kind === "error" && (
             <p>
