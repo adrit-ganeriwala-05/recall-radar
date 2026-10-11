@@ -3,6 +3,7 @@
 // hero replay and results work with the API unreachable.
 import { cpSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv, type Plugin } from "vite";
 
@@ -31,7 +32,9 @@ export default defineConfig(({ mode }) => {
   const apiTarget = `http://127.0.0.1:${env.RR_API_PORT || "8000"}`;
   return {
     envDir: ROOT,
-    plugins: [react(), copyDemoExports()],
+    plugins: [react(), tailwindcss(), copyDemoExports()],
+    // "@/…" resolves to src/ (the shadcn/Bklit chart components import "@/lib/utils" etc.).
+    resolve: { alias: { "@": resolve(import.meta.dirname, "src") } },
     server: {
       port: Number(env.VITE_PORT || 5173),
       strictPort: true,

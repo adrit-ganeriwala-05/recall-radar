@@ -1,0 +1,353 @@
+/* Owner: C. Automotive Observatory tokens (Tailwind CSS v4: tokens live in @theme, no config file).
+   A dark studio: near-black graphite, warm-white type, pearl and champagne details, one cobalt accent.
+   Typography (tokens below; fonts loaded in layout.tsx, no remote request):
+     --font-display  Space Grotesk — headings, navigation, buttons, labels, important numbers
+     --font-sans     Manrope       — body copy, forms, tables, cards, longer explanations (the default)
+   Base rules put every heading, nav, button, label and table header in the display face, so a new
+   component gets the system without opting in; rr-display / rr-eyebrow / rr-figure cover the rest.
+   Contrast, computed with the WCAG 2.1 relative-luminance formula (on graphite #0C0E11 / surface #161A20):
+     ink #F4F0E8 ......... 17.00 / 15.36      pearl #CFD5DC ....... 13.07 / 11.81
+     muted #A7AFB9 ....... 8.72 / 7.88        faint #8A939E ....... 6.21 / 5.61
+     cobalt #86A5FF ...... 8.14 / 7.35        champagne #D4C39F ... 11.14 / 10.07
+     ink on the filled-button gradient #3A62DE → #2F55CF: 4.64 → 5.56 (solid fallback #3459D6: 5.21) */
+@import "tailwindcss";
+
+/* Content-based layout switch for the hero (and anything that must follow it): side-by-side copy and
+   vehicle stage once there is room — 1024 px wide, or a landscape-shaped viewport at least 560 px wide
+   (landscape phones, short laptops), or a foldable reporting two horizontal segments. Pixel values on
+   purpose: they match the scene's measured-stage framing regardless of the text-size setting. */
+/* Block form on purpose: the one-line form with a comma-separated media list compiled to the first
+   query only (verified in the build output), dropping the landscape and foldable conditions. */
+@custom-variant wide {
+  @media (min-width: 1024px) {
+    @slot;
+  }
+  @media (min-aspect-ratio: 27/20) and (min-width: 560px) {
+    @slot;
+  }
+  @media (horizontal-viewport-segments: 2) {
+    @slot;
+  }
+}
+
+/* While the scroll choreography runs (ScrollDirector sets <html data-choreo="on">: wide layout, motion
+   allowed, hardware WebGL). Keyed to the attribute, not a media query, so it is off without JS, under
+   software rendering and with the static fallback, exactly when the ScrollDirector says so. */
+@custom-variant choreo (:root[data-choreo="on"] &);
+
+/* Side gutters that also clear display cutouts (viewport-fit=cover is set in layout.tsx). */
+@utility safe-px {
+  padding-left: max(1.25rem, env(safe-area-inset-left));
+  padding-right: max(1.25rem, env(safe-area-inset-right));
+  @media (min-width: 640px) {
+    padding-left: max(2rem, env(safe-area-inset-left));
+    padding-right: max(2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Foldables with a vertical hinge: one column per screen segment, the hinge as the gap, so the copy and
+   its actions stay entirely on the left segment and the vehicle stage on the right. */
+@media (horizontal-viewport-segments: 2) {
+  .rr-hero-grid {
+    max-width: none;
+    padding-left: 0;
+    padding-right: 0;
+    grid-template-columns: env(viewport-segment-width 0 0) env(viewport-segment-width 1 0);
+    column-gap: calc(env(viewport-segment-left 1 0) - env(viewport-segment-right 0 0));
+  }
+  .rr-hero-copy {
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    padding-right: 1.25rem;
+  }
+}
+
+@theme {
+  --color-graphite: #0c0e11;
+  --color-surface: #161a20;
+  --color-surface-2: #1c2128;
+  --color-ink: #f4f0e8;
+  --color-pearl: #cfd5dc;
+  --color-muted: #a7afb9;
+  --color-faint: #8a939e;
+  --color-cobalt: #86a5ff;
+  --color-cobalt-strong: #3459d6;
+  --color-champagne: #d4c39f;
+  --color-line: rgb(244 240 232 / 0.09);
+  --color-line-strong: rgb(244 240 232 / 0.18);
+
+  /* Typography tokens. Fallbacks are generic families only (the metric-adjusted fallback faces that
+     next/font generates come first inside each variable). */
+  --font-sans: var(--font-manrope), ui-sans-serif, sans-serif;
+  --font-display: var(--font-space-grotesk), ui-sans-serif, sans-serif;
+  --tracking-display: -0.035em;
+  --tracking-heading: -0.02em;
+  --tracking-label: 0.16em;
+  --leading-display: 0.98;
+  --leading-body: 1.65;
+}
+
+/* Display headings (hero, section titles): Space Grotesk, medium weight, tight tracking. */
+@utility rr-display {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-display);
+}
+
+/* Small labels: Space Grotesk, uppercase, wide tracking, champagne. */
+@utility rr-eyebrow {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-champagne);
+}
+
+/* Important numbers: Space Grotesk with tabular figures, so counts and dates line up. */
+@utility rr-figure {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Raised panels: a faint top light and a soft drop, with a solid colour underneath for contrast checks.
+   With a mouse, a light follows the pointer along the edge (::before, masked to the 1 px border) and
+   faintly inside (::after, beneath the content); PointerGlow writes --mx / --my. */
+@utility rr-card {
+  position: relative;
+  isolation: isolate;
+  border-radius: 1rem;
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0) 45%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.05),
+    0 24px 48px -28px rgb(0 0 0 / 0.75);
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 400ms;
+  }
+  &::before {
+    inset: -1px;
+    padding: 1px;
+    background: radial-gradient(20rem circle at var(--mx, 50%) var(--my, 0%), rgb(134 165 255 / 0.8), rgb(212 195 159 / 0.18) 45%, transparent 70%);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+  &::after {
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(26rem circle at var(--mx, 50%) var(--my, 0%), rgb(134 165 255 / 0.085), transparent 65%);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    &:hover::before,
+    &:hover::after {
+      opacity: 1;
+    }
+  }
+}
+
+/* Pill buttons; height and padding are set where used (min-h-11 / min-h-12, px-*). */
+@utility rr-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    color 150ms,
+    box-shadow 150ms,
+    filter 150ms;
+}
+
+@utility rr-btn-primary {
+  color: var(--color-ink);
+  background-color: var(--color-cobalt-strong);
+  background-image: linear-gradient(180deg, #3a62de, #2f55cf);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    0 10px 28px -12px rgb(58 98 222 / 0.7);
+  &:hover {
+    filter: brightness(1.08);
+  }
+}
+
+@utility rr-btn-ghost {
+  color: var(--color-ink);
+  border: 1px solid var(--color-line-strong);
+  background-color: rgb(255 255 255 / 0.02);
+  &:hover {
+    border-color: var(--color-cobalt);
+    background-color: rgb(134 165 255 / 0.06);
+  }
+}
+
+@utility rr-link {
+  color: var(--color-cobalt);
+  text-decoration-line: underline;
+  text-decoration-color: rgb(134 165 255 / 0.45);
+  text-underline-offset: 5px;
+  text-decoration-thickness: 1px;
+  &:hover {
+    color: var(--color-ink);
+    text-decoration-color: currentColor;
+  }
+}
+
+/* A fine divider that fades out at both ends. */
+@utility rr-hairline {
+  height: 1px;
+  background-image: linear-gradient(90deg, transparent, var(--color-line-strong) 18%, var(--color-line-strong) 82%, transparent);
+}
+
+/* Hero entrance, once: each line rises 14 px out of a soft blur, staggered by --rr-i. The start state
+   applies only during the animation and its delay (fill-mode backwards): afterwards the text carries no
+   filter or transform at all, and without CSS animations it is simply there. */
+@keyframes rr-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .rr-rise {
+    animation: rr-rise 900ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+    animation-delay: calc(120ms + var(--rr-i, 0) * 90ms);
+  }
+}
+
+/* Reading progress: a champagne-to-cobalt hairline under the header, driven by the page's own scroll
+   (CSS scroll timeline, no script). Browsers without scroll timelines simply do not show it. */
+@keyframes rr-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@supports (animation-timeline: scroll()) {
+  .rr-progress {
+    background-image: linear-gradient(90deg, var(--color-champagne), var(--color-cobalt));
+    transform-origin: left;
+    animation: rr-progress linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background-color: var(--color-graphite);
+    /* Anchor jumps land below the sticky header. */
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    background-color: var(--color-graphite);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-weight: 420; /* Manrope reads a touch thin at 400 on the dark ground; the variable axis allows 420 */
+    line-height: var(--leading-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* The display face for structure: headings, navigation, buttons, labels and table headers. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  nav,
+  button,
+  label,
+  legend,
+  th,
+  dt,
+  caption {
+    font-family: var(--font-display);
+  }
+  h3,
+  h4 {
+    letter-spacing: var(--tracking-heading);
+  }
+  /* Forms and table cells read in the body face. */
+  input,
+  select,
+  textarea,
+  td {
+    font-family: var(--font-sans);
+  }
+
+  ::selection {
+    background-color: rgb(134 165 255 / 0.32);
+    color: var(--color-ink);
+  }
+
+  html {
+    scrollbar-color: rgb(244 240 232 / 0.22) transparent;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-cobalt);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* Lenis drives scrolling while it is active; native smooth scrolling would fight it. */
+  html.lenis {
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Printing this page: no fixed canvas layer, no sticky header, plain paper colours. (The one-page buyer
+   report is a separate product route with its own print layout; nothing here can reach it.) */
+@media print {
+  [data-scene-state] {
+    display: none !important;
+  }
+  header {
+    position: static !important;
+  }
+  html,
+  body,
+  section,
+  footer {
+    background: #fff !important;
+    color: #000 !important;
+  }
+}

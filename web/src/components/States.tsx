@@ -1,20 +1,22 @@
 // Owner: C. Loading, empty and error states shared by every screen.
+import { motion } from "motion/react";
 import type { ReactNode } from "react";
+import { stateFade, useMotionPresets } from "../ui/motion";
 import type { ErrorResponse } from "../contracts.gen";
 
 export function Loading({ what }: { what: string }) {
   return (
-    <p className="state state-loading" role="status" aria-live="polite">
+    <motion.p className="state state-loading" role="status" aria-live="polite" {...stateFade}>
       Loading {what}…
-    </p>
+    </motion.p>
   );
 }
 
 export function Empty({ children }: { children: ReactNode }) {
   return (
-    <p className="state state-empty" role="status">
+    <motion.p className="state state-empty" role="status" {...stateFade}>
       {children}
-    </p>
+    </motion.p>
   );
 }
 
@@ -29,18 +31,19 @@ const HINT: Record<ErrorResponse["error"]["code"], string> = {
 const RETRYABLE: ErrorResponse["error"]["code"][] = ["unavailable", "internal"];
 
 export function ErrorState({ error, retry }: { error: ErrorResponse; retry?: () => void }) {
+  const mp = useMotionPresets();
   const canRetry = retry && RETRYABLE.includes(error.error.code);
   return (
-    <div className="state state-error" role="alert">
+    <motion.div className="state state-error" role="alert" {...stateFade}>
       <p>
         <strong>{error.error.message}</strong>
       </p>
       <p>{HINT[error.error.code]}</p>
       {canRetry && (
-        <button type="button" onClick={retry}>
+        <motion.button type="button" onClick={retry} {...mp.buttonTap}>
           Try again
-        </button>
+        </motion.button>
       )}
-    </div>
+    </motion.div>
   );
 }

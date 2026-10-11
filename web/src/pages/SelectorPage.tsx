@@ -1,4 +1,6 @@
 // Owner: C. C1: make -> model -> year selector, plus the hero replay entry point.
+import { motion } from "motion/react";
+import { useMotionPresets } from "../ui/motion";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getHero, getMakes, getModels, getYears } from "../api/client";
@@ -20,6 +22,7 @@ export function resetSavedCarCheck(openedAtRoot = true) {
 }
 
 export default function SelectorPage() {
+  const mp = useMotionPresets();
   const navigate = useNavigate();
   const [make, setMake] = useState("");
   const [model, setModel] = useState("");
@@ -153,7 +156,7 @@ export default function SelectorPage() {
       {features.vinCheck && <VinCheck />}
 
       {hero.state === "done" && hero.ok && (
-        <aside className="hero-card">
+        <motion.aside className="hero-card" {...mp.cardHover}>
           <h2>See an example replay</h2>
           <p>Step through one complaint pattern month by month, using only what was public at each date.</p>
           <Link className="button" to={`/replay/${encodeURIComponent(hero.data.episode_id)}`}>
@@ -165,7 +168,7 @@ export default function SelectorPage() {
           {hero.data.provenance.data_label === "synthetic_fixture" && (
             <p className="small">This example is built from made-up test records, not real complaints.</p>
           )}
-        </aside>
+        </motion.aside>
       )}
     </section>
   );

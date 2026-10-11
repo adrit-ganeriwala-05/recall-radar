@@ -1,9 +1,12 @@
 // Owner: C. C4 results. Every number here is read from the evaluation JSON (exports/demo via the
 // API, or the bundled offline copy). Pending metrics say so; nothing is filled in by the UI.
-import { useState, type KeyboardEvent, type ReactNode } from "react";
+import { motion } from "motion/react";
+import { useMemo, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { getResults, resultsCsvUrl, type Period, type Source } from "../api/client";
 import { useApi } from "../api/useApi";
+import { ChartFrame, CoverageComparison, LeadTimeScatter, type ChartState } from "../charts";
+import { coverageRow, earlyLeadPoints, fractionText, type CoverageRow } from "../charts/data";
 import { ProvenanceBar } from "../components/Provenance";
 import { Empty, ErrorState, Loading } from "../components/States";
 import type { AuditRow, EvalCase, EvaluationSummary, Metric } from "../contracts.gen";
@@ -20,6 +23,7 @@ import {
   vehicleText,
 } from "../format";
 import { issueForHref } from "./IssueForPage";
+import { sectionViewport, useMotionPresets } from "../ui/motion";
 
 const PERIODS: { id: Period; label: string }[] = [
   { id: "development", label: "Development period" },
@@ -27,11 +31,12 @@ const PERIODS: { id: Period; label: string }[] = [
 ];
 
 export function MetricCard({ m }: { m: Metric }) {
+  const mp = useMotionPresets();
   const def = METRICS[m.name];
   const ci = metricCiText(m);
   const frac = metricFractionText(m);
   return (
-    <div className={`metric metric-${m.status}`} data-testid={`metric-${m.name}`}>
+    <motion.div className={`metric metric-${m.status}`} data-testid={`metric-${m.name}`} variants={mp.sectionChild} {...mp.cardHover}>
       <p className="metric-label">{def.label}</p>
       <p className="metric-value" data-testid="metric-value">
         {metricValueText(m)}
@@ -40,7 +45,7 @@ export function MetricCard({ m }: { m: Metric }) {
       {ci && <p className="metric-detail">{ci}</p>}
       <p className="metric-help">{def.help}</p>
       {m.note && <p className="metric-note">{m.note}</p>}
-    </div>
+    </motion.div>
   );
 }
 
@@ -135,46 +140,42 @@ function AuditTable({ rows }: { rows: AuditRow[] }) {
   );
 }
 
-// Lead-time bins follow the outcome statuses (PROJECT_SPEC §7): early = 60 to 730 days.
-export const LEAD_BINS: { label: string; test: (d: number) => boolean }[] = [
-  { label: "Alert after official action (< 0 days)", test: (d) => d < 0 },
-  { label: "0 to 59 days (late)", test: (d) => d >= 0 && d < 60 },
-  { label: "60 to 179 days", test: (d) => d >= 60 && d < 180 },
-  { label: "180 to 364 days", test: (d) => d >= 180 && d < 365 },
-  { label: "365 to 730 days", test: (d) => d >= 365 && d <= 730 },
-  { label: "More than 730 days (outside window)", test: (d) => d > 730 },
-];
-
-/** Histogram of lead_days over the cases in the JSON; counts are rows of `cases`, nothing else. */
-export function LeadTimeHistogram({ cases }: { cases: EvalCase[] }) {
-  const leads = cases.map((c) => c.lead_days).filter((d): d is number => d !== null);
-  if (leads.length === 0) return <Empty>No matched investigations with a lead time yet.</Empty>;
-  const counts = LEAD_BINS.map((b) => leads.filter(b.test).length);
-  const max = Math.max(...counts);
+/** Lead times: one point per matched early alert in the results file (Bklit scatter), exact values. */
+export function LeadTimeChart({ cases }: { cases: EvalCase[] }) {
+  const points = useMemo(() => earlyLeadPoints(cases), [cases]);
+  const title = "Days from alert to investigation, matched early alerts";
+  const state: ChartState = points.length === 0 ? { kind: "empty", message: "No matched early alerts with a lead time in this results file yet." } : { kind: "ready" };
   return (
-    <div className="table-scroll">
-      <table className="histogram" data-testid="lead-histogram">
-        <caption className="visually-hidden">Days from alert date to investigation opening</caption>
-        <thead>
-          <tr>
-            <th scope="col">Days from alert to investigation</th>
-            <th scope="col">Investigations</th>
-            <th scope="col" aria-hidden="true"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {LEAD_BINS.map((b, i) => (
-            <tr key={b.label}>
-              <th scope="row">{b.label}</th>
-              <td>{counts[i]}</td>
-              <td aria-hidden="true" className="hist-cell">
-                <span className="hist-bar" style={{ width: `${max ? (counts[i] / max) * 100 : 0}%` }} />
-              </td>
+    <ChartFrame
+      title={title}
+      description="Each point is one investigation that an alert preceded within the accepted early-alert interval, placed at its exact lead time in days. The dashed lines mark the interval's edges."
+      state={state}
+      table={
+        <table data-testid="lead-table">
+          <caption className="visually-hidden">{title}</caption>
+          <thead>
+            <tr>
+              <th scope="col">Investigation family</th>
+              <th scope="col">Earliest action</th>
+              <th scope="col">Lead days</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {points.map((pt) => (
+              <tr key={pt.familyId} data-testid="lead-row">
+                <th scope="row">{pt.familyId}</th>
+                <td>{pt.actionNo ?? "—"}</td>
+                <td>{pt.leadDays}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      }
+      summary={<>{points.length === 1 ? "One matched early alert" : `${points.length} matched early alerts`}: {points.map((pt) => `${pt.leadDays} days`).join(", ")}.</>}
+      testId="lead-time"
+    >
+      <LeadTimeScatter title={title} points={points} />
+    </ChartFrame>
   );
 }
 
@@ -193,6 +194,7 @@ function Group({ title, n, open, children, testId }: { title: string; n: number;
 const FIRST: Metric["name"][] = ["early_coverage_all", "chance_coverage"];
 
 export function Results({ data, source }: { data: EvaluationSummary; source?: Source }) {
+  const mp = useMotionPresets();
   const allPending = data.metrics.every((m) => m.status === "pending");
   const metrics = [
     ...FIRST.flatMap((n) => data.metrics.filter((m) => m.name === n)),
@@ -248,14 +250,14 @@ export function Results({ data, source }: { data: EvaluationSummary; source?: So
       </p>
 
       <h2>Metrics</h2>
-      <div className="metric-grid">
+      <motion.div className="metric-grid" variants={mp.section} initial="hidden" whileInView="shown" viewport={sectionViewport}>
         {metrics.map((m) => (
           <MetricCard key={m.name} m={m} />
         ))}
-      </div>
+      </motion.div>
 
       <h2>Lead time</h2>
-      <LeadTimeHistogram cases={data.cases} />
+      <LeadTimeChart cases={data.cases} />
 
       <h2>Cases</h2>
       <p className="small">
@@ -337,7 +339,70 @@ function PeriodResults({ period }: { period: Period }) {
   );
 }
 
+/** Measured coverage beside chance coverage, development and held-out as separate groups. */
+export function CoverageSection() {
+  const [dev, reloadDev] = useApi(() => getResults("development"), []);
+  const [held] = useApi(() => getResults("held_out"), []);
+  const title = "Early-alert coverage beside chance coverage, by period";
+  const rows = useMemo<CoverageRow[]>(
+    () => [
+      coverageRow("development", "Development period", dev.state === "done" && dev.ok ? dev.data.metrics : null),
+      coverageRow("held_out", "Held-out period", held.state === "done" && held.ok ? held.data.metrics : null),
+    ],
+    [dev, held],
+  );
+  const pendingText = (r: CoverageRow): string | null => {
+    if (r.recallRadarFraction || r.chanceFraction) return null;
+    if (r.period === "held_out") {
+      if (held.state === "done" && !held.ok && held.error.error.code !== "not_found" && held.error.error.code !== "unavailable") return "Held-out results could not be loaded.";
+      return HELD_OUT_NOT_RUN;
+    }
+    return "Not measured in this results file.";
+  };
+  let state: ChartState = { kind: "ready" };
+  if (dev.state !== "done" || held.state !== "done") state = { kind: "loading" };
+  else if (!dev.ok) state = { kind: "error", message: `Development results could not be loaded: ${dev.error.error.message}`, onRetry: reloadDev };
+  else if (rows.every((r) => !r.recallRadarFraction && !r.chanceFraction)) state = { kind: "empty", message: "No measured coverage values in the cached results yet." };
+  const line = (r: CoverageRow) =>
+    r.recallRadarFraction || r.chanceFraction
+      ? `${r.label}: early-alert coverage ${r.recallRadarFraction ? fractionText(r.recallRadarFraction) : "not measured"}, chance coverage ${r.chanceFraction ? fractionText(r.chanceFraction) : "not measured"}.`
+      : `${r.label}: ${pendingText(r)}`;
+  return (
+    <ChartFrame
+      title={title}
+      description="For each period on its own: the share of documented investigations that an alert preceded, beside the share expected from randomly timed alerts. Each value is a count of investigations over the eligible total."
+      state={state}
+      table={
+        <table data-testid="coverage-table">
+          <caption className="visually-hidden">{title}</caption>
+          <thead>
+            <tr>
+              <th scope="col">Period</th>
+              <th scope="col">Early-alert coverage</th>
+              <th scope="col">Chance coverage</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.period} data-testid={`coverage-row-${r.period}`}>
+                <th scope="row">{r.label}</th>
+                <td>{r.recallRadarFraction ? fractionText(r.recallRadarFraction) : pendingText(r) ?? "Not measured"}</td>
+                <td>{r.chanceFraction ? fractionText(r.chanceFraction) : pendingText(r) ?? "Not measured"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      }
+      summary={rows.map(line).join(" ")}
+      testId="coverage-chart"
+    >
+      <CoverageComparison title={title} rows={rows} pendingText={pendingText} />
+    </ChartFrame>
+  );
+}
+
 export default function ResultsPage() {
+  const mp = useMotionPresets();
   const [params, setParams] = useSearchParams();
   const initial = params.get("period") === "held_out" ? "held_out" : "development";
   const [period, setPeriod] = useState<Period>(initial);
@@ -361,9 +426,10 @@ export default function ResultsPage() {
         with randomly timed alerts. Development results were used to choose settings; held-out results were computed
         once, after the settings were frozen.
       </p>
+      <CoverageSection />
       <div role="tablist" aria-label="Evaluation period" className="tabs" onKeyDown={onKey}>
         {PERIODS.map((p) => (
-          <button
+          <motion.button
             key={p.id}
             id={`tab-${p.id}`}
             type="button"
@@ -372,9 +438,12 @@ export default function ResultsPage() {
             aria-controls={`panel-${p.id}`}
             tabIndex={period === p.id ? 0 : -1}
             onClick={() => choose(p.id)}
+            className="rr-tab"
+            {...mp.buttonTap}
           >
             {p.label}
-          </button>
+            {period === p.id && <motion.span className="rr-tab-indicator" layoutId="results-tab-indicator" aria-hidden="true" />}
+          </motion.button>
         ))}
       </div>
       <div role="tabpanel" id={`panel-${period}`} aria-labelledby={`tab-${period}`}>
