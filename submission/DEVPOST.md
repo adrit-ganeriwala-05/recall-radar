@@ -57,7 +57,9 @@ investigation families → seeded evaluation with chance controls. FastAPI serve
 React + Vite + Recharts render them. One Vultr VM with Caddy and systemd; the app makes no network
 calls at request time and runs offline on a laptop. Contracts (Pydantic → JSON Schema →
 TypeScript) keep the four parts in agreement; CI checks drift. Release: tag `rc1`, reproducibility
-hash <REPRO_HASH from B10>.
+hash (SHA-256 of `exports/demo/results.csv`,
+reproduced by `make repro` from a clean clone)
+`7a469c93a4097df1bb3d3f28a97772d20e58aa9ed106338cde6b67a3c561321a`.
 
 ## Challenges
 Time-travel honesty: the "added to file" date equals the received date for almost all complaints
