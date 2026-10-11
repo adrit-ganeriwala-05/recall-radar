@@ -4,10 +4,10 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-11 00:47 ET
-- **v2 in progress (PRD_v2 FINAL, feature cutoff 03:45).** Branch b/v2 (PR open; check `git log`). b/method still holds PR #22 (docs).
-- Last origin/main merged: 9d9936c (v2 spec, PR #24), merged 00:46 ET
-- Contract: 1.0.0 on main; 1.1.0 in PR #25, acked by B at 2731c1e
+- Updated: 2026-10-11 01:15 ET
+- **v2 in progress (PRD_v2 FINAL, feature cutoff 03:45).** Branch b/v2 = PR #27 (check `git log` for the tip). b/method still holds PR #22 (docs).
+- Last origin/main merged: ba839ba (contract v1.1.0, PR #25), merged 01:15 ET
+- Contract: 1.1.0 on main
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a / LDATE_PLUS_7
 - Freeze: `freeze-v1` → dd6b439. v2 code of B lives in `recall_radar/b_v2/` because the freeze covers all of `recall_radar/method/`.
 - Mode: implementing (v2). Next for me: second PR after contract 1.1 is on main (apply F3 to exports/demo/replays); reviews for A (F1, F6, F9) and C (search UI); Gate B at 03:45.
@@ -90,16 +90,21 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - B's v2 tables file built locally at `data/b_v2/b_v2_tables.duckdb` (gitignored): 8 concepts, 52 aliases, 13,673 fallback explanations. A rebuilds it from the repo; no file transfer.
 - F2 status: fallback only. No GEMINI_API_KEY in `.env`, `google-genai` not installed, no model name set.
 
+- Reviews given 00:55–01:12: #23 `Reviewed 488983d: ok` (Gate A test fix); #25 ack + ok at 09bd24a and de0014f; #26 ok at fb5d578; #28 `Reviewed 7150583: ok` (F1 data: text identical to my own parse of the raw recall file for 13,556 campaigns, flags agree, campaign sets equal the baseline table for 39,985 vehicles, protected tables identical); #30 ok at 65e6a6d and f124c1d (F7/F8 API: index serves exactly my judged documents; report equals vehicle on 200 vehicles; replay links 85 of 85); #31 `Reviewed fe97cea: ok` (F6: check digit recomputed independently); #32 `Reviewed 1d1d4c2: ok` (C's search: 26,185 hits identical to my Python reference on five real indexes).
+- **B10 at the tag `baseline-v1` (45fd5ac)** → `RR_RAW_DIR=~/rr-raw make repro` exit 0, MATCH ×4 (01:12). Recorded in `docs/handoffs/20261010-2145-B-to-D-b10-repro.md`.
+- Protection at A's F1 build (7150583, built on my machine): `python -m recall_radar.b_v2.protect data/for_D_1c8dd4b/recall_radar.duckdb <v2>` → PROTECTED TABLES: IDENTICAL (`logs/protected_v2_a7150583.txt`).
+- **F3 applied to the committed bundle** (01:15, after contract 1.1.0 reached main): `python -m recall_radar.b_v2.recall_markers --db data/for_D_1c8dd4b/recall_radar.duckdb` → 21 replays rewritten, 81 issue-linked + 167 other-for-this-model markers, 5 undated family campaigns without a marker; the five protected files keep the certificate's sha256; `--check` → 0 left. F2 loader now reads `recall_campaign_v2`.
+
 ## In progress
 - none
 
 ## Next (in order)
-1. PR for b/v2 (code, tests, review files, docs): A reviews, D merges in the 01:45 window.
-2. After contract 1.1.0 is on main: merge main, run `python -m recall_radar.b_v2.recall_markers --db data/for_D_1c8dd4b/recall_radar.duckdb`, check the five protected files' sha256 against `docs/BASELINE_CERTIFICATE.md`, update `tests/method/test_committed_bundle.py` only if needed, second PR (F3 bundle). Tell D the replay hashes in the certificate change by design (PRD F3.5).
-3. Protection duty at every merge window: `python -m recall_radar.b_v2.protect data/for_D_1c8dd4b/recall_radar.duckdb <A's v2 db>`; post both outputs.
-4. Reviews owed: A's F1 enrichment, F6, F9 (grounding, counts, chronology); C's search UI (parity file).
-5. Gate B 03:45: protected checksums, `exports/demo` hashes, `uv run pytest tests/method`, `python -m recall_radar.b_v2.symptom_eval --db …`, F2 status line. Stop new work at 03:45.
-6. Still open from v1: PR #22 (docs); B10 on `baseline-v1` when D tags it.
+1. PR #27 (now also: F3 applied to `exports/demo/replays`, F2 loader, B10 record): A re-reviews the new head, D merges in the 01:45 window.
+2. After #27 is on main: tell A the one-line change for on-demand replays (`recall_markers.rewrite`), review A's/C's follow-ups, C's replay-marker UI (F3.3, F3.4).
+3. Protection duty at every merge window and at Gate B: `python -m recall_radar.b_v2.protect <baseline> <v2>`; post both outputs.
+4. Reviews owed: A's F9 messaging (reviewer B), anything A or C re-push.
+5. Gate B 03:45: protected checksums, the five protected sha256, `uv run pytest tests/method`, `python -m recall_radar.b_v2.symptom_eval --db …`, F2 status line. Stop new work at 03:45.
+6. Still open from v1: PR #22 (docs only).
 
 ## Last passing commands (exact)
 - `uv run pytest` → 127 passed, 1 deselected (the deselected one is the real_data test) at the tip after A's review changes @ 02263ed

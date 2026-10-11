@@ -344,6 +344,11 @@ protected checksums: recall_radar.duckdb
 - Only `recall_reported` markers of `exports/demo/replays/*.json` and the replay hashes in MANIFEST change. Frames,
   alert and investigation markers, results, cases and hero keep their bytes (tests on synthetic and real data).
   The step runs after `make export`: `python -m recall_radar.b_v2.recall_markers --db <baseline db>`.
+- **Applied to the committed bundle** once contract 1.1.0 was on main (ba839ba): 21 replay files and their 21 lines
+  in MANIFEST.json changed; `results_development.json`, `results_held_out.json`, `results.csv`, `cases.csv` and
+  `hero.json` have the sha256 values of `docs/BASELINE_CERTIFICATE.md` (pinned in
+  `test_committed_result_files_still_have_their_baseline_hashes`). The certificate's replay and MANIFEST hashes are
+  the baseline's and differ from the files now, as PRD F3.5 allows. `--check` reports 0 files left to rewrite.
 
 ### 12.3 F8 report selection (`b_v2/report_select.py`)
 `select_report_data(con, make, model, model_year)`: up to 5 component systems by distinct complaint ids (ties

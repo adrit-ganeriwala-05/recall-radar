@@ -216,3 +216,46 @@ def test_real_bundle_keeps_frames_results_and_issue_markers(tmp_path):
             map(key, (m for m in after["markers"] if m.get("link") == "issue"))
         )
         assert [m for m in before["markers"] if m["type"] != "recall_reported"] == [m for m in after["markers"] if m["type"] != "recall_reported"]
+
+
+# ----------------------------------------------------------------------------- the committed bundle after F3
+
+# PRD_v2 §1 "Frozen science": these five files are byte-identical to the baseline (docs/BASELINE_CERTIFICATE.md).
+# A change here means a result changed; that needs a new freeze, not an edit of this table.
+BASELINE_SHA256 = {
+    "results_development.json": "fc16cb8519d89e66ee08915c6cf1ef089154fd8ba197943c108533309f6900ad",
+    "results_held_out.json": "6c2245101c3928245587844214617964f7f5f535207cc77b65d8b0b1326c5c88",
+    "results.csv": "7a469c93a4097df1bb3d3f28a97772d20e58aa9ed106338cde6b67a3c561321a",
+    "cases.csv": "df773929e0dc60d80817abfc5830962ee052e894fa946c1ab0e0fa5ca90a0bd5",
+    "hero.json": "7a13ca3cb78ce7625e35425fd4c33973c3f0c1b332837b2fe2ffc5c443f79523",
+}
+
+
+def test_committed_result_files_still_have_their_baseline_hashes():
+    assert set(BASELINE_SHA256) == set(R.PROTECTED_FILES)
+    for name, digest in BASELINE_SHA256.items():
+        assert hashlib.sha256((DEMO / name).read_bytes()).hexdigest() == digest, name
+
+
+@NEEDS_CONTRACT
+def test_committed_replays_carry_link_kinds_on_recall_markers_only():
+    replays = sorted((DEMO / "replays").glob("*.json"))
+    assert replays
+    kinds = {"issue": 0, "vehicle": 0}
+    for path in replays:
+        text = path.read_text()
+        assert R.dump(json.loads(text)) == text  # canonical form
+        replay = C.Replay.model_validate_json(text)
+        family = set(replay.outcome.recall_campnos) if replay.outcome else set()
+        seen = set()
+        for raw, m in zip(json.loads(text)["markers"], replay.markers, strict=True):
+            if m.type != "recall_reported":
+                assert "campno" not in raw and "link" not in raw  # alert and investigation markers are untouched
+                continue
+            assert m.link in ("issue", "vehicle") and m.campno and m.is_outcome and m.campno in m.label
+            assert (m.campno in family) == (m.link == "issue")  # issue = the matched family's campaigns, nothing else
+            assert ("Other recall for this model" in m.label) == (m.link == "vehicle")
+            assert m.campno not in seen  # one marker per campaign
+            seen.add(m.campno)
+            kinds[m.link] += 1
+    assert kinds["issue"] > 0 and kinds["vehicle"] > 0
