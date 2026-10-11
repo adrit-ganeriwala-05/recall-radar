@@ -6,7 +6,7 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 
 - Updated: 2026-10-10 21:45 ET (clock times before 17:10 in this file were estimates; `git log` has the true times)
 - Branch / HEAD: b/method = main 0f56762 + status/handoff commits (check `git log`). PR #14 (frozen export) merged → main f324b00.
-- Last origin/main merged: 0f56762 (PRs #10, #11, #14, #16), fast-forward 21:20 ET
+- Last origin/main merged: 0f56762 (PRs #10, #11, #14, #16), fast-forward 21:40 ET
 - Contract version: 1.0.0
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a / LDATE_PLUS_7
 - **Freeze: tag `freeze-v1` → dd6b439, pushed 20:22 ET (Saketh approved the tag push). The held-out year has been run once. Nothing under `recall_radar/method/`, `config.yaml`, `review/system_map.csv`, `review/keywords.txt` may change without `freeze-v2`.**
