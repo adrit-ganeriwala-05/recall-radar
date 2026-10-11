@@ -1,0 +1,192 @@
+{
+ "provenance": {
+  "contract_version": "1.1.0",
+  "data_label": "synthetic_fixture",
+  "snapshot_id": null,
+  "data_as_of": null,
+  "config_hash": null,
+  "git_sha": null,
+  "availability_basis": null,
+  "generated_at": "2026-10-10T16:00:00Z"
+ },
+ "vehicle": {
+  "make": "MERCEDES-BENZ COMMERCIAL VEHICLES NORTH AMERICA",
+  "model": "SPRINTER 3500XD CAB CHASSIS HIGH ROOF EXTENDED WHEELBASE",
+  "model_year": 2019
+ },
+ "complaint_date_range": {
+  "start": "2016-01-04",
+  "end": "2019-06-28"
+ },
+ "snapshot_date": null,
+ "distinct_complaints": 9999,
+ "counting_basis": "distinct NHTSA complaint IDs",
+ "top_groups": [
+  {
+   "group": {
+    "group_id": "g_000000000000",
+    "vehicle": {
+     "make": "MERCEDES-BENZ COMMERCIAL VEHICLES NORTH AMERICA",
+     "model": "SPRINTER 3500XD CAB CHASSIS HIGH ROOF EXTENDED WHEELBASE",
+     "model_year": 2019
+    },
+    "comp_system": "SERVICE BRAKES, HYDRAULIC: ANTILOCK/TRACTION CONTROL/ELECTRONIC LIMITED SLIP",
+    "sub_issue": null,
+    "distinct_complaints": 30,
+    "first_month": "2016-03",
+    "last_month": "2018-12"
+   },
+   "distinct_complaints": 1000,
+   "link": "/issue/g_000000000000"
+  },
+  {
+   "group": {
+    "group_id": "g_000000000001",
+    "vehicle": {
+     "make": "MERCEDES-BENZ COMMERCIAL VEHICLES NORTH AMERICA",
+     "model": "SPRINTER 3500XD CAB CHASSIS HIGH ROOF EXTENDED WHEELBASE",
+     "model_year": 2019
+    },
+    "comp_system": "ELECTRICAL SYSTEM: 12V/24V/48V BATTERY: CABLES AND HARNESS CONNECTORS",
+    "sub_issue": null,
+    "distinct_complaints": 30,
+    "first_month": "2016-03",
+    "last_month": "2018-12"
+   },
+   "distinct_complaints": 963,
+   "link": "/issue/g_000000000001"
+  },
+  {
+   "group": {
+    "group_id": "g_000000000002",
+    "vehicle": {
+     "make": "MERCEDES-BENZ COMMERCIAL VEHICLES NORTH AMERICA",
+     "model": "SPRINTER 3500XD CAB CHASSIS HIGH ROOF EXTENDED WHEELBASE",
+     "model_year": 2019
+    },
+    "comp_system": "POWER TRAIN: AUTOMATIC TRANSMISSION: CONTROL MODULE (TCM, PCM) SOFTWARE",
+    "sub_issue": null,
+    "distinct_complaints": 30,
+    "first_month": "2016-03",
+    "last_month": "2018-12"
+   },
+   "distinct_complaints": 926,
+   "link": "/issue/g_000000000002"
+  },
+  {
+   "group": {
+    "group_id": "g_000000000003",
+    "vehicle": {
+     "make": "MERCEDES-BENZ COMMERCIAL VEHICLES NORTH AMERICA",
+     "model": "SPRINTER 3500XD CAB CHASSIS HIGH ROOF EXTENDED WHEELBASE",
+     "model_year": 2019
+    },
+    "comp_system": "STRUCTURE: BODY: DOOR LATCHES, LOCKS AND LINKAGES: SLIDING SIDE DOOR",
+    "sub_issue": null,
+    "distinct_complaints": 30,
+    "first_month": "2016-03",
+    "last_month": "2018-12"
+   },
+   "distinct_complaints": 889,
+   "link": "/issue/g_000000000003"
+  },
+  {
+   "group": {
+    "group_id": "g_000000000004",
+    "vehicle": {
+     "make": "MERCEDES-BENZ COMMERCIAL VEHICLES NORTH AMERICA",
+     "model": "SPRINTER 3500XD CAB CHASSIS HIGH ROOF EXTENDED WHEELBASE",
+     "model_year": 2019
+    },
+    "comp_system": "AIR BAGS: FRONTAL: DRIVER SIDE: INFLATOR MODULE AND CLOCKSPRING",
+    "sub_issue": null,
+    "distinct_complaints": 30,
+    "first_month": "2016-03",
+    "last_month": "2018-12"
+   },
+   "distinct_complaints": 852,
+   "link": "/issue/g_000000000004"
+  }
+ ],
+ "shown_n": 5,
+ "total_groups": 41,
+ "investigations": [
+  {
+   "action_no": "PE19001",
+   "inv_type": "PE",
+   "open_date": "2019-04-02",
+   "subject": "Steering column bolt loosening",
+   "link": "https://www.nhtsa.gov/recalls"
+  }
+ ],
+ "total_investigations": 1,
+ "campaigns": [
+  {
+   "campno": "18V000000",
+   "component": "STEERING",
+   "report_date": "2019-02-04",
+   "summary": "Example Motors is recalling certain 2017 Roadster vehicles. The steering column <bolt> may loosen.",
+   "consequence": "A loose steering column bolt can reduce steering control, increasing the risk of a crash.",
+   "remedy": "Dealers will inspect and tighten the bolt, free of charge.\nOwner letters are expected to be mailed.",
+   "park_it": true,
+   "park_outside": false,
+   "report_date_basis": "Report received date (RCDATE)",
+   "source_url": "https://www.nhtsa.gov/recalls?nhtsaId=18V000000",
+   "snapshot_id": null,
+   "explanation": {
+    "status": "accepted",
+    "model": "synthetic-fixture",
+    "prompt_version": "fixture-1",
+    "sentences": [
+     {
+      "text": "A steering column bolt may loosen, which can reduce steering control.",
+      "source_fields": [
+       "summary",
+       "consequence"
+      ],
+      "source_spans": [
+       "The steering column <bolt> may loosen.",
+       "reduce steering control"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "campno": "19V111000",
+   "component": "ELECTRICAL SYSTEM",
+   "report_date": "2019-06-10",
+   "summary": "A wiring harness may chafe and short circuit.",
+   "consequence": "A short circuit increases the risk of a fire.",
+   "remedy": "Dealers will add a protective sleeve.",
+   "park_it": false,
+   "park_outside": true,
+   "report_date_basis": "Report received date (RCDATE)",
+   "source_url": "https://www.nhtsa.gov/recalls?nhtsaId=19V111000",
+   "snapshot_id": null,
+   "explanation": {
+    "status": "fallback",
+    "sentences": [],
+    "model": null,
+    "prompt_version": null
+   }
+  },
+  {
+   "campno": "20V222000",
+   "component": "SERVICE BRAKES",
+   "report_date": null,
+   "summary": "The brake hose may crack.",
+   "consequence": null,
+   "remedy": null,
+   "park_it": null,
+   "park_outside": null,
+   "report_date_basis": null,
+   "source_url": null,
+   "snapshot_id": null,
+   "explanation": null
+  }
+ ],
+ "total_campaigns": 3,
+ "vin_lookup_url": "https://www.nhtsa.gov/recalls",
+ "selection_rule": "Top 5 issue groups by distinct complaints (ties by component name); up to 5 investigations, newest first; up to 6 recall campaigns, newest report date first."
+}
