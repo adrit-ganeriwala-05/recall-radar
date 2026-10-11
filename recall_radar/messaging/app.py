@@ -37,12 +37,16 @@ def create_app(analysis=None, provider=None, db_path: Path | None = None) -> Fas
             security.verify(os.environ.get("IMESSAGE_WEBHOOK_SECRET", ""), dict(request.headers), body)
         except security.Rejected as e:
             return JSONResponse({"error": e.reason}, status_code=e.status)
-        event_id = request.headers.get("x-spectrum-webhook-id") or ""
+        event = service.parse(body)
+        # Dedupe on the message's own id: X-Spectrum-Webhook-Id is the webhook (subscription) id and is the same
+        # on every delivery (found at Gate P), so keying on it dropped every message after the first.
+        msg_id = str(((event.get("message") or {}).get("id")) or "")
+        event_id = f"msg:{msg_id}" if msg_id else ""
         if not event_id:
             return JSONResponse({"error": "missing webhook id"}, status_code=400)
         con = connect(db)
         try:
-            service.handle(con, service.parse(body), a, prov, event_id, float(request.headers["x-spectrum-timestamp"]))
+            service.handle(con, event, a, prov, event_id, float(request.headers["x-spectrum-timestamp"]))
         finally:
             con.close()
         return JSONResponse({"ok": True})
