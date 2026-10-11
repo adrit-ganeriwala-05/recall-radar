@@ -48,6 +48,11 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from recall_radar import contracts as C
 from recall_radar.method.config import config_hash as _config_hash
+from recall_radar.method.config import load_config
+from recall_radar.method.replay import replay_json
+from recall_radar.method.util import data_cutoff
+
+from .replay_fallback import replay_on_demand
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = REPO_ROOT / "contracts" / "fixtures" / "api"
@@ -334,6 +339,11 @@ class Store:
     @cached_property
     def config(self) -> dict:
         return yaml.safe_load(self.s.config_path.read_text(encoding="utf-8"))
+
+    @cached_property
+    def method_config(self) -> dict:
+        """config.yaml as the method code reads it (paths expanded, config_hash added)."""
+        return load_config(self.s.config_path)
 
     @cached_property
     def config_hash(self) -> str:
@@ -701,8 +711,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if (FIXTURES / f"replay_{episode_id}.json").is_file():
                 return fixture(f"replay_{episode_id}.json")
             raise not_found("No replay for this alert episode.", episode_id=episode_id)
-        return export_json(f"replays/{episode_id}.json", C.Replay,
-                           not_found("No replay exported for this alert episode.", episode_id=episode_id))
+        missing = not_found("No replay for this alert episode.", episode_id=episode_id)
+        if s.export_file(f"replays/{episode_id}.json") is not None or not s.db_path.is_file():
+            return export_json(f"replays/{episode_id}.json", C.Replay, missing)
+        # not exported: build it from the database the same way the export does (B's request 2306)
+        if not {"alert_episode", "alert_match"} <= store.tables:
+            raise missing
+        built = replay_on_demand(store.cursor(), store.method_config, store.provenance, episode_id,
+                                 data_cutoff(store.method_config, "full"))
+        if built is None:
+            raise missing
+        return ok(json.loads(replay_json(built)))
 
     @app.get("/api/results")
     def results(period: Period) -> JSONResponse:
