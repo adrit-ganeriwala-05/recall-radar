@@ -97,6 +97,25 @@ def test_kill_switch_default_off_and_webhook_end_to_end(tmp_path, monkeypatch):
     assert len(prov.sent) == 1
 
 
+def test_every_message_counts_although_the_webhook_id_header_never_changes(tmp_path, monkeypatch):
+    """Gate P finding: X-Spectrum-Webhook-Id is the subscription id (same on every delivery); dedupe is per message id."""
+    prov = MockProvider()
+    client = TestClient(app_mod.create_app(FakeAnalysis(), prov, tmp_path / "m.sqlite"))
+    monkeypatch.setenv("RR_MESSAGING_ENABLED", "1")
+    monkeypatch.setenv("IMESSAGE_WEBHOOK_SECRET", "s3cret")
+
+    def post(text, mid):
+        body = json.dumps(ev(text, mid=mid)).encode()
+        ts = str(int(time.time()))
+        h = {"X-Spectrum-Signature": security.sign("s3cret", ts, body), "X-Spectrum-Timestamp": ts, "X-Spectrum-Webhook-Id": "wh-same"}
+        return client.post("/spectrum-webhook", content=body, headers=h).status_code
+
+    assert post("HELP", "m-1") == 200 and len(prov.sent) == 1
+    assert post("WATCH 2017 Example Motors Roadster", "m-2") == 200 and len(prov.sent) == 2
+    assert post("WATCH 2017 Example Motors Roadster", "m-2") == 200 and len(prov.sent) == 2  # a retried delivery
+    assert post("STATUS", "m-3") == 200 and len(prov.sent) == 3
+
+
 # ---------------------------------------------------------------- enrollment and commands
 
 
