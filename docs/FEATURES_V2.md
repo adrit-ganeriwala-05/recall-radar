@@ -6,7 +6,12 @@ Merge windows 01:45 · 02:30 · 03:15 · 03:45 (cutoff). Order inside a window: 
 B → A API → C UI → D features. Every PR: head contains origin/main, CI green, "Reviewed <sha7>: ok".
 Global rules for every feature: no change to `recall_radar/method/**`, `config.yaml`,
 `review/system_map.csv`, `review/keywords.txt` or `exports/demo/results*`, `cases.csv`, `hero.json`;
-new tables only in `recall_radar_v2.duckdb`; our copy passes the banned-word check, official NHTSA
+new tables only in `recall_radar_v2.duckdb`, which is a **copy of the baseline DB plus new tables** (never a
+`make pipeline` rerun at a v2 commit: that writes new run ids), proven with
+`uv run python -m recall_radar.b_v2.protect <baseline.duckdb> <recall_radar_v2.duckdb>` →
+`PROTECTED TABLES: IDENTICAL`; B's v2 code lives in `recall_radar/b_v2/**`. Reproducibility is pinned to
+`baseline-v1` (`git checkout baseline-v1 && make repro`); Gate B checks protected files by sha256 against
+BASELINE_CERTIFICATE and protected tables with the protect tool. Our copy passes the banned-word check, official NHTSA
 text and user drafts are verbatim plain text and are not filtered.
 
 ## C1.1 Contract v1.1.0 — A (acks B, C) · window 01:45 (first)

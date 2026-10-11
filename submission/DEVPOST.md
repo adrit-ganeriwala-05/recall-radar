@@ -58,7 +58,7 @@ React + Vite + Recharts render them. One Vultr VM with Caddy and systemd; the ap
 calls at request time and runs offline on a laptop. Contracts (Pydantic → JSON Schema →
 TypeScript) keep the four parts in agreement; CI checks drift. Release: tag `rc1`, reproducibility
 hash (SHA-256 of `exports/demo/results.csv`,
-reproduced by `make repro` from a clean clone)
+reproduced by `git checkout baseline-v1 && make repro` from a clean clone)
 `7a469c93a4097df1bb3d3f28a97772d20e58aa9ed106338cde6b67a3c561321a`.
 
 ## Challenges
@@ -74,7 +74,8 @@ We asked a narrow question and answered it with rules fixed in advance: on the h
 simple complaint-growth detector did not raise alerts earlier for vehicles NHTSA later
 investigated than for comparable vehicles it never investigated. We report that as the result.
 Freezing the thresholds, the hero rule and the method code under a git tag before the held-out
-run is what makes the negative result trustworthy, and a clean clone reproduces the result files
+run is what makes the negative result trustworthy, and a clean clone at the tag `baseline-v1` reproduces
+the result files
 (both period summaries, results.csv and cases.csv) byte for byte.
 Most held-out investigation families were excluded because their first action was an
 engineering analysis, almost all of them from a single analysis that names several hundred

@@ -45,7 +45,7 @@ time; excerpts are regex-redacted and shown truncated with a link to the public 
 No accounts, no tracking.
 
 **Can I reproduce it?** `make setup && make pipeline` on the snapshot recorded in
-`snapshots/SNAPSHOT.lock.json`; `make repro` compares the result files (both period summaries, results.csv, cases.csv) byte for
+`snapshots/SNAPSHOT.lock.json`; `git checkout baseline-v1 && make repro` compares the result files (both period summaries, results.csv, cases.csv) byte for
 byte (hash in Devpost).
 
 **What's next?** Most held-out investigation families were excluded because their first action was an

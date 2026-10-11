@@ -22,6 +22,7 @@ recall_radar/__init__.py             A
 recall_radar/data/**                 A
 recall_radar/api/**                  A
 recall_radar/method/**               B
+recall_radar/b_v2/**                 B     # v2: protect, recall_markers, recall_explain, symptom_index, report_select (outside the freeze)
 recall_radar/ml/**                   D
 recall_radar/messaging/**            A     # v2 F9 service (PRD_v2 §4 F9)
 contracts/**                         A

@@ -23,12 +23,15 @@ named teammate's posted result. Anything not measured says so.
 | Setup | `make setup` | exit 0 | verified |
 | Unit, lint, guards | `make check` | exit 0: 344 passed, 1 xfailed (python); 106 passed (web); secrets 0; claims 0; fill_numbers 0 | verified |
 | Real data (D's machine) | `make test-real` with the serving DB | method 5/5, api 4/4, data 2/3 — the failure is `test_real_raw_dir_matches_committed_lock` (no raw zips on D's machine) | partial |
-| Real data with raw zips | A: `RR_RAW_DIR=~/rr-raw make test-real` | not yet posted for 195ad45 (A passed it at e8e5c87, PR #15) | **pending A** |
+| Real data with raw zips | A: `RR_RAW_DIR=~/rr-raw make test-real` | **FAIL at 195ad45**: `test_real_alias_table_leaves_no_punctuation_variants` hard-coded `data/` → fix PR #23 (test-only); re-run at the merged SHA | **GATE A FAIL → A** |
 | Deployed SHA | `curl /healthz` | git_sha = 195ad45 | verified |
 | Integration | `RR_BASE_URL=https://www.recall-radar.us RR_RELEASE=1 RR_EXPECT_SHA=195ad45 make integration` | 21 passed, 0 skipped (displayed = exported) | verified |
 | Browser smoke | `BASE_URL=https://www.recall-radar.us make e2e` | 2 passed (desktop, phone) | verified |
 | Outage | `RELEASE=1 bash deploy/outage_check.sh --release` | 0 FAIL, 0 WARN | verified |
-| Reproducibility | B: `RR_RAW_DIR=~/rr-raw make repro` (handoff 20261010-2145) | MATCH ×4 at 0f56762; pipeline inputs unchanged since | verified (B) |
+| Reproducibility | B: `RR_RAW_DIR=~/rr-raw make repro` at 195ad45 (PR #24 comment) | MATCH ×4 | verified (B) |
+| Method + freeze (B) | `uv run pytest tests/method`; real_data method on DB 5d708042…; freeze check; `exports/demo` vs MANIFEST | 150 passed + 1 xfailed; 5 passed; ok; 26 files == MANIFEST | verified (B) |
+| Protected tables | B: independent rebuild vs serving DB | checksum-identical | verified (B) |
+| Web (C) | `npm ci && typecheck && test && build`; deployed browser pass at 360 px live and API-down | 106 passed; flows ok; console clean | verified (C stand-in) |
 
 The checks ran against `https://www.recall-radar.us` because D's laptop still had a cached negative
 DNS answer for the apex; the apex was checked separately with `curl --resolve` (200, valid certificate).

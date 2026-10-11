@@ -31,7 +31,9 @@ Without `make pipeline`, `make serve` still shows the results page and the demo 
 committed `exports/demo/` bundle; vehicle search needs the database the pipeline builds.
 
 Reproduce the published results (clean clone, full re-ingest, byte-for-byte comparison of the result
-files): `RR_RAW_DIR=<raw files> make verify-snapshot && RR_RAW_DIR=<raw files> make repro`.
+files) at the tag that produced them: `git checkout baseline-v1 && RR_RAW_DIR=<raw files> make verify-snapshot
+&& RR_RAW_DIR=<raw files> make repro`. Later commits change pipeline inputs (contract version,
+dependencies), so a rerun there gets new run ids; the committed result files themselves do not change.
 Deploying to a VM: `deploy/README.md`.
 
 ## Data
