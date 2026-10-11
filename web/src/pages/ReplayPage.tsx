@@ -1,14 +1,14 @@
 // Owner: C. C3 replay: step month by month through what was public at each cutoff.
 import { useEffect, useState, type KeyboardEvent } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getReplay } from "../api/client";
+import { getHero, getReplay } from "../api/client";
 import { useApi } from "../api/useApi";
 import { BarChart } from "../components/BarChart";
 import { ProvenanceBar } from "../components/Provenance";
 import { Empty, ErrorState, Loading } from "../components/States";
 import { VIN_LOOKUP_URL } from "../components/VinBox";
 import type { OutcomeMatch, Replay } from "../contracts.gen";
-import { dateText, monthText, plural, statusText, vehicleText } from "../format";
+import { dateText, heroPeriodNote, monthText, plural, statusText, vehicleText } from "../format";
 import { frameMarkers, framePoints } from "../replay";
 
 const STEP_MS = 800;
@@ -191,6 +191,9 @@ export function ReplayView({ data }: { data: Replay }) {
 export default function ReplayPage() {
   const { episodeId = "" } = useParams();
   const [res, reload] = useApi(() => getReplay(episodeId), [episodeId]);
+  const [hero] = useApi(getHero, []);
+  // The hero replay says which period it comes from (B's frozen rule may fall back to development).
+  const heroPeriod = hero.state === "done" && hero.ok && hero.data.episode_id === episodeId ? hero.data.period : null;
   return (
     <section>
       {res.state === "loading" && <Loading what="replay" />}
@@ -198,6 +201,11 @@ export default function ReplayPage() {
       {res.state === "done" && res.ok && (
         <>
           <ProvenanceBar provenance={res.data.provenance} source={res.source} />
+          {heroPeriod && (
+            <p className="notice" data-testid="hero-period">
+              {heroPeriodNote(heroPeriod)}
+            </p>
+          )}
           <ReplayView key={res.data.episode_id} data={res.data} />
         </>
       )}
