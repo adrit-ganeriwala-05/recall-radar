@@ -4,13 +4,13 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-11 03:33 ET
-- **v2: feature cutoff 03:45 reached; no new feature work after it.** Open PR: b/f2-verdicts (#54: F2 verdict file, Gate B evidence, this file).
-- Last origin/main merged: c5fd95b (03:10 train: #52 F2 finalize, #51 evidence map, #49, #50), merged 03:12 ET
+- Updated: 2026-10-11 03:53 ET
+- **v2: past the feature cutoff; no new feature work.** All of B's v2 work is on main and deployed. Open PR: b/post-gateb (this file only).
+- Last origin/main merged: b963d64 (PR #54: F2 verdict file, Gate B evidence), merged 03:48 ET; live site reports b963d64 since 03:52 ET
 - Contract: 1.1.0 on main
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a / LDATE_PLUS_7
 - Freeze: `freeze-v1` → dd6b439. v2 code of B lives in `recall_radar/b_v2/` because the freeze covers all of `recall_radar/method/`.
-- Mode: waiting(A's review of #54 and D's merge; then D runs `--finalize` on the F2 tables; Gate B 03:45–04:20, deploy 04:20, Gate P 04:45 — since 03:33)
+- Mode: waiting(D's Gate B sheet and Gate P at 04:45; A's fix for the DELETE row in messaging — since 03:53)
 
 ## Done (task id → commit → evidence)
 - B1 → fe38661 → `tests/fixtures/method/*.csv` + hand calculations in `docs/METHOD_NOTES.md` §4
@@ -111,15 +111,18 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - `GEMINI_API_KEY` appeared in my `.env` (added by the human); I have not used it and made no model call.
 - **Gate B evidence** captured at c5fd95b: `logs/gate_b_B.txt`, committed as `docs/handoffs/20261011-*-B-to-D-gate-b.md`: protect IDENTICAL; five protected sha256 == certificate; `make protected` 0 problems; `check_freeze` → freeze-v1; `uv run pytest tests/method` → 268 passed, 1 xfailed; real_data method → 8 passed; symptom eval 30 of 30, precision at 5 = 73 of 110.
 
+- 03:43–03:48: A's review of #54 (through D's session) found three explanations I had let through (changed modal, dropped "when" clause). Flipped them and applied one rule to every row (any change of certainty either way, any dropped when/if/while condition, any added causal link → reject): **44 accept, 28 reject**. Merged by D → main b963d64.
+- **Post-deploy check, live b963d64** (03:53): `RR_BASE_URL=https://www.recall-radar.us RR_RELEASE=1 uv run pytest tests/integration -m real_data` → 21 passed; 26 `/demo/` files == committed MANIFEST; results + hero equal the committed files; `/api/report`, `/api/symptom-index` (8 concepts, 52 aliases), cards with official text, replay link kinds incl. an on-demand replay all answer. **F2 as served: all 72 reviewed campaigns checked through vehicle pages → my 44 accepts are served accepted with the exact sentences I read, each re-validating on the served official text and matching its cache key; my 28 rejects are served fallback.** F2 = accepted 44 of 13673.
+- Site answered 502 on `/healthz` for under a minute at 03:51 while D switched releases.
+
 ## In progress
 - none
 
 ## Next (in order)
-1. #54 merged → D runs `--finalize` with the verdict file on the run's tables; if it does not print "28 accepted rows downgraded" / "accepted 44 of 13673", the tables are not the ones the sheet came from: stop.
-2. After D assembles the served v2 DB: A (or I, if the file reaches me) reruns `python -m recall_radar.b_v2.protect <baseline> <served v2>`; must be IDENTICAL.
-3. After the 04:20 deploy: from my machine, `RR_BASE_URL=https://www.recall-radar.us RR_RELEASE=1 uv run pytest tests/integration -m real_data`, and spot-check that an accepted explanation shows the AI label above the official text and a rejected one shows official text only.
-4. Gate P (04:45, D + A): re-review A's fix for the DELETE row; I do not hold Photon credentials.
-5. No change under the freeze without `freeze-v2`. No new feature work after 03:45.
+1. Gate P (04:45, D + A): re-review A's fix for the DELETE acknowledgement row (PR #34 comment). I hold no Photon credentials; the iMessage line is added on D's machine.
+2. If D rebuilds or redeploys the v2 DB: rerun the live F2 comparison (all 72 reviewed campaigns: verdict vs served status) and `RR_RELEASE=1` integration.
+3. Answer review requests; no feature work. No change under the freeze without `freeze-v2`.
+4. Before submission (07:30): confirm README/Devpost statements about F2 ("accepted 44 of 13673", AI label, official text always shown), F7 (precision as measured) and reproducibility (pinned to `baseline-v1`) against the files.
 
 ## Last passing commands (exact)
 - `uv run pytest` → 127 passed, 1 deselected (the deselected one is the real_data test) at the tip after A's review changes @ 02263ed
