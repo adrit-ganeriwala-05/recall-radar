@@ -4,13 +4,13 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 21:45 ET (clock times before 17:10 in this file were estimates; `git log` has the true times)
-- Branch / HEAD: b/method = main 0f56762 + status/handoff commits (check `git log`). PR #14 (frozen export) merged → main f324b00.
-- Last origin/main merged: 0f56762 (PRs #10, #11, #14, #16), fast-forward 21:40 ET
+- Updated: 2026-10-10 22:11 ET (clock times before 17:10 in this file were estimates; `git log` has the true times)
+- Branch / HEAD: b/method = main bb1852f + tests, notes, status and the B10 record (PR open; check `git log`)
+- Last origin/main merged: bb1852f (PR #15 and #17: A's serving-time name and address scrubs), merged 22:11 ET, no conflicts
 - Contract version: 1.0.0
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a / LDATE_PLUS_7
 - **Freeze: tag `freeze-v1` → dd6b439, pushed 20:22 ET (Saketh approved the tag push). The held-out year has been run once. Nothing under `recall_radar/method/`, `config.yaml`, `review/system_map.csv`, `review/keywords.txt` may change without `freeze-v2`.**
-- Mode: waiting(D tags rc1 → B10 final `make repro` on it; A's follow-up to PR #15 for mixed-case names — since 21:45)
+- Mode: watching (Saketh, about 22:10: keep validating the repository with new tests and edge cases). Waiting on D's `rc1` tag for the final B10 run — since 22:11
 
 ## Done (task id → commit → evidence)
 - B1 → fe38661 → `tests/fixtures/method/*.csv` + hand calculations in `docs/METHOD_NOTES.md` §4
@@ -75,6 +75,14 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - D's release test run locally against that database + committed exports: server on a local port in cached mode, `RR_RELEASE=1 RR_BASE_URL=http://127.0.0.1:8137 uv run pytest tests/integration -m real_data` → 21 passed (after `npm --prefix web run build`; with a web build older than the export one test failed on `/demo/hero.json` 404).
 - **B10 on main → `RR_RAW_DIR=~/rr-raw make repro` at 0f56762 → exit 0, MATCH ×4**, log `logs/repro_main_0f56762.log`. Hashes printed by the script equal `shasum -a 256` of the committed `exports/demo` files. Record: `docs/handoffs/20261010-2145-B-to-D-b10-repro.md`. Still to do on `rc1`.
 - Review of A's PR #15 at 1a50a58 (A9: titled names scrubbed from served excerpts) → posted "Reviewed 1a50a58: ok" with a required follow-up: the pattern is uppercase-only; a scan of all stored texts through that head's `scrub_names` leaves 53 mixed-case texts with a title + capitalised word (13 inside the first 400 characters). Suggested pattern posted on the PR. No pipeline input changed; `uv run pytest` there → 307 passed, 29 deselected.
+
+- Reviews of A's PR #17: 349bc2f ok for the address scrub (the mixed-case name gap was still open), then 9d2e7c1 ok: full scan of all stored texts, title + capitalised name 346 → 0 in served excerpts; 388 texts change; `uv run pytest` there → 322 passed. Merged → main bb1852f.
+- Validation sweep (22:11), nothing committed changed by it:
+  - Database and export: no infinite or NaN score, no episode below the alert thresholds, shares inside 0..1, unique episode ids; all 25 export JSON files are strict JSON.
+  - API (A's code, read only), local server on the clean database: about 190 hostile or malformed requests → only 400/404/200, no 5xx, no path traversal; 4,217 make/model pairs listed, 500 vehicle pages and 150 alert vehicles walked with all issue pages (16,881 excerpts, none over 400 characters, no duplicates across pages) → 0 anomalies.
+  - New tests: `tests/method/test_edge_cases.py` (13: interval limits, periods with nothing early or nothing eligible, the episode rule as properties, score ordering, row-order independence), `tests/method/test_committed_bundle.py` (10: MANIFEST hashes, contracts, tables re-derived from the JSON, counts re-derived from the case list, audit, hero, replays, banned words), `tests/method/test_real_invariants.py` (4, real_data: alert rule on every stored episode, 300 groups recounted, headline family counts recounted in SQL for both periods).
+  - `make check` → 344 passed, 33 deselected, 1 xfailed; web 100 passed; 0 ownership violations. `RR_DATA_DIR=data/for_D_1c8dd4b uv run pytest -m real_data tests/method` → 5 passed.
+  - Found, recorded in `docs/METHOD_NOTES.md` §11, not fixed (frozen code): `evaluate` stops with a KeyError for a period in which no family opened at all (strict xfail test as a tripwire; neither configured period is empty); interval limits at 0 of n / n of n are exact only to about 2e-16; 3 of the 21 exported replays show "after official action" because the alert also followed another family's earlier investigation (the hero is not one of them).
 
 ## In progress
 - none
