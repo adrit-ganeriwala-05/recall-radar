@@ -121,6 +121,19 @@ def test_group_chats_refused_and_echoes_ignored(con):
     assert say(con, "HELP", "e2", prov=prov, extra={"isFromMe": True}) is None and prov.sent == []
 
 
+def test_agent_sender_and_text_we_just_sent_are_never_answered(con):
+    """Gate P safety: an echo of our own message must not start a reply loop, whatever the provider flags."""
+    prov = MockProvider()
+    assert say(con, "HELP", "a1", prov=prov, extra={"sender": {"kind": "agent", "id": "line"}}) is None
+    assert prov.sent == []
+    reply = say(con, "HELP", "a2", prov=prov)  # a real user message gets the HELP text
+    assert reply and len(prov.sent) == 1
+    # that exact reply text arriving back on the same route (no flags at all) is ignored
+    assert say(con, reply, "a3", prov=prov) is None and len(prov.sent) == 1
+    # the same text on another route is a different person: still answered normally
+    assert say(con, "HELP", "a4", route="space-2", prov=prov) is not None
+
+
 def test_one_vehicle_per_subscriber_and_routes_are_isolated(con):
     enroll(con, "space-1")
     enroll(con, "space-2")
