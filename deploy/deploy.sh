@@ -125,6 +125,17 @@ if [ -f "$BUILD/web/package-lock.json" ]; then
   (cd "$BUILD/web" && npm ci --no-audit --no-fund --loglevel=error && VITE_API_MODE=live npm run build)
   rm -rf -- "$BUILD/web/node_modules"
   [ -f "$BUILD/web/dist/index.html" ] || die "web build produced no web/dist/index.html"
+  # C's 3D presentation (web/presentation/RELEASE.md): static Next export into web/dist/observatory,
+  # built before the secret scan below so its bundle is scanned too
+  if [ -f "$BUILD/web/presentation/package-lock.json" ]; then
+    info "building the /observatory presentation (npm ci + release)"
+    (cd "$BUILD/web/presentation" && npm ci --no-audit --no-fund --loglevel=error && npm run release -- --to ../dist/observatory 2> >(grep -v "not a git repository" >&2))
+    # the export has no .git, so release.mjs cannot read the SHA: record the one being deployed
+    node -e 'const f=process.argv[1],m=JSON.parse(require("fs").readFileSync(f));m.git={sha:process.argv[2],branch:null,dirty:false};require("fs").writeFileSync(f,JSON.stringify(m,null,2)+"\n")' \
+      "$BUILD/web/dist/observatory/release-manifest.json" "$SHA"
+    rm -rf -- "$BUILD/web/presentation/node_modules" "$BUILD/web/presentation/.next"
+    [ -f "$BUILD/web/dist/observatory/index.html" ] || die "presentation build produced no web/dist/observatory/index.html"
+  fi
   if grep -rEln "AIza[0-9A-Za-z_-]{35}|sk-ant-|GEMINI_API_KEY|RR_VM_" "$BUILD/web/dist"; then
     die "secret-like string in web/dist (files above); not deploying"
   fi
