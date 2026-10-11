@@ -11,6 +11,7 @@ export const HERO = {
   lede: "Explore reported problems, official recalls, and the records behind them.",
   primaryAction: "Explore vehicle records",
   secondaryAction: "See how it works",
+  vehicleLabel: "Illustrative vehicle",
 } as const;
 
 export const NAV = {
@@ -44,4 +45,11 @@ export const FOOTER = {
   vinLink: "Check open recalls on NHTSA",
   dataNote: "Data: public NHTSA complaint, investigation and recall files. Counts are distinct complaints.",
   alertNote: "An alert means a complaint pattern deserves a closer look. It is not a defect finding and not a recall forecast.",
+  modelCredit: {
+    lead: "Illustrative vehicle: “Car Concept” by Eric Chadwick, © Darmstadt Graphics Group GmbH, from the Khronos glTF Sample Assets,",
+    license: "CC BY 4.0",
+    changes: "Modified: logos and licence plate removed, one paint variant kept, geometry compressed. Not a model-year representation; no endorsement implied.",
+    sourceUrl: "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept",
+    licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+  },
 } as const;

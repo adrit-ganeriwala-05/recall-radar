@@ -9,8 +9,10 @@ export function HowItWorks() {
     <section
       id={SECTION_IDS.howItWorks}
       aria-labelledby="how-title"
-      className="mx-auto max-w-[90rem] border-t border-line px-5 py-24 sm:px-8"
+      className="relative bg-graphite"
     >
+      {/* Opaque sheet: until Phase 4 choreographs the car, later sections cover the fixed scene. */}
+      <div className="mx-auto max-w-[90rem] border-t border-line px-5 py-24 sm:px-8">
       <h2 id="how-title" className="text-4xl font-medium tracking-[-0.02em] sm:text-5xl">
         {HOW_IT_WORKS.title}
       </h2>
@@ -32,6 +34,7 @@ export function HowItWorks() {
           {HOW_IT_WORKS.resultsLink}
         </SmartLink>
       </p>
+      </div>
     </section>
   );
 }

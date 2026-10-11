@@ -1,6 +1,6 @@
 # Recall Radar — The Automotive Observatory (presentation) · architecture
 
-Owner: C. Status: **Phase 1 (architecture + shell) implemented; Phases 2–4 planned, not built.**
+Owner: C. Status: **Phases 1 (architecture + shell) and 2 (3D scene) implemented; Phases 3–4 planned, not built.**
 Authority: `docs/PRD_v2.md` (scope, copy, data semantics, gates) > this document > the master prompt's
 visual direction. The presentation reads approved artifacts and APIs; it never changes the
 detector, matching, evaluation, frozen config, protected exports or databases.
@@ -20,9 +20,9 @@ detector, matching, evaluation, frozen config, protected exports or databases.
 | typescript | 6.0.3 | Phase 1 | Next's build loads the TS JS API; 7.x is the native port |
 | tailwindcss, @tailwindcss/postcss | 4.3.3 | Phase 1 | v4 conventions only: `@import "tailwindcss"` + `@theme`, no `tailwind.config.js` |
 | geist | 1.7.2 | Phase 1 | SIL OFL font files bundled locally by next/font (no remote request) |
-| three / @types/three | 0.186.1 / 0.186.0 | Phase 2 | R3F peer `three >=0.156` |
-| @react-three/fiber | 9.8.1 | Phase 2 | React 19 line |
-| @react-three/drei | 10.7.9 | Phase 2 (only if a helper is needed) | peers react ^19, fiber ^9, three >=0.159 |
+| three / @types/three | 0.186.1 / 0.186.0 | Phase 2 (installed) | R3F peer `three >=0.156` |
+| @react-three/fiber | 9.8.1 | Phase 2 (installed) | React 19 line |
+| @react-three/drei | 10.7.9 | Phase 2 (installed; Environment, Lightformer, ContactShadows only) | peers react ^19, fiber ^9, three >=0.159 |
 | gsap (+ScrollTrigger) | 3.15.0 | Phase 4 | |
 | lenis | 1.3.26 | Phase 4 | |
 
@@ -100,12 +100,35 @@ Destinations come only from `src/content/destinations.ts` (product routes that e
 `/`, `/vehicle`, `/issue/:groupId`, `/issue-for`, `/replay/:episodeId`, `/results`; NHTSA
 `https://www.nhtsa.gov/recalls`). Feature claims follow `docs/LEDGER.md` statuses only.
 
-## 7. 3D asset requirement (blocks Phase 2 quality, not the app)
-No vehicle model exists in the repo. Phase 2 needs one local GLB/glTF with a licence that allows
-redistribution in a public repo and a public website (e.g. CC0 or CC-BY with attribution), a generic
-non-branded hatchback/sedan, ≤ ~5 MB, PBR materials. Acquisition requires your authorisation and the
-exact source URL + licence recorded in `web/presentation/public/models/ATTRIBUTION.md`. Without it,
-Phase 2 ships the static illustrative fallback and says so; it is not the completed 3D scene.
+## 7. 3D scene (Phase 2, implemented)
+- **Asset**: `public/models/car-concept-pearl.glb` (3,639,612 bytes), derived from Khronos glTF Sample
+  Assets "Car Concept" by Eric Chadwick, © Darmstadt Graphics Group GmbH, **CC BY 4.0**. Upstream licence
+  excludes logos, so the licence plate and every use of the Khronos logo texture were removed (asserted
+  by `tools/process-car-model.mjs`). Pearl variant baked, geometry meshopt-compressed; body paint retuned
+  to pearl silver at runtime. Provenance, checksum and all modifications: `public/models/ATTRIBUTION.md`;
+  on-page credit in the footer. Labelled "Illustrative vehicle"; not a model-year representation.
+- **Measured asset facts** (glTF-Transform `getBounds`): Y-up, rests on y = 0, nose toward +z (headlights
+  z = +2.18 m), 4.357 × 1.149 × 2.542 m incl. mirrors, 213,313 triangles, 22 materials, 13 WebP textures.
+- **Loading**: three's own `GLTFLoader` + three's bundled `MeshoptDecoder` (no Draco → no CDN decoder).
+  drei is used only for `Environment`/`Lightformer` (no remote HDR) and `ContactShadows`.
+- **Normalization**: `Box3` of the parsed scene → length 4, centred on x/z, wheels on y = 0; bounding-sphere
+  radius reported to the controller. Cached on the scene so Strict Mode remounts never re-measure a
+  scaled copy.
+- **Framing**: `motionState.COMPOSITIONS` gives per chapter a camera direction, target, screen anchor and
+  width fill for wide (≥ 1024 px) and narrow layouts. `SceneController` solves the camera distance from
+  the measured radius and live aspect (`fitDistance`) and places the car with `camera.setViewOffset`, so
+  framing holds at any viewport size. It is the only writer of camera and model transforms; pointer
+  adds ≤ 0.07 rad yaw / 0.025 rad pitch to the model (mouse only).
+- **Rendering**: one `<Canvas>`, `frameloop="demand"` (frames only while damping moves; none when settled
+  or the tab is hidden), DPR [1, 1.75] high / [1, 1.25] low tier; low tier (≤ 4 cores, ≤ 4 GB, or coarse
+  pointer) replaces transmission glass with tinted transparency. Contact shadow baked once after the
+  model loads, parented to the car. No post-processing, no real-time shadow maps.
+- **Failure paths**: no WebGL → static SVG fallback without downloading three.js; model error (error
+  boundary) or lost context → same fallback with the reason; the HTML page is unaffected throughout.
+- **Dev inspector** (development builds only): `window.__observatory.compose("intro" | "explore" |
+  "record" | "official" | "report" | "closing")`.
+- **Known notice**: `@react-three/fiber` 9.8.1 logs "THREE.Clock: This module has been deprecated" with
+  three 0.186 (library warning, not a hydration or WebGL error).
 
 ## 8. Commands
 ```

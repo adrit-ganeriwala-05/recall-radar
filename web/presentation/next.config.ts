@@ -12,9 +12,13 @@
 import path from "node:path";
 import type { NextConfig } from "next";
 
+const BASE_PATH = "/observatory";
+
 const nextConfig: NextConfig = {
   output: "export",
-  basePath: "/observatory",
+  basePath: BASE_PATH,
+  // Files in public/ are not rewritten by basePath; the scene builds its model URL from this.
+  env: { NEXT_PUBLIC_BASE_PATH: BASE_PATH },
   trailingSlash: true,
   reactStrictMode: true,
   images: { unoptimized: true },

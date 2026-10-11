@@ -1,9 +1,18 @@
-// Owner: C. Introduction. Desktop grid is ~42% copy / ~58% vehicle composition; the right column is
-// reserved for the vehicle scene, which renders in the separate background SceneLayer (Phase 2) and
-// therefore never sits inside this text flow. Until then it holds only a quiet studio-floor gradient.
+// Owner: C. Introduction. Wide grid is ~42% copy / ~58% vehicle composition. The car itself is drawn
+// by the fixed background SceneLayer (motionState COMPOSITIONS anchor it in the right column wide, and
+// above the copy narrow); this section only reserves that space and carries the DOM label.
 import { HERO } from "@/content/copy";
 import { DESTINATIONS, SECTION_IDS } from "@/content/destinations";
 import { SmartLink } from "./SmartLink";
+
+/** The 3D (or static) car is generic; this label says so wherever it is shown. */
+function IllustrativeLabel({ className }: { className: string }) {
+  return (
+    <p className={"w-fit rounded-md border border-line bg-graphite/70 px-3 py-1 text-sm text-muted " + className}>
+      {HERO.vehicleLabel}
+    </p>
+  );
+}
 
 export function Hero() {
   return (
@@ -14,7 +23,11 @@ export function Hero() {
     >
       {/* @container: the heading is sized from this column's width (cqi), so the two authored lines
           never break word-by-word inside the 42% column. "The available evidence." is ~10.3em wide. */}
-      <div className="@container">
+      {/* Narrow screens: reserved area for the car above the copy (narrow composition anchor y = 0.3). */}
+      <div aria-hidden="true" className="h-[20svh] lg:hidden" />
+      <IllustrativeLabel className="-mt-6 justify-self-center lg:hidden" />
+      {/* Opaque on narrow screens so light text never scrolls over the silver bodywork. */}
+      <div className="@container bg-graphite lg:bg-transparent">
         <h1
           id="hero-title"
           className="text-[clamp(2.25rem,9.4cqi,7rem)] font-medium leading-[1.04] tracking-[-0.03em] text-ink"
@@ -42,10 +55,9 @@ export function Hero() {
           </a>
         </div>
       </div>
-      <div
-        aria-hidden="true"
-        className="hidden aspect-[16/10] w-full rounded-[2rem] bg-[radial-gradient(60%_45%_at_55%_75%,rgb(245_242_235/0.07),transparent_70%)] lg:block"
-      />
+      <div className="relative hidden aspect-[16/10] w-full lg:block">
+        <IllustrativeLabel className="absolute -bottom-4 left-1/2 -translate-x-1/2" />
+      </div>
     </section>
   );
 }
