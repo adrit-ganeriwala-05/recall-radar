@@ -1,5 +1,6 @@
 # F9 messaging service (PRD_v2 §4 F9). Owner: D. Separate from the analysis API; stoppable on its own.
 # Ships DISABLED: /etc/recall-radar/messaging.env has RR_MESSAGING_ENABLED=0 → every webhook 503, nothing stored.
+# ProtectHome=read-only (not true): uv installs the interpreter under /home/rr (same as the API unit).
 # Loopback only: the app talks to the analysis API (127.0.0.1:8000) and the Photon sidecar (127.0.0.1:8790).
 # The sidecar and the daily monitor timer (the parts that need outbound network) are NOT installed until Gate P,
 # which is the outbound kill switch. Caddy does not route /spectrum-webhook until Gate P.
@@ -24,7 +25,7 @@ IPAddressAllow=localhost
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
-ProtectHome=true
+ProtectHome=read-only
 ReadWritePaths=/opt/recall-radar/data
 
 [Install]
