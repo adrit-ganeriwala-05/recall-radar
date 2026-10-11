@@ -4,9 +4,9 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-11 01:40 ET
-- **v2 in progress (PRD_v2 FINAL, feature cutoff 03:45).** All of B's v2 code is on main (01:45 train, PR #39 → main faa12f9). Work branch: b/v2 (docs follow-ups; check `git log`).
-- Last origin/main merged: faa12f9 (train: #28 #27 #26 #30 #31 #34 #29 #32 #33 #35 #37), fast-forward 01:38 ET
+- Updated: 2026-10-11 02:58 ET
+- **v2 in progress (PRD_v2 FINAL, feature cutoff 03:45).** All of B's v2 code is on main. Work branch: b/v2-gateb (docs: Gate B evidence map + this file).
+- Last origin/main merged: 4398728 (03:15 train: #44 #41 #45 #46), merged 02:57 ET
 - Contract: 1.1.0 on main
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a / LDATE_PLUS_7
 - Freeze: `freeze-v1` → dd6b439. v2 code of B lives in `recall_radar/b_v2/` because the freeze covers all of `recall_radar/method/`.
@@ -99,6 +99,11 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - **Merge train check (PR #38 at dfed025) → pass**: my paths == 0358cd5; frozen paths == freeze-v1; five protected sha256 == certificate; `uv run pytest` → 511 passed; protected tables identical on a v2 DB built with the train's code.
 - **After the 01:45 window, main faa12f9** (01:40): `make check` → 540 passed, 1 xfailed; web 193; ownership 0. v2 DB built with main's code at `data/v2/recall_radar_v2.duckdb` (gitignored): `python -m recall_radar.b_v2.protect data/for_D_1c8dd4b/recall_radar.duckdb data/v2/recall_radar_v2.duckdb` → PROTECTED TABLES: IDENTICAL (`logs/protected_main_faa12f9.txt`). real_data `tests/method` + `tests/api` with `RR_DATA_DIR=data/v2` → 14 passed. `python -m recall_radar.b_v2.symptom_eval --db …` → unchanged. Local serve of main on the v2 DB: `RR_RELEASE=1 RR_BASE_URL=http://127.0.0.1:8137 uv run pytest tests/integration -m real_data` → 21 passed; `/api/report`, `/api/symptom-index`, exported and on-demand replays answer.
 - Known: `test_p95_latency_under_300ms` failed once on a freshly built (cold) v2 DB and passed on reruns.
+
+- 01:42–02:57: main b8960cd (C's #36 F3 UI), b887cba (train 01:45c: C's route mounts, D's Gate B tooling), 4398728 (train 03:15). Reviews: `Reviewed ad09553: ok` (#43), `Reviewed fec38ff: ok` (#44, A's on-demand replay links: 709 recall markers on 100 random episodes all carry campno + link), `Reviewed 0369c1f: ok` (#47). My docs PR #41 merged with the 03:15 train; #22 closed.
+- Database handover (02:26, A's request on #45): folder `data/handover_gateb/` (gitignored) with the serving baseline 5d708042…, my v2 build c3a40246… and my tables file c29193da…; sent by the human; A verified 3/3 and built the Gate B v2 DB (sha256 9c248297…a383bf346, handoff `20261011-0300-A-to-D-gate-b-v2-db.md`), protect IDENTICAL, row counts equal mine.
+- **After the 03:15 window, main 4398728** (02:58): `make check` → 541 passed, 1 xfailed; web 204; `make protected` → 0 problem(s); `python -m recall_radar.b_v2.protect data/for_D_1c8dd4b/recall_radar.duckdb data/v2/recall_radar_v2.duckdb` → PROTECTED TABLES: IDENTICAL; real_data `tests/method` + `tests/api` with `RR_DATA_DIR=data/v2` → 14 passed.
+- Gate B evidence map for D: `docs/handoffs/20261011-0207-B-to-D-gate-b-evidence-map.md` (38 named tests, all present on main).
 
 ## In progress
 - none
