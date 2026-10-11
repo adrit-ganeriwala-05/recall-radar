@@ -92,12 +92,15 @@ while [ $# -gt 0 ]; do
 done
 REF=${REF:-HEAD}
 case $MODE in cached | fixture) ;; *) die "--mode must be cached or fixture, not '$MODE'" ;; esac
+if [ "$BUILD_ONLY" = 0 ]; then
+  # fetch before resolving REF, or `origin/main` names whatever this checkout fetched last
+  git -C "$RR_ROOT" fetch -q origin 2>/dev/null || warn "git fetch failed; origin/* refs may be stale"
+fi
 SHA=$(git -C "$RR_ROOT" rev-parse --verify --quiet "$REF^{commit}") || die "unknown git ref '$REF'"
 SHORT=${SHA:0:7}
 
 if [ "$BUILD_ONLY" = 0 ]; then
   rr_load_env
-  git -C "$RR_ROOT" fetch -q origin 2>/dev/null || warn "git fetch failed; cannot check origin/main"
   if ! git -C "$RR_ROOT" merge-base --is-ancestor "$SHA" origin/main 2>/dev/null; then
     warn "$REF ($SHORT) is not on origin/main: fine for a fixture or trial deploy, never for a release"
   fi

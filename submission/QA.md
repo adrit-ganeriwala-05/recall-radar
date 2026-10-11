@@ -24,7 +24,14 @@ the replay uses today's records and labels.
 **How good is it?** On the held-out year, with thresholds frozen first: early alerts for
 [held_out.early_coverage_all] of eligible investigations (95-percent interval
 [held_out.early_coverage_all.ci_low]–[held_out.early_coverage_all.ci_high]) versus
-[held_out.chance_coverage] for matched controls. All misses are listed.
+[held_out.chance_coverage] for matched controls. All misses are listed. The results page says it
+in one sentence:
+[verdict.held_out]
+
+**So the detector does not work?** Not as an early-warning signal on the held-out year, and we
+say so on the results page and here. What the app does do is let anyone read a vehicle's full
+complaint history and see what was public before each NHTSA investigation. The replay in the
+demo is a development-period case and is labeled that way.
 
 **What is "chance" here?** For each investigated vehicle and system we pick up to five similar
 vehicles (same system, nearby model year, similar prior volume, no investigation) and run the
@@ -38,6 +45,11 @@ time; excerpts are regex-redacted and shown truncated with a link to the public 
 No accounts, no tracking.
 
 **Can I reproduce it?** `make setup && make pipeline` on the snapshot recorded in
-`snapshots/SNAPSHOT.lock.json`; `make repro` compares the exports byte for byte (hash in Devpost).
+`snapshots/SNAPSHOT.lock.json`; `make repro` compares the result files (both period summaries, results.csv, cases.csv) byte for
+byte (hash in Devpost).
 
-**What's next?** <one item from the measured results, e.g. the largest miss category>
+**What's next?** Most held-out investigation families were excluded because their first action was an
+engineering analysis, almost all of them from a single analysis that names several hundred
+vehicle and system combinations ([held_out.excluded_families.numerator] of
+[held_out.excluded_families.denominator] families excluded for any reason). The next test is at that level, with a new freeze and
+a new held-out year.
