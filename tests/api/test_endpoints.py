@@ -293,6 +293,27 @@ def test_git_sha_prefers_env(monkeypatch):
     assert api.git_sha() == "feedbeef"
 
 
+@pytest.mark.parametrize(
+    ("text", "served"),
+    [
+        # A9: a manufacturer employee named in a complaint (shape of the live finding, made-up name)
+        ("THE LETTER FROM MS. JANE DOE OF EXAMPLE MOTORS DATED", "THE LETTER FROM [NAME] OF EXAMPLE MOTORS DATED"),
+        ("MR. ROE EXPLAINED THE REPAIR", "[NAME] THE REPAIR"),
+        ("CALLED MRS. ROE AND WAITED", "CALLED [NAME] AND WAITED"),
+        ("SEEN BY DR. ROE", "SEEN BY [NAME]"),
+        ("SPOKE TO MR JOHN ROE CALLED BACK", "SPOKE TO [NAME] CALLED BACK"),
+        # MS/DR without a period, a part name after MR/MRS, or a common word after it: not a person
+        ("TOOK IT TO MR TIRE TWICE", "TOOK IT TO MR TIRE TWICE"),
+        ("THE MRS CONTROL UNIT FAILED", "THE MRS CONTROL UNIT FAILED"),
+        ("DRIVING IN MS IN JUNE", "DRIVING IN MS IN JUNE"),
+        ("PARKED ON OAK DR. AND THEN", "PARKED ON OAK DR. AND THEN"),
+        ("THE ENGINE MISS FIRED", "THE ENGINE MISS FIRED"),
+    ],
+)
+def test_excerpt_scrubs_honorific_names(text, served):
+    assert api.excerpt(text) == served
+
+
 def test_excerpt_limits():
     assert api.excerpt("a " * 10) == "a a a a a a a a a a"
     long = api.excerpt("word " * 200)

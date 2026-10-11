@@ -4,14 +4,18 @@ Restart memory for session rr-A. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 21:00 ET
-- Branch / HEAD: a/data-api @ see `git log -1` (A8 PR to main)
-- Last origin/main merged: 82ba637 (PR #12; freeze-v1 = dd6b439)
+- Updated: 2026-10-10 22:45 ET
+- Branch / HEAD: a/data-api @ see `git log -1` (A9 PR to main)
+- Last origin/main merged: 90f454c (PR #10; live site runs 90f454c)
 - Contract version: 1.0.0 (doc-only clarifications dffb361; ready to tag contract-v1 at dffb361)
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a (main config.yaml) / LDATE_PLUS_7 (decided A3)
-- Mode: waiting(A8 PR review/merge → B re-runs evaluate + export with held-out labels; then A9 after rc1) since 21:00; no recall_radar/data change after freeze-v1
+- Mode: waiting(A9 PR review/merge → D deploys; rc1) since 22:45; no recall_radar/data change after freeze-v1
 
 ## Done (task id → commit → evidence)
+- A9 → field check vs live http://64.177.53.230 (90f454c): every Results metric (value, n of d, CI) both periods + 21 replays (title, banner, frame count) = exports/demo → 120 passed, 0 failed (Python-computed expected strings, Playwright)
+- A9 redaction → 1,004 live-served excerpts: 0 email/phone/VIN, all ≤ 400 chars; 1 person name after an honorific → `scrub_names` in the API (serving time; data code is a freeze-v1 pipeline input): 332 stored texts change; re-scan 0 names. DATA_NOTES 'A9'
+- Gate 3 pending item → `RR_RAW_DIR=~/rr-raw make test-real` → data 3 passed (incl. raw-dir lock + real redaction), method 1, api 4
+- PR #11 (D) as C stand-in → requested changes ee23882 (EA exclusion wording; repro compares 4 files, not every file)
 - A8 → review/match_labels_heldout.csv: 15 of 15 candidate pairs (3 families: PE21010 air bags, PE21021 fuel pump, PE21023 Passenger Play), all not_related; window sizes equal B's window_count for all 15; B's `candidates.load_labels`/`review_state` → 15 labeled of 15. Held-out evaluate NOT run by A (B's one-shot)
 - PR #12 (B test-only) → `Reviewed 7f9968c: ok` (296 passed with freeze-v1 present; check_freeze → freeze-v1, pipeline revision dd6b439)
 - PR #7 merged at 4425bb2 (B: "Reviewed 4425bb2: ok"), incl. DuckDB memory cap 79f76bc
@@ -39,7 +43,7 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - none
 
 ## Next (in order)
-1. A8 held-out labels (after B9), A9 displayed-vs-exported check overnight
+1. After D deploys the A9 fix: re-run the excerpt scan + field check on the URL. Then A8 held-out labels (after B9), A9 displayed-vs-exported check overnight
 
 ## Last passing commands (exact)
 - `make check` after merging main a775d09 → ruff clean, 271 passed, web 72 passed, secrets 0, claims 0, ownership 0 violations
