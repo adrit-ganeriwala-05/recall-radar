@@ -4,9 +4,9 @@ Restart memory for session rr-C. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 23:50 ET (by a stand-in session on Person A's Mac while C's session was out of quota; C resumes 22:30)
+- Updated: 2026-10-11 01:15 ET (by a stand-in session on Person A's Mac while C's session was out of quota; C resumes 22:30)
 - Branch / HEAD: c/web @ see `git log -1` (stand-in commits: ca03073 merge main, 738e88a fixes, status; PR #5 merged at 22e781a; then main f4eac57 fast-forward + verdict margin fix) · PR #10
-- Last origin/main merged: 2d3b0a1 (PR #15 A9 live)
+- Last origin/main merged: aed57f4 (PR #20)
 - Contract version: 1.0.0
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a (main) / LDATE_PLUS_7
 - Mode: C9 done; only C8 hallway test left (needs a person) since 23:50
@@ -29,6 +29,7 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 
 - Stand-in 19:30 → PR #3 review `Reviewed e69d362: ok` + 5 follow-ups (posted on GitHub): D's integration on real data 13 passed / 8 skipped; Caddy-layout API-down browser check (static dist, 502 on /api) desktop + phone 16/16 — this is the offline /demo check with the real bundle
 - Stand-in 20:00 → PR #9 review (D's submission copy) + verdict margin fix in `web/src/format.ts`: `(0.3 - 0.2) * 100` is 9.999999999999998 in JS, so a gap of exactly 10 points read "10.0 points above chance … do not show"; the gap is now rounded to 6 decimals first (same answer as the Decimal rule in `scripts/fill_numbers.py`). New hand-derived test in `web/src/reframe.test.tsx`. `npm --prefix web run test` → 73 passed; typecheck clean
+- Stand-in 01:15 → spec audit gap closed (PROJECT_SPEC §7/§8 "every miss listed with its monthly counts"): each vehicle in a results case row links to `/issue-for?make&model&year&system` (new `IssueForPage`), which opens that vehicle's issue page for the investigated system (monthly counts vs baseline) or says plainly that no complaint was filed under it. Hero card heading gap fixed. New `web/src/misses-monthly.test.tsx` (5). `npm --prefix web run test` → 106 passed; typecheck clean. Real data: 24 sampled miss links (both periods) → 9 issue pages with monthly counts, 15 plain 'no complaints' messages, 0 dead ends; D's smoke 2 passed; 38/38 browser checks
 - Stand-in 23:50 → **C9 final captures** from the live site (main 2d3b0a1, real data, names scrubbed): `BASE_URL=http://64.177.53.230 npm --prefix web run capture` → shots 1–7 ok, 1080p .webm + .png, 23 MB, on Person A's Mac in web/test-results/captures (gitignored; hand to D for D9). The hero issue page (shot 7) has 0 excerpts the pending address scrub (PR #17) would change, so no re-capture is needed after #17. Shot 8 (Wi-Fi off + make serve) is filmed by hand
 - Stand-in 23:00 → C9 dry run vs the live real-data site (90f454c): `BASE_URL=http://64.177.53.230 npm --prefix web run capture` → shots 1–7 ok (1080p .webm + .png in web/test-results/captures, gitignored). Shot 6 now holds 7 s on the verdict sentence before scrolling the misses (D's shot list, PR #11). C8 polish pass on the stills: labels right; cosmetic only — provenance chips show in the header and again on the page; the hero card has extra space above its heading. Final captures: after D deploys A9 (PR #15: names scrubbed from served excerpts, shot 7) / rc1
 - Stand-in 22:00 → merged main f324b00 (exports/demo now committed): `make check` → 296 passed, web 100 passed (agreement tests run on the committed exports), 0 violations. Browser on the final exports (real DB, live build), desktop + phone: live 38/38, API down 38/38 (held-out sample now measured 0 of 20; verdict 3.1 points below chance; hero labelled development). D's smoke vs the same server: 2 passed (no longer skipped: a hero exists)
