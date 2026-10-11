@@ -1,0 +1,10 @@
+{
+  "name": "recall-radar-photon-sidecar",
+  "private": true,
+  "type": "module",
+  "description": "F9 Photon Spectrum sidecar runtime (owner D). Code: recall_radar/messaging/photon_ts/sidecar.ts (A).",
+  "dependencies": {
+    "spectrum-ts": "12.10.1",
+    "tsx": "4.20.6"
+  }
+}
