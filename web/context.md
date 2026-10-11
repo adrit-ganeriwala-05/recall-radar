@@ -78,13 +78,29 @@ The full spec from the user is in the **Appendix** below. It is authoritative.
   - One fix: `charts/chart-loading-label.tsx` import `../components/shimmering-text` became `../shimmering-text` (registry path bug).
 - Status: `npx tsc --noEmit` passes with 0 errors. `npx vitest run` gives 307 passed: the old 209, plus `copy.test.ts` banned-word scans of the new files (one test per file).
 
-**Not done yet** (everything below):
-- No chart has been replaced.
-- No `src/charts/theme.ts`.
-- No MotionConfig or motion usage.
-- No dark-only theme.
-- No new tests.
-- No browser inspection.
+**Status update (later the same day): the chart work is implemented** (commit `d004e53` on `c/charts-wip`):
+- **Charts** (`web/src/charts/`):
+  - **Code:** `ChartFrame` (title, description, states, table toggle, mount-on-visible), `ComplaintTimeline` (Bklit `ComposedChart`), `IssueDistribution` (horizontal `BarChart`), `CoverageComparison` (grouped horizontal `BarChart` + Bklit `Legend`), `LeadTimeScatter` (`ScatterChart`); `layers.tsx` holds the month/day axes, bar tags, keyboard explorers (sliders that drive Bklit's tooltip), marker buttons with tooltips, recall lines and held-out outlines.
+  - **Data and wrappers:** `data.ts` (pure mappings), `theme.ts`, `types.ts`, lazy wrappers in `index.tsx`.
+  - **Removed:** `components/BarChart.tsx`.
+- **Pages:**
+  - Replay, issue and vehicle use the composed chart.
+  - The vehicle page also has `SummaryMetrics` cards and the top-5 issue chart.
+  - Results has the coverage comparison (both periods fetched, never combined) and the lead-time scatter, which replaces the binned histogram.
+- **Motion:** `web/src/ui/motion.ts`, with `useMotionPresets()` for reduced motion.
+  - `MotionConfig reducedMotion="user"` and the route fade are in `App.tsx`.
+  - The drawer has a slide and a backdrop.
+  - Cards, buttons, tabs and states use the presets.
+- **Dark-only product theme** in `styles.css` (AA ratios listed in its header).
+- **Hook kept for D's smoke test:** marker elements keep hidden ▲/◆ + label text. Visible glyphs are ● / ◆ / │.
+- **Tests:**
+  - `src/charts/charts.test.tsx` is new;
+  - replay, recall-marker and additions tests were updated for the new markup and spec changes (no weakened assertions);
+  - `src/test/setup.ts` stubs `ResizeObserver`, `IntersectionObserver` and `matchMedia`, and preloads the chart modules.
+- **Results:** `npx tsc --noEmit` passes. `npx vitest run` gives 339 passed. `npm run build` passes, and no chart library is in the main chunk.
+- **Not done:**
+  - **Browser inspection** at the 12 widths and 200% zoom (`C:\Users\adrit\rr-scratch\charts-check.cjs` against the fixture build on :4190). It is blocked by Windows loopback port exhaustion (`ERR_ADDRESS_IN_USE`); rerun it when ports are free.
+  - **D's `web/e2e`** needs a real API with data (no local DB).
 
 ### Findings needed for the work
 **Existing charts:**

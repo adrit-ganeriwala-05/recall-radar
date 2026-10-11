@@ -56,7 +56,8 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - Docs: `web/presentation/ARCHITECTURE.md` (§9 audit, §10 F1–F9, §11 choreography), `RELEASE.md`.
 - Release needs D: one deploy.sh step (RELEASE.md), and a decision on shipping after the cutoff.
 - Last runs (exact): `npx vitest run` (web) -> 209 passed @ 4a8c8ba; presentation `npm run e2e` @ pre-typography tree -> 82 passed, 3 failed (axe scrollable region, hero entrance end-state check, resize sweep timeout), all three fixed after that run, full suite NOT rerun since (user asked to stop test runs); GPU project choreography 16 passed earlier. Product fixture build checks (scratch scripts): 90 route x size checks 0 problems, fonts-blocked 20 loads 0 problems, F8 print 1 page.
-- In progress next: product charts -> Bklit UI (visx/motion via shadcn registry from GitHub, ui.bklit.com unreachable) + Framer Motion; product goes dark-only; Tailwind scoped without preflight (user decisions 2026-10-11).
+- Product charts -> Bklit UI + Framer Motion: implemented on `c/charts-wip` (d004e53; see web/context.md). tsc 0, vitest 339 passed, build ok. Browser inspection at 12 widths blocked by Windows port exhaustion; D's e2e needs the real API.
+- (earlier plan) In progress next: product charts -> Bklit UI (visx/motion via shadcn registry from GitHub, ui.bklit.com unreachable) + Framer Motion; product goes dark-only; Tailwind scoped without preflight (user decisions 2026-10-11).
 
 ## Next (in order)
 1. On C's Windows machine: `git fetch origin && git switch c/web && git pull --ff-only` (local c/web 981ae41 fast-forwards; it had no uncommitted work). Read `docs/handoffs/20261010-1915-C-to-C-standin-takeover.md`.
