@@ -4,14 +4,15 @@ Restart memory for session rr-A. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 22:45 ET
+- Updated: 2026-10-10 23:40 ET
 - Branch / HEAD: a/data-api @ see `git log -1` (A9 PR to main)
-- Last origin/main merged: 90f454c (PR #10; live site runs 90f454c)
+- Last origin/main merged: 2d3b0a1 (PR #15 A9 names, live)
 - Contract version: 1.0.0 (doc-only clarifications dffb361; ready to tag contract-v1 at dffb361)
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a (main config.yaml) / LDATE_PLUS_7 (decided A3)
-- Mode: waiting(A9 PR review/merge → D deploys; rc1) since 22:45; no recall_radar/data change after freeze-v1
+- Mode: waiting(B review + D deploy of the address scrub PR) since 23:40
 
 ## Done (task id → commit → evidence)
+- A9 post-deploy (2d3b0a1 live): 1,007 served excerpts → 0 names, 0 email/phone/VIN; 10620901 served with [NAME]. Found street suffixes the ingest rule lacks (WAY, PIKE, LOOP, …) → `scrub_addresses` in the API (1,871 texts), new PR
 - A9 → field check vs live http://64.177.53.230 (90f454c): every Results metric (value, n of d, CI) both periods + 21 replays (title, banner, frame count) = exports/demo → 120 passed, 0 failed (Python-computed expected strings, Playwright)
 - A9 redaction → 1,004 live-served excerpts: 0 email/phone/VIN, all ≤ 400 chars; 1 person name after an honorific → `scrub_names` in the API (serving time; data code is a freeze-v1 pipeline input): 332 stored texts change; re-scan 0 names. DATA_NOTES 'A9'
 - Gate 3 pending item → `RR_RAW_DIR=~/rr-raw make test-real` → data 3 passed (incl. raw-dir lock + real redaction), method 1, api 4

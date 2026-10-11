@@ -78,5 +78,12 @@ the more cautious basis, as B also suggested in the PR #4 review. Every screen t
 - Known residual: "MS" without a period followed by a surname is not scrubbed, because "MS" is far
   more often Mississippi. Moving `scrub_names` into ingest is a post-hackathon change (needs a new
   freeze; the DB would be rebuilt).
+- Post-deploy re-scan (main 2d3b0a1 live): 1,007 served excerpts → 0 names; the found complaint shows [NAME].
+  It flagged a street address with a suffix the ingest rule lacks ("<number> AUTO PARK WAY", a dealer).
+  The rule knows STREET…HIGHWAY but not WAY, PIKE, LOOP, FREEWAY, EXPRESSWAY, TURNPIKE, PLAZA, SQUARE;
+  some matches are homes ("<number> <name> WAY"). `scrub_addresses` in the API adds them, with the
+  ingest rule's speed/distance exclusions, and skips phrases (a common word between number and
+  suffix: "2009 ALL THE WAY"). 1,871 stored texts change; a sample of 30 scrubbed spans is all
+  addresses or highway exits. Known miss: "<number> THE <name> WAY".
 - Displayed-vs-exported: `RR_RELEASE=1` integration against the live site and the browser field
   checks are recorded in docs/status/A.md.

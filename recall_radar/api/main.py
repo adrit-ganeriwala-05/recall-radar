@@ -153,8 +153,32 @@ def scrub_names(text: str) -> str:
     return _HONORIFIC.sub(_scrub_honorific, text)
 
 
+# Same shape as the ingest address rule (a number, 1-4 words, a street suffix; speeds and distances
+# excluded), for the suffixes that rule lacks. A9 found "<number> <name> WAY" and "... PIKE" served.
+_ADDRESS_EXTRA = re.compile(
+    r"\b\d{1,6}(?!\s*(?:MPH|MILES?|MI|KM|KPH|KMH|FEET|FT|YARDS?|MINUTES?|HOURS?|DAYS?|RPMS?|AM|PM)\b)"
+    r"((?:\s+[A-Za-z0-9.'-]+){1,4}?)\s+(?:WAY|PIKE|LOOP|FREEWAY|EXPRESSWAY|TURNPIKE|PLAZA|SQUARE|SQ)\b\.?",
+    re.IGNORECASE,
+)
+# A common word between the number and the suffix means a phrase, not a street name
+# ("2009 ALL THE WAY", "19 WHILE DRIVING ON THE FREEWAY").
+_NOT_A_STREET = _NOT_A_NAME | frozenset(
+    "ALL ANY DRIVING EACH ENTERING EXITING HALF LANE LANES LEFT MERGING ONE ONLY OTHER PART RIGHT SAME WHOLE WRONG".split()
+)
+
+
+def _scrub_address(m: re.Match[str]) -> str:
+    words = {w.strip(".,'-").upper() for w in m.group(1).split()}
+    return m.group(0) if words & _NOT_A_STREET else "[ADDRESS]"
+
+
+def scrub_addresses(text: str) -> str:
+    """Replace street addresses whose suffix the ingest rule does not know with [ADDRESS]."""
+    return _ADDRESS_EXTRA.sub(_scrub_address, text)
+
+
 def excerpt(text: str | None) -> str:
-    text = scrub_names(" ".join((text or "").split()))
+    text = scrub_addresses(scrub_names(" ".join((text or "").split())))
     if len(text) <= EXCERPT_CHARS:
         return text
     cut = text[: EXCERPT_CHARS - 1]

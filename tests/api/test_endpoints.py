@@ -314,6 +314,26 @@ def test_excerpt_scrubs_honorific_names(text, served):
     assert api.excerpt(text) == served
 
 
+@pytest.mark.parametrize(
+    ("text", "served"),
+    [
+        # A9: suffixes the ingest address rule lacks (made-up addresses)
+        ("CALLED THE DEALER (1234 AUTO PARK WAY, SOMETOWN, CA)", "CALLED THE DEALER ([ADDRESS], SOMETOWN, CA)"),
+        ("I LIVE AT 56 ELM WAY NEAR", "I LIVE AT [ADDRESS] NEAR"),
+        ("SHOP AT 8814 OLD MILL PIKE.", "SHOP AT [ADDRESS]"),
+        ("AT 12 MARKET PLAZA TODAY", "AT [ADDRESS] TODAY"),
+        # speeds, distances and times are not addresses
+        ("DOING 65 MPH ON THE FREEWAY", "DOING 65 MPH ON THE FREEWAY"),
+        ("20 MILES EACH WAY", "20 MILES EACH WAY"),
+        ("AROUND 2000 RPMS THE ONLY WAY", "AROUND 2000 RPMS THE ONLY WAY"),
+        ("SINCE 2009 ALL THE WAY DOWN", "SINCE 2009 ALL THE WAY DOWN"),
+        ("ON 3/19 WHILE DRIVING ON THE FREEWAY", "ON 3/19 WHILE DRIVING ON THE FREEWAY"),
+    ],
+)
+def test_excerpt_scrubs_addresses_the_ingest_rule_misses(text, served):
+    assert api.excerpt(text) == served
+
+
 def test_excerpt_limits():
     assert api.excerpt("a " * 10) == "a a a a a a a a a a"
     long = api.excerpt("word " * 200)
