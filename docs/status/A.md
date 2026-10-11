@@ -4,14 +4,18 @@ Restart memory for session rr-A. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 20:10 ET
-- Branch / HEAD: a/data-api @ see `git log -1` (PR #7 to main)
-- Last origin/main merged: a775d09 (PR #5 merge)
+- Updated: 2026-10-10 21:00 ET
+- Branch / HEAD: a/data-api @ see `git log -1` (A8 PR to main)
+- Last origin/main merged: 82ba637 (PR #12; freeze-v1 = dd6b439)
 - Contract version: 1.0.0 (doc-only clarifications dffb361; ready to tag contract-v1 at dffb361)
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a (main config.yaml) / LDATE_PLUS_7 (decided A3)
-- Mode: waiting(freeze-v1 → B9 held-out candidates for A8) since 19:00
+- Mode: waiting(A8 PR review/merge → B re-runs evaluate + export with held-out labels; then A9 after rc1) since 21:00; no recall_radar/data change after freeze-v1
 
 ## Done (task id → commit → evidence)
+- A8 → review/match_labels_heldout.csv: 15 of 15 candidate pairs (3 families: PE21010 air bags, PE21021 fuel pump, PE21023 Passenger Play), all not_related; window sizes equal B's window_count for all 15; B's `candidates.load_labels`/`review_state` → 15 labeled of 15. Held-out evaluate NOT run by A (B's one-shot)
+- PR #12 (B test-only) → `Reviewed 7f9968c: ok` (296 passed with freeze-v1 present; check_freeze → freeze-v1, pipeline revision dd6b439)
+- PR #7 merged at 4425bb2 (B: "Reviewed 4425bb2: ok"), incl. DuckDB memory cap 79f76bc
+- PR #8 re-review → `Reviewed ac3edf1: ok` (delta since f7606e1 = main merge + B status; dev run with labels: sample 2/20, other counts unchanged; held_out REFUSED exit 2)
 - D's reviewer note (PR #3): DuckDB `memory_limit` per API process, default 1GB (`RR_DUCKDB_MEMORY_LIMIT`) → local commit, pushed after PR #7 merges → `uv run pytest tests/api` all passed; real_data tests/api 3 passed 1 skipped; 2 workers on the real DB + D's integration → 0 failed
 - PR #8 (B pre-freeze) → `Reviewed f7606e1: ok`; asked PR #7 to merge before freeze-v1 (labels are a pipeline input); recommended freeze also cover recall_radar/data
 - C stand-in: PR #9 (D submission copy) `Reviewed a9fb133: ok`; TS verdict margin float bug fixed on c/web 34c212e → PR #10
@@ -35,7 +39,7 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - none
 
 ## Next (in order)
-1. Push the memory-cap commit as a new PR once PR #7 merges. A8 held-out labels (after B9), A9 displayed-vs-exported check overnight
+1. A8 held-out labels (after B9), A9 displayed-vs-exported check overnight
 
 ## Last passing commands (exact)
 - `make check` after merging main a775d09 → ruff clean, 271 passed, web 72 passed, secrets 0, claims 0, ownership 0 violations
