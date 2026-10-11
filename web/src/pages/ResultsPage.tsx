@@ -19,6 +19,7 @@ import {
   statusText,
   vehicleText,
 } from "../format";
+import { issueForHref } from "./IssueForPage";
 
 const PERIODS: { id: Period; label: string }[] = [
   { id: "development", label: "Development period" },
@@ -65,7 +66,18 @@ function CaseTable({ cases }: { cases: EvalCase[] }) {
                 {c.earliest_action_no} <span className="small">({c.inv_type}, {c.family_id})</span>
               </th>
               <td>{dateText(c.investigation_open_date)}</td>
-              <td>{c.vehicles.length ? c.vehicles.map(vehicleText).join("; ") : "Several makes"}</td>
+              <td>
+                {c.vehicles.length
+                  ? c.vehicles.map((v, i) => (
+                      <span key={vehicleText(v)}>
+                        {i > 0 && "; "}
+                        <Link to={issueForHref(v, c.comp_system)} title={`Monthly counts: ${vehicleText(v)}, ${c.comp_system}`}>
+                          {vehicleText(v)}
+                        </Link>
+                      </span>
+                    ))
+                  : "Several makes"}
+              </td>
               <td>{c.comp_system}</td>
               <td>
                 {statusText(c.status)}
