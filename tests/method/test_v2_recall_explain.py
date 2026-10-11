@@ -358,3 +358,20 @@ def test_review_sheet_and_finalize_from_the_command_line(tmp_path, capsys):
     assert "finalize: 0 accepted rows downgraded" in capsys.readouterr().out
     assert X.main(["--campaign-db", str(base), "--out", str(tables), "--finalize", "--verdicts", str(tmp_path / "none.csv")]) == 0
     assert "fallback only (2 campaigns)" in capsys.readouterr().out
+
+
+def test_committed_verdict_file_is_valid_and_every_line_is_bs_reading():
+    verdicts = X.load_verdicts()  # review/explanation_verdicts.csv; raises on a bad line
+    if not verdicts:
+        pytest.skip("no explanation has been reviewed yet")
+    assert set(verdicts.values()) <= {"accept", "reject"}
+    for key in verdicts:
+        campno, sha, model, prompt_version = key.split("|")
+        assert key.startswith(campno) and len(sha) == 64 and model and prompt_version
+    import csv
+
+    with open(X.VERDICTS_CSV, newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    assert len(rows) == len(verdicts)  # one line per explanation
+    assert all(r["note"].strip() for r in rows)  # every verdict says what it rests on
+    assert all(r["cache_key"].split("|")[0] == r["campno"] for r in rows)

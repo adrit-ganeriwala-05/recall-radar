@@ -4,13 +4,13 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-11 02:58 ET
-- **v2 in progress (PRD_v2 FINAL, feature cutoff 03:45).** All of B's v2 code is on main. Work branch: b/v2-gateb (docs: Gate B evidence map + this file).
-- Last origin/main merged: 4398728 (03:15 train: #44 #41 #45 #46), merged 02:57 ET
+- Updated: 2026-10-11 03:33 ET
+- **v2: feature cutoff 03:45 reached; no new feature work after it.** Open PR: b/f2-verdicts (#54: F2 verdict file, Gate B evidence, this file).
+- Last origin/main merged: c5fd95b (03:10 train: #52 F2 finalize, #51 evidence map, #49, #50), merged 03:12 ET
 - Contract: 1.1.0 on main
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a / LDATE_PLUS_7
 - Freeze: `freeze-v1` → dd6b439. v2 code of B lives in `recall_radar/b_v2/` because the freeze covers all of `recall_radar/method/`.
-- Mode: implementing (v2). Next for me: second PR after contract 1.1 is on main (apply F3 to exports/demo/replays); reviews for A (F1, F6, F9) and C (search UI); Gate B at 03:45.
+- Mode: waiting(A's review of #54 and D's merge; then D runs `--finalize` on the F2 tables; Gate B 03:45–04:20, deploy 04:20, Gate P 04:45 — since 03:33)
 
 ## Done (task id → commit → evidence)
 - B1 → fe38661 → `tests/fixtures/method/*.csv` + hand calculations in `docs/METHOD_NOTES.md` §4
@@ -105,14 +105,21 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - **After the 03:15 window, main 4398728** (02:58): `make check` → 541 passed, 1 xfailed; web 204; `make protected` → 0 problem(s); `python -m recall_radar.b_v2.protect data/for_D_1c8dd4b/recall_radar.duckdb data/v2/recall_radar_v2.duckdb` → PROTECTED TABLES: IDENTICAL; real_data `tests/method` + `tests/api` with `RR_DATA_DIR=data/v2` → 14 passed.
 - Gate B evidence map for D: `docs/handoffs/20261011-0207-B-to-D-gate-b-evidence-map.md` (38 named tests, all present on main).
 
+- 02:57–03:33: main 2f4bf0f (D's DB deploy scripts), c5fd95b (03:10 train). Reviews: `Reviewed 5b3cd8f: ok` / `9c5e3d8` (#49), `fa5a59d` / `fcd5310` (#50), `491f2b0` (#53 train).
+- **F2 changed from fallback-only**: D ran `recall_explain --generate` (model gemini-3.1-flash-lite, 300 campaigns, human-supplied key) → 72 accepted by the validator. I added `--finalize` / `--review-sheet` (#52, A ok 41d6997, on main): an accepted row is served only if it re-validates against the serving DB and `review/explanation_verdicts.csv` has B's accept for its exact cache key. **I read all 72 against the official text: 44 accept, 28 reject** (first pass 58 / 14; A's review found three I had let through; I then applied one rule to every row) (8 dropped a condition, 2 dropped "serious injury or death", 2 wrong cause, 1 "can not" → "may not", 1 "have a defect" in our own words). Verdict file in PR #54; all 72 keys recompute from the official text in my v2 DB. D then runs `--finalize --verdicts review/explanation_verdicts.csv`: expected "28 accepted rows downgraded", "accepted 44 of 13673".
+- F9 rehearsal (I am the reviewer): messaging app in-process, signed webhooks, mock sender, real analysis API on the v2 DB, 21 messages + edge cases: flows and numbers correct (414 complaints, 23 groups, 11 campaigns for the test vehicle). Finding posted on #34: after DELETE the acknowledgement row stays in `outbox` with the chat id in clear. The Photon line cannot be added from my machine (no Photon CLI, no Photon credentials here; D holds them) — told the human.
+- `GEMINI_API_KEY` appeared in my `.env` (added by the human); I have not used it and made no model call.
+- **Gate B evidence** captured at c5fd95b: `logs/gate_b_B.txt`, committed as `docs/handoffs/20261011-*-B-to-D-gate-b.md`: protect IDENTICAL; five protected sha256 == certificate; `make protected` 0 problems; `check_freeze` → freeze-v1; `uv run pytest tests/method` → 268 passed, 1 xfailed; real_data method → 8 passed; symptom eval 30 of 30, precision at 5 = 73 of 110.
+
 ## In progress
 - none
 
 ## Next (in order)
-1. Protection duty at each remaining window (02:30, 03:15, 03:45) and at Gate B: `python -m recall_radar.b_v2.protect <baseline> <v2>` + the five protected sha256 + `uv run pytest tests/method`.
-2. Reviews owed as they arrive: A's follow-up for on-demand replay markers; anything A or C re-push; C's #36 is reviewed by A and D (my data note is addressed).
-3. Gate B 03:45: post protected checksums (baseline vs v2), `exports/demo` hashes, `uv run pytest tests/method`, `python -m recall_radar.b_v2.symptom_eval --db …` output, F2 status line ("fallback only (13673 campaigns)"). Stop new work at 03:45.
-4. F2 stays fallback unless a Gemini key, the SDK and a model name arrive (asked the human at 00:49; no answer yet).
+1. #54 merged → D runs `--finalize` with the verdict file on the run's tables; if it does not print "28 accepted rows downgraded" / "accepted 44 of 13673", the tables are not the ones the sheet came from: stop.
+2. After D assembles the served v2 DB: A (or I, if the file reaches me) reruns `python -m recall_radar.b_v2.protect <baseline> <served v2>`; must be IDENTICAL.
+3. After the 04:20 deploy: from my machine, `RR_BASE_URL=https://www.recall-radar.us RR_RELEASE=1 uv run pytest tests/integration -m real_data`, and spot-check that an accepted explanation shows the AI label above the official text and a rejected one shows official text only.
+4. Gate P (04:45, D + A): re-review A's fix for the DELETE row; I do not hold Photon credentials.
+5. No change under the freeze without `freeze-v2`. No new feature work after 03:45.
 
 ## Last passing commands (exact)
 - `uv run pytest` → 127 passed, 1 deselected (the deselected one is the real_data test) at the tip after A's review changes @ 02263ed
