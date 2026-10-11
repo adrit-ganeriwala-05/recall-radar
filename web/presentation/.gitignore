@@ -1,0 +1,6 @@
+# Owner: C. Build outputs of the presentation app (never committed).
+.next/
+out/
+node_modules/
+next-env.d.ts
+*.tsbuildinfo
