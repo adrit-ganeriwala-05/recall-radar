@@ -1,0 +1,89 @@
+/* Owner: C. Tailwind v4 for the Bklit chart components only: theme + utilities, deliberately WITHOUT
+   Tailwind's preflight reset, so every existing product page keeps the styling in styles.css.
+   One chart design system: the tokens below are the only chart colours (dark product theme), exposed
+   under the CSS variable names the Bklit components read; src/charts/theme.ts mirrors them for code. */
+@layer theme, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@source "./";
+
+:root {
+  /* Chart design tokens. */
+  --chart-background: #111315;
+  --chart-surface: #1c2024;
+  --chart-text: #f5f2eb;
+  --chart-text-secondary: #aeb6be;
+  --chart-cobalt: #638fff;
+  --chart-amber: #f4b860;
+  --chart-recall: #e06c75;
+  --chart-gray: #8a939e;
+  --chart-grid: rgba(174, 182, 190, 0.14);
+  --chart-tooltip-background: #1c2024;
+  --chart-tooltip-border: rgba(174, 182, 190, 0.24);
+
+  /* The same tokens under the names Bklit reads. */
+  --foreground: var(--chart-text);
+  --muted-foreground: var(--chart-text-secondary);
+  --chart-foreground: var(--chart-text-secondary);
+  --chart-foreground-muted: var(--chart-text-secondary);
+  --chart-label: var(--chart-text-secondary);
+  --chart-line-primary: var(--chart-cobalt);
+  --chart-line-secondary: var(--chart-text-secondary);
+  --chart-indicator-color: var(--chart-cobalt);
+  --chart-indicator-secondary-color: var(--chart-text-secondary);
+  --chart-crosshair: rgba(174, 182, 190, 0.35);
+  --chart-brush-border: var(--chart-grid);
+  --chart-tooltip-foreground: var(--chart-text);
+  --chart-tooltip-muted: var(--chart-text-secondary);
+  --chart-1: var(--chart-cobalt);
+  --chart-2: var(--chart-gray);
+  --chart-3: var(--chart-amber);
+  --chart-4: var(--chart-recall);
+  --chart-5: var(--chart-text-secondary);
+  --chart-marker-background: var(--chart-surface);
+  --chart-marker-border: var(--chart-tooltip-border);
+  --chart-marker-foreground: var(--chart-text);
+  --chart-marker-badge-background: var(--chart-cobalt);
+  --chart-marker-badge-foreground: var(--chart-background);
+  --chart-segment-background: rgba(99, 143, 255, 0.08);
+  --chart-segment-line: var(--chart-cobalt);
+  --chart-scale-01: var(--chart-surface);
+  --chart-scale-02: #2a3140;
+  --chart-scale-03: #3b4a6b;
+  --chart-scale-04: #4d6bb5;
+  --chart-scale-05: var(--chart-cobalt);
+  --chart-scale-pattern-color: var(--chart-background);
+  --legend: var(--chart-text);
+  --legend-foreground: var(--chart-text);
+  --legend-muted: var(--chart-surface);
+  --legend-muted-foreground: var(--chart-text-secondary);
+  --legend-track: rgba(174, 182, 190, 0.14);
+  --shimmering-color: var(--chart-text-secondary);
+}
+
+/* Colour utilities used inside the Bklit components (text-chart-label, bg-chart-tooltip-background, …). */
+@theme inline {
+  --color-legend: var(--legend);
+  --color-legend-foreground: var(--legend-foreground);
+  --color-legend-muted: var(--legend-muted);
+  --color-legend-muted-foreground: var(--legend-muted-foreground);
+  --color-legend-track: var(--legend-track);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-background: var(--chart-background);
+  --color-chart-foreground: var(--chart-foreground);
+  --color-chart-foreground-muted: var(--chart-foreground-muted);
+  --color-chart-crosshair: var(--chart-crosshair);
+  --color-chart-grid: var(--chart-grid);
+  --color-chart-tooltip-background: var(--chart-tooltip-background);
+  --color-chart-tooltip-foreground: var(--chart-tooltip-foreground);
+  --color-chart-tooltip-muted: var(--chart-tooltip-muted);
+  --color-chart-marker-background: var(--chart-marker-background);
+  --color-chart-marker-border: var(--chart-marker-border);
+  --color-chart-marker-foreground: var(--chart-marker-foreground);
+  --color-chart-label: var(--chart-label);
+  --font-sans: var(--font-body);
+}
