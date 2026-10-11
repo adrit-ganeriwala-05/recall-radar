@@ -73,6 +73,8 @@ case.** 21 replay files are in `exports/demo/replays/`; every one carries the re
   `pending` to `measured`; all 15 pairs were labeled not related, so no manual match was added) and three cases
   carry `review_label`. Every other row of `results.csv` and `cases.csv` is the same.
 - `RR_RAW_DIR=~/rr-raw make repro` at 3000b65 → exit 0, MATCH ×4 (log `logs/repro_freeze_v1_labels.log`).
-- D: the database that goes with this export is the one built by this run (its `eval_metric.run_id` values end in
-  `1c8dd4b`). B's human sends it; the SHA-256 is in the team chat line. A database with ids ending in `dd6b439`
-  is the earlier run and does not match the committed export.
+- D: the database that goes with this export is the one `make repro` built from a clean clone at 3000b65. It
+  holds only this run (`eval_metric.run_id` values end in `1c8dd4b`; one config hash in `alert_episode`), and it is
+  the file whose rerun matched the committed export. B's human sends it; its SHA-256 is in the team chat line, so
+  check `shasum -a 256` after the transfer. Place it as `$RR_DATA_DIR/recall_radar.duckdb`. B's own working
+  database has the same current rows plus leftovers from earlier development runs, so it is not the one sent.
