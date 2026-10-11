@@ -15,6 +15,19 @@ Who owns what: `docs/OWNERSHIP.md`. Schedule and gates: `docs/EXECUTION_PLAN.md`
   lives saved, crashes prevented, owners (we count distinct complaints).
 - Model-level recall campaigns never imply an individual car's status. Always link
   https://www.nhtsa.gov/recalls for VIN lookup.
+- **v2 (from 2026-10-11 00:15):** `docs/PRD_v2.md` (FINAL) wins over any prompt. Report features only
+  with its statuses (verified, implemented-unverified, fallback(<what>), disabled, blocked(<input>),
+  not started); only `verified` is called shipped.
+- **Verbatim text:** official NHTSA text (recall summary, consequence, remedy, complaint excerpts) and a
+  user's own draft (F5) are shown verbatim as plain text, attributed, never rewritten and never
+  banned-word filtered. Our authored copy and any model-generated text still pass the banned-word check.
+- **Scoped exceptions (PRD_v2 only):** Gemini calls only as F2 batch and inside the F9 messaging service,
+  never at request time in the web app; browser storage only `localStorage["rr.mycar.v1"]` (F4);
+  a VIN lives in memory only and goes to NHTSA vPIC only after the notice and an explicit click (F6);
+  messaging state only in `messaging.sqlite` (F9). Everything in PRD_v2 §3 stays forbidden.
+- **Privacy wording:** while messaging is disabled, "no accounts, no tracking cookies, no analytics" is
+  true. If F9 is enabled, README and submission drop every "no user data" claim and state what
+  messaging stores (PRD_v2 §6) in the same commit that enables it.
 
 ## 2. Ownership
 - Edit only paths you own (`docs/OWNERSHIP.md`). Need a change elsewhere? Write a handoff

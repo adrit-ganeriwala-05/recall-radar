@@ -35,7 +35,8 @@ on_vm() {
 
   install -m 644 "$stage/Caddyfile" /etc/caddy/Caddyfile
   install -d /etc/systemd/system/caddy.service.d
-  printf '[Service]\nEnvironment=RR_SITE=%s\n' "$site" >/etc/systemd/system/caddy.service.d/recall-radar.conf
+  # quoted: a site list such as "example.org, www.example.org, :80" contains spaces
+  printf '[Service]\nEnvironment="RR_SITE=%s"\n' "$site" >/etc/systemd/system/caddy.service.d/recall-radar.conf
   install -m 644 "$stage/recall-radar.service" /etc/systemd/system/recall-radar.service
   systemctl daemon-reload
   RR_SITE="$site" caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile

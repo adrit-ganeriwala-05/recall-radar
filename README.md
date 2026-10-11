@@ -10,8 +10,14 @@ anything before NHTSA staff did. To check a specific car, use NHTSA's VIN lookup
 https://www.nhtsa.gov/recalls.
 
 ## Status
-In progress. Results are shown only after the evaluation script produces them
-(`exports/demo/results.csv`); this README contains no performance numbers.
+Release `rc1`. Live demo: https://recall-radar.us (one Vultr VM; the app makes no outbound calls).
+Detector settings were frozen under the git tag `freeze-v1` before the held-out year was run once.
+On that year the alerts did not come earlier for investigated vehicles than for comparable vehicles
+that were never investigated; the results page states the comparison with chance in one sentence.
+All numbers live in `exports/demo/results.csv`; this README contains none.
+
+What the app is for: reading a vehicle's full complaint history and seeing what was public before
+each NHTSA investigation.
 
 ## Run it
 ```bash
@@ -21,12 +27,22 @@ bash scripts/fetch_sources.sh all   # NHTSA public files into data/raw (~240 MB)
 make pipeline                       # ingest → detect → match → evaluate → export
 make serve                          # http://127.0.0.1:8000 — works offline
 ```
+Without `make pipeline`, `make serve` still shows the results page and the demo replay from the
+committed `exports/demo/` bundle; vehicle search needs the database the pipeline builds.
+
+Reproduce the published results (clean clone, full re-ingest, byte-for-byte comparison of the result
+files) at the tag that produced them: `git checkout baseline-v1 && RR_RAW_DIR=<raw files> make verify-snapshot
+&& RR_RAW_DIR=<raw files> make repro`. Later commits change pipeline inputs (contract version,
+dependencies), so a rerun there gets new run ids; the committed result files themselves do not change.
+Deploying to a VM: `deploy/README.md`.
 
 ## Data
 Public NHTSA Office of Defects Investigation files (complaints, investigations, recalls) from
 https://www.nhtsa.gov/nhtsa-datasets-and-apis. Personal fields are dropped at parse time and
-complaint text is redacted before storage. Current files reflect later corrections, so a replay
-shows complaints whose current records say they were available by each date.
+complaint text is redacted before storage; served excerpts are scrubbed again for titled names
+and street addresses. A complaint counts as public seven days after NHTSA received it (the "added
+to file" date equals the received date for almost all complaints), and every screen labels the
+replay a "received-date experiment". Current files reflect later corrections.
 
 ## Disclosure
 Planning documents, contracts and coordination files were generated with Claude (Anthropic)
