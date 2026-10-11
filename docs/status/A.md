@@ -4,12 +4,12 @@ Restart memory for session rr-A. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-11 01:55 ET (PRD v2 build)
-- Branch / HEAD: a/f3-ondemand (F3 links on on-demand replays); #25 #26 #28 #30 #31 #34 merged (train #39 → main faa12f9)
-- Last origin/main merged: b8960cd (train #39 + #36)
+- Updated: 2026-10-11 02:55 ET (PRD v2 build)
+- Branch / HEAD: all A v2 PRs merged: #25 #26 #28 #30 #31 #34 (train #39), #44 #45 (train #47 → main 4398728)
+- Last origin/main merged: 4398728 (train #47)
 - Contract version: 1.1.0 (PR #25, main ba839ba)
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a (main config.yaml) / LDATE_PLUS_7 (decided A3)
-- Mode: building (cutoff 03:45); next windows 02:30 / 03:15; Gate B 03:45–04:20
+- Mode: feature work done; Gate B 03:45–04:20 (evidence on the deployed v2 DB after D's F2 run)
 
 ## PRD v2 (2026-10-11) — statuses use PRD §9 words; none is `verified` until Gate B
 | Feature | A's part | PR | Status | Evidence |
@@ -21,7 +21,8 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 | F7/F8 | /api/symptom-index, /api/report | #30 merged | implemented-unverified | 25 vehicles report = /api/vehicle; ≤ 0.25 MB gzip |
 | F9 | messaging service | #34 merged | disabled (mock-verified; Gate P pending) | 29 tests; router=keywords; documents=fallback(link) |
 | extra | replay fallback (B 2306) | #26 merged | implemented-unverified | 21/21 byte-identical; 40 random 200 |
-| F3 | on-demand replays get B's recall links (B's #38 follow-up) | a/f3-ondemand | implemented-unverified | v2 DB: 60 random on-demand → 200, non-recall content = builder 60/60, 14 issue + 407 vehicle links, median 0.23 s; 21 exported = file; real test asserts campno+link (v2 + baseline DB); make check exit 0 (541 passed) |
+| F3 | on-demand replays get B's recall links (B's #38 follow-up) | #44 merged | implemented-unverified (B ok fec38ff) | v2 DB: 60 random on-demand → 200, non-recall content = builder 60/60, 14 issue + 407 vehicle links, median 0.23 s; 21 exported = file; real test asserts campno+link (v2 + baseline DB); make check exit 0 (541 passed) |
+| Gate B DB | v2 DB from serving 5d708042… (request #45, handoff 0300) | #45 merged | done | my build 9c248297… (main b887cba): protect IDENTICAL; counts = B's; real_data data+api+method 17 passed 0 skipped; local serve RR_RELEASE=1 integration 21 passed; Playwright 8 passed 4 skipped (phone PDF); 360 px 46 pages 0 overflow; F3 6/6. D chose B's equivalent file c3a40246… (D: 17/17 baseline tables identical) and runs F2 into a copy → A re-checks that file |
 
 ## Done (task id → commit → evidence)
 - rc1 blocker (B): mixed-case titled names → `_HONORIFIC` case-insensitive title + capitalised name words (B's pattern), 6 sentence-case tests; full scan 346 → 0 (0 served), 388 texts change
