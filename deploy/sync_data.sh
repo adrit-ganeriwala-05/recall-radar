@@ -2,25 +2,28 @@
 # D5: upload the DuckDB file the API reads to the VM. Owner: D.
 # Usage: bash deploy/sync_data.sh [path/to/recall_radar.duckdb] [--allow-large] [--yes]
 #        make sync-data [DB=...]
-# Prints size, SHA-256 and snapshot_id, uploads to data/recall_radar.duckdb.new, verifies the
+# The VM file keeps the source name: recall_radar.duckdb (baseline) or recall_radar_v2.duckdb (PRD_v2: the
+# v2 DB sits beside the baseline so a rollback to baseline-v1 still finds its own file).
+# Prints size, SHA-256 and snapshot_id, uploads to data/<name>.new, verifies the
 # SHA-256 on the VM, swaps it in atomically and restarts the service if it is running.
 # Plan (EXECUTION_PLAN D5): <= 500 MB -> this script. Larger -> upload the canonical zips and run
 # `make pipeline` on the VM instead (deploy/README.md), unless --allow-large is given.
 set -euo pipefail
 
 on_vm() {
-  local want=$1 data=/opt/recall-radar/data got
-  got=$(sha256sum "$data/recall_radar.duckdb.new" | cut -d' ' -f1)
+  local want=$1 name=${2:-recall_radar.duckdb} data=/opt/recall-radar/data got
+  case $name in recall_radar.duckdb | recall_radar_v2.duckdb) ;; *) echo "ERROR: unexpected DB name $name" >&2; exit 1 ;; esac
+  got=$(sha256sum "$data/$name.new" | cut -d' ' -f1)
   [ "$got" = "$want" ] || { echo "ERROR: checksum mismatch on the VM ($got != $want)" >&2; exit 1; }
-  chown rr:rr "$data/recall_radar.duckdb.new"
-  chmod 644 "$data/recall_radar.duckdb.new"
-  mv -f "$data/recall_radar.duckdb.new" "$data/recall_radar.duckdb"
-  echo "$(date -u +%FT%TZ) data $want" >>/opt/recall-radar/DEPLOYS.log
+  chown rr:rr "$data/$name.new"
+  chmod 644 "$data/$name.new"
+  mv -f "$data/$name.new" "$data/$name"
+  echo "$(date -u +%FT%TZ) data $name $want" >>/opt/recall-radar/DEPLOYS.log
   if systemctl is-active --quiet recall-radar; then
     systemctl restart recall-radar
     echo "service restarted on the new data"
   fi
-  echo "VM data: $(ls -lh "$data/recall_radar.duckdb" | awk '{print $5}') sha256 $got"
+  echo "VM data: $name $(ls -lh "$data/$name" | awk '{print $5}') sha256 $got"
 }
 
 if [ "${1:-}" = --on-vm ]; then
@@ -58,6 +61,8 @@ if [ "$MB" -gt 500 ] && [ "$ALLOW_LARGE" = 0 ]; then
   die "${MB} MB > 500 MB: per the plan, run the pipeline on the VM instead (deploy/README.md 'Large database'), or re-run with --allow-large"
 fi
 rr_confirm "Upload it to $RR_VM and swap it in (restarts the service)?"
-rr_rsync --partial --progress "$DB" "$RR_VM:$RR_APP_DIR/data/recall_radar.duckdb.new"
-rr_run_on_vm "${BASH_SOURCE[0]}" "$SHA"
+NAME=$(basename "$DB")
+case $NAME in recall_radar.duckdb | recall_radar_v2.duckdb) ;; *) die "the file must be named recall_radar.duckdb (baseline) or recall_radar_v2.duckdb (v2), not $NAME" ;; esac
+rr_rsync --partial --progress "$DB" "$RR_VM:$RR_APP_DIR/data/$NAME.new"
+rr_run_on_vm "${BASH_SOURCE[0]}" "$SHA" "$NAME"
 info "data synced; record in docs/status/D.md: D5 rsync, ${MB} MB, sha256 ${SHA:0:12}, snapshot $SNAP"
