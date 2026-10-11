@@ -244,3 +244,25 @@ def test_status_line_and_no_frozen_import():
     assert X.status_line({"fallback": 12}) == "fallback only (12 campaigns)"
     assert X.status_line({"accepted": 3, "fallback": 9}) == "accepted 3 of 12"
     assert "recall_radar.method" not in Path(X.__file__).read_text()
+
+
+def test_sources_take_official_text_from_the_v2_table_and_cover_every_campaign(tmp_path):
+    db = tmp_path / "v2.duckdb"
+    con = duckdb.connect(str(db))
+    con.execute("CREATE TABLE recall_campaign (campno VARCHAR, make VARCHAR, report_date DATE)")  # baseline: no text
+    con.executemany("INSERT INTO recall_campaign VALUES (?, 'SYNTHCO', NULL)", [["18V100000"], ["19E200000"], ["20V123000"]])
+    con.execute("CREATE TABLE recall_campaign_v2 (campno VARCHAR, make VARCHAR, model VARCHAR, model_year INTEGER, summary VARCHAR, consequence VARCHAR, remedy VARCHAR)")
+    con.executemany("INSERT INTO recall_campaign_v2 VALUES (?, 'SYNTHCO', 'M', ?, ?, ?, ?)", [
+        [SRC.campno, 2019, SRC.summary, SRC.consequence, SRC.remedy], [SRC.campno, 2020, SRC.summary, SRC.consequence, SRC.remedy],
+        ["18V100000", 2018, "Certain vehicles may lose a wheel nut.", None, None],
+    ])  # fmt: skip
+    con.close()
+    got = {s.campno: s for s in X.load_sources(db)}
+    assert sorted(got) == ["18V100000", "19E200000", "20V123000"]  # every campaign of either table, once
+    assert got["20V123000"] == SRC and got["18V100000"].summary == "Certain vehicles may lose a wheel nut."
+    assert not got["19E200000"].has_text  # an equipment campaign has no card text: it stays fallback
+    out_db = tmp_path / "t.duckdb"
+    assert X.main(["--campaign-db", str(db), "--out", str(out_db)]) == 0
+    con = duckdb.connect(str(out_db), read_only=True)
+    assert con.execute("SELECT count(*), count(*) FILTER (WHERE status = 'fallback') FROM recall_explanation").fetchone() == (3, 3)
+    con.close()

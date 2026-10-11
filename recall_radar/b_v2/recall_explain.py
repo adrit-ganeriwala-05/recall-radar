@@ -356,18 +356,26 @@ def write_table(db_path: Path | str, rows: Iterable[Explanation]) -> dict[str, i
 
 
 def load_sources(db_path: Path | str) -> list[Source]:
-    """One Source per campaign in `recall_campaign`. Official text is read only if the table has those columns."""
+    """One Source per campaign. Official text comes from A's `recall_campaign_v2` (v2 database) when it
+    exists, else from `recall_campaign` if that table has the text columns, else there is no text."""
     import duckdb
 
     con = duckdb.connect(str(db_path), read_only=True)
     try:
-        cols = {r[0] for r in con.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'recall_campaign'").fetchall()}
-        if not set(SOURCE_FIELDS) <= cols:
-            return [Source(str(r[0])) for r in con.execute("SELECT DISTINCT CAST(campno AS VARCHAR) FROM recall_campaign ORDER BY 1").fetchall()]
-        rows = con.execute(
-            "SELECT CAST(campno AS VARCHAR), max(summary), max(consequence), max(remedy) FROM recall_campaign GROUP BY 1 ORDER BY 1"
-        ).fetchall()
-        return [Source(*r) for r in rows]
+        columns: dict[str, set[str]] = {}
+        for table, column in con.execute(
+            "SELECT table_name, column_name FROM information_schema.columns WHERE table_name IN ('recall_campaign', 'recall_campaign_v2')"
+        ).fetchall():
+            columns.setdefault(table, set()).add(column)
+        campnos = set()
+        for table in columns:
+            campnos |= {str(r[0]) for r in con.execute(f"SELECT DISTINCT CAST(campno AS VARCHAR) FROM {table}").fetchall()}
+        text: dict[str, tuple] = {}
+        for table in ("recall_campaign", "recall_campaign_v2"):  # the v2 table wins when both have text
+            if set(SOURCE_FIELDS) <= columns.get(table, set()):
+                rows = con.execute(f"SELECT CAST(campno AS VARCHAR), max(summary), max(consequence), max(remedy) FROM {table} GROUP BY 1").fetchall()
+                text |= {r[0]: r[1:] for r in rows}
+        return [Source(c, *text.get(c, (None, None, None))) for c in sorted(campnos)]
     finally:
         con.close()
 
