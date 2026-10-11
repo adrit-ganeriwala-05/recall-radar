@@ -4,13 +4,13 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-10 22:11 ET (clock times before 17:10 in this file were estimates; `git log` has the true times)
-- Branch / HEAD: b/method = main bb1852f + tests, notes, status and the B10 record (PR open; check `git log`)
-- Last origin/main merged: bb1852f (PR #15 and #17: A's serving-time name and address scrubs), merged 22:11 ET, no conflicts
+- Updated: 2026-10-10 23:07 ET (clock times before 17:10 in this file were estimates; `git log` has the true times)
+- Branch / HEAD: b/method = main aed57f4 + a handoff request and this file (check `git log`). PR #20 (tests, notes) merged → main aed57f4.
+- Last origin/main merged: aed57f4, fast-forward about 22:20 ET
 - Contract version: 1.0.0
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a / LDATE_PLUS_7
 - **Freeze: tag `freeze-v1` → dd6b439, pushed 20:22 ET (Saketh approved the tag push). The held-out year has been run once. Nothing under `recall_radar/method/`, `config.yaml`, `review/system_map.csv`, `review/keywords.txt` may change without `freeze-v2`.**
-- Mode: watching (Saketh, about 22:10: keep validating the repository with new tests and edge cases). Waiting on D's `rc1` tag for the final B10 run — since 22:11
+- Mode: watching (Saketh, about 22:10: keep validating the repository with new tests and edge cases). Waiting on D's `rc1` tag for the final B10 run, and on A/D's decision about the replay links — since 23:07
 
 ## Done (task id → commit → evidence)
 - B1 → fe38661 → `tests/fixtures/method/*.csv` + hand calculations in `docs/METHOD_NOTES.md` §4
@@ -83,6 +83,13 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
   - New tests: `tests/method/test_edge_cases.py` (13: interval limits, periods with nothing early or nothing eligible, the episode rule as properties, score ordering, row-order independence), `tests/method/test_committed_bundle.py` (10: MANIFEST hashes, contracts, tables re-derived from the JSON, counts re-derived from the case list, audit, hero, replays, banned words), `tests/method/test_real_invariants.py` (4, real_data: alert rule on every stored episode, 300 groups recounted, headline family counts recounted in SQL for both periods).
   - `make check` → 344 passed, 33 deselected, 1 xfailed; web 100 passed; 0 ownership violations. `RR_DATA_DIR=data/for_D_1c8dd4b uv run pytest -m real_data tests/method` → 5 passed.
   - Found, recorded in `docs/METHOD_NOTES.md` §11, not fixed (frozen code): `evaluate` stops with a KeyError for a period in which no family opened at all (strict xfail test as a tripwire; neither configured period is empty); interval limits at 0 of n / n of n are exact only to about 2e-16; 3 of the 21 exported replays show "after official action" because the alert also followed another family's earlier investigation (the hero is not one of them).
+
+- Watch round 2 (22:20–23:07), all read-only:
+  - Cold start: fresh clone of main aed57f4 → `make setup` exit 0, `make test` exit 0 (344 passed, web 100), `make serve` without a database serves `/results`, `/api/results`, `/api/hero`, `/api/replay/E-0167` (200) and answers 503 "not built yet" for vehicle search, as D's README says. `git archive` of main without `.git`: `uv sync --locked && uv run pytest` → 344 passed.
+  - Live site (bb1852f): all 26 `/demo/` files hash-match the committed MANIFEST; `/api/results` ×2, `/api/hero` and 21 replays equal the committed files; `RR_RELEASE=1` integration → 21 passed.
+  - Web source and built bundle: no banned claim word.
+  - D's PR #19 (README, Devpost hash): statements checked, notes posted on the PR. C's PR #21 (miss links): all 2,983 case-vehicle links followed through the API → 1,662 issue pages, 1,321 plain messages, 0 error states; notes posted.
+  - **Found: most replay links are dead ends.** The API serves only the 21 exported replays; the other 2,511 alert episodes return 404 "No replay exported", and the vehicle page, the issue page and 60 of the 85 linked results rows point at them. Request with a tested API-only fix (replays built on demand, byte-identical to the exported ones, about 0.2 s each): `docs/handoffs/20261010-2306-B-to-A-C-D-replay-links.md`.
 
 ## In progress
 - none
