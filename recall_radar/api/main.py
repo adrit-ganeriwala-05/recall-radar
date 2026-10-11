@@ -10,6 +10,8 @@ Environment (all optional):
     RR_CONFIG       config.yaml path (default: repo config.yaml)
     RR_WEB_DIST     built web app (default: web/dist); served at / with SPA fallback
     RR_GIT_SHA      deployed commit; else the REVISION file at the repo root; else git; else null
+    RR_DB_FILE      DuckDB file name in RR_DATA_DIR (default: recall_radar_v2.duckdb if present, else
+                    recall_radar.duckdb); the v2 file is the baseline copy + new tables (PRD v2 §1)
     RR_DUCKDB_MEMORY_LIMIT  DuckDB memory cap per API process (default 1GB). DuckDB's own default
                     is 80% of RAM per process; with `--workers 2` on the 4 GB VM that oversubscribes.
 
@@ -208,10 +210,19 @@ def git_sha() -> str | None:
 # --------------------------------------------------------------------------- settings
 
 
+def db_file(data_dir: Path) -> Path:
+    """RR_DB_FILE if set; else the v2 DB (baseline copy + F1/F2/F7 tables) when it exists; else the baseline."""
+    name = os.environ.get("RR_DB_FILE", "").strip()
+    if name:
+        return data_dir / name
+    v2 = data_dir / "recall_radar_v2.duckdb"
+    return v2 if v2.is_file() else data_dir / "recall_radar.duckdb"
+
+
 class Settings:
     def __init__(self) -> None:
         self.mode: Literal["cached", "fixture"] = "fixture" if os.environ.get("RR_MODE") == "fixture" else "cached"
-        self.db_path = Path(os.environ.get("RR_DATA_DIR", "data")) / "recall_radar.duckdb"
+        self.db_path = db_file(Path(os.environ.get("RR_DATA_DIR", "data")))
         self.exports = Path(os.environ.get("RR_EXPORTS_DIR", REPO_ROOT / "exports"))
         self.config_path = Path(os.environ.get("RR_CONFIG", REPO_ROOT / "config.yaml"))
         self.web_dist = Path(os.environ.get("RR_WEB_DIST", REPO_ROOT / "web" / "dist"))
@@ -225,6 +236,46 @@ class Settings:
             if p.is_file():
                 return p
         return None
+
+
+# --------------------------------------------------------------------------- F1 recall cards
+
+
+def explanation_for(row: dict | None) -> C.RecallExplanation:
+    """B's recall_explanation row -> contract model; anything missing or invalid is shown as fallback
+    (official text only, never labeled AI)."""
+    fallback = C.RecallExplanation(status="fallback", sentences=[])
+    if not row or row.get("status") != "accepted":
+        return fallback
+    try:
+        return C.RecallExplanation(status="accepted", sentences=json.loads(row.get("sentences") or "[]"),
+                                   model=row.get("model"), prompt_version=row.get("prompt_version"))
+    except (ValueError, TypeError):
+        return fallback
+
+
+def recall_cards(store: Store, make: str, model: str, year: int) -> list[C.RecallCampaign]:
+    """One card per campno for exactly this make/model/year (PRD F1.1). v2 DB: official text + flags;
+    baseline DB: campno, component and report date only."""
+    if store.has_table("recall_campaign_v2"):
+        rows = store.rows(
+            """SELECT campno, component, report_date, report_date_basis, summary, consequence, remedy,
+                      park_it, park_outside, source_url, snapshot_id
+               FROM recall_campaign_v2 WHERE make = ? AND model = ? AND model_year = ? ORDER BY campno""",
+            [make, model, year])
+        expl = {}
+        if rows and store.has_table("recall_explanation"):
+            expl = {r["campno"]: r for r in store.rows(
+                "SELECT campno, status, sentences, model, prompt_version FROM recall_explanation "
+                "WHERE list_contains(?, campno)", [[r["campno"] for r in rows]])}
+        return [C.RecallCampaign(**r, explanation=explanation_for(expl.get(r["campno"]))) for r in rows]
+    if not store.has_table("recall_campaign"):
+        return []
+    return [C.RecallCampaign(campno=r["campno"], component=r["component"], report_date=r["report_date"])
+            for r in store.rows(
+                """SELECT campno, min(component) AS component, min(report_date) AS report_date
+                   FROM recall_campaign WHERE make = ? AND model = ? AND model_year = ?
+                   GROUP BY campno ORDER BY campno""", [make, model, year])]
 
 
 # --------------------------------------------------------------------------- data store
@@ -558,13 +609,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             )
             for c in sorted(comps, key=lambda c: (-c["n"], c["comp_system"]))
         ]
-        recalls = []
-        if store.has_table("recall_campaign"):
-            recalls = [C.RecallCampaign(campno=r["campno"], component=r["component"], report_date=r["report_date"])
-                       for r in store.rows(
-                           """SELECT campno, min(component) AS component, min(report_date) AS report_date
-                              FROM recall_campaign WHERE make = ? AND model = ? AND model_year = ?
-                              GROUP BY campno ORDER BY campno""", [mk, md, year])]
+        recalls = recall_cards(store, mk, md, year)
         return ok(C.VehicleResponse(provenance=store.provenance, vehicle=key, distinct_complaints=sum(counts.values()),
                                     components=components, monthly=monthly, recall_campaigns=recalls,
                                     note=RECALL_NOTE))
