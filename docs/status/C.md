@@ -48,8 +48,15 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - Stand-in 19:10 → 738e88a: Gate 1 reframe (results verdict from JSON coverage vs chance + 10-point margin; PRELIMINARY note on development until freeze-v1; landing reframe line linking Results); hero note no longer matches D's `SYNTHETIC TEST DATA` locator; live build ships no fixture JSON (D's note); "Try again" only for 503/500; rates read "n over d". New `web/src/reframe.test.tsx` (hand-derived strings). `npm --prefix web run test` → 72 passed.
 - Real-data check by the stand-in (scratch, nothing committed): main's API (c70db51) on the full 2014–2023 DB with B's detect/match at config 0c26e23e0a3a + B's real development export (20 replays): C's agreement tests 93 passed (real results + 20 replays); browser check 18/18 PASS (2011 HYUNDAI SONATA vehicle with 6 episode markers, episode evidence 13 == window_count 13, replay ▲@12 before ◆@35, verdict "8.9% vs 8.9% … same as chance … do not show …", PRELIMINARY note, config hash, held-out not-run, no Try again on 404). D's smoke: "2 skipped" (its replay step skips the whole test while /api/hero is 503 — expected until freeze).
 
-## In progress
-- none
+## In progress — Observatory presentation (`web/presentation/`, branch `c/observatory`, not pushed)
+- Phases 1–4 implemented (architecture, 3D scene, HTML UI, scroll choreography); **awaiting the human's
+  final review and deployment approval. Not deployed. Not a ledger feature; built after the 03:45 cutoff.**
+- HEAD: 4a8c8ba (product typography) on 91366cc (Phase 4 + visual pass + presentation typography). Earlier: 34db33a P1 · f67b33b P2 · ccd6f99 audit · 067c70b fixes ·
+  4ed24de merge main · f3105a5 P3 · e0d86da test. origin/main has moved since 4ed24de: merge before any PR.
+- Docs: `web/presentation/ARCHITECTURE.md` (§9 audit, §10 F1–F9, §11 choreography), `RELEASE.md`.
+- Release needs D: one deploy.sh step (RELEASE.md), and a decision on shipping after the cutoff.
+- Last runs (exact): `npx vitest run` (web) -> 209 passed @ 4a8c8ba; presentation `npm run e2e` @ pre-typography tree -> 82 passed, 3 failed (axe scrollable region, hero entrance end-state check, resize sweep timeout), all three fixed after that run, full suite NOT rerun since (user asked to stop test runs); GPU project choreography 16 passed earlier. Product fixture build checks (scratch scripts): 90 route x size checks 0 problems, fonts-blocked 20 loads 0 problems, F8 print 1 page.
+- In progress next: product charts -> Bklit UI (visx/motion via shadcn registry from GitHub, ui.bklit.com unreachable) + Framer Motion; product goes dark-only; Tailwind scoped without preflight (user decisions 2026-10-11).
 
 ## Next (in order)
 1. On C's Windows machine: `git fetch origin && git switch c/web && git pull --ff-only` (local c/web 981ae41 fast-forwards; it had no uncommitted work). Read `docs/handoffs/20261010-1915-C-to-C-standin-takeover.md`.
