@@ -1,0 +1,12 @@
+# Every 15 minutes: each vehicle is still fetched at most once a day (job.MONITOR_EVERY_S); the other runs only
+# flush digests that quiet hours (21:00-08:00 local) held back. Owner: D.
+[Unit]
+Description=Recall Radar messaging monitor every 15 minutes (F9.6)
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=15min
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target
