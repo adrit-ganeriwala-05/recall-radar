@@ -9,6 +9,8 @@ import { MyCarControls } from "../components/MyCar";
 import { RecallCards } from "../components/RecallCard";
 import { SymptomSearch } from "../components/SymptomSearch";
 import { VinBox } from "../components/VinBox";
+import { buyerReportHref } from "../features/buyer-report/BuyerReportRoute";
+import { reportHref } from "../features/report/ReportRoute";
 import { features } from "../features";
 import type { MonthlyPoint, VehicleResponse } from "../contracts.gen";
 import { dateText, monthText, plural, vehicleText } from "../format";
@@ -42,6 +44,11 @@ function Vehicle({ data }: { data: VehicleResponse }) {
     <>
       <h1>{vehicleText(data.vehicle)}</h1>
       {features.myCar && <MyCarControls vehicle={data.vehicle} />}
+      <p className="vehicle-actions">
+        {features.buyerReport && <Link to={buyerReportHref(data.vehicle)}>Used-car complaint and recall summary</Link>}
+        {features.buyerReport && features.reportProblem && " · "}
+        {features.reportProblem && <Link to={reportHref(data.vehicle)}>Report a problem with this vehicle</Link>}
+      </p>
       <p className="big-number">
         <strong>{plural(data.distinct_complaints, "distinct complaint", "distinct complaints")}</strong> across all
         components
@@ -109,7 +116,7 @@ function Vehicle({ data }: { data: VehicleResponse }) {
       {features.symptomSearch && (
         <SymptomSearch
           vehicle={data.vehicle}
-          reportHref={`/report?${new URLSearchParams({ make: data.vehicle.make, model: data.vehicle.model, year: String(data.vehicle.model_year) })}`}
+          reportHref={reportHref(data.vehicle)}
         />
       )}
 
