@@ -1,0 +1,29 @@
+/* Owner: D. F8 buyer report: screen layout + a US Letter print layout that must fit one page. */
+.br { max-width: 48rem; line-height: 1.35; }
+.br h1 { margin: 0 0 0.25rem; font-size: 1.4rem; }
+.br h2 { margin: 0.9rem 0 0.3rem; font-size: 1.05rem; }
+.br-vehicle { font-size: 1.15rem; font-weight: 700; margin: 0 0 0.4rem; overflow-wrap: anywhere; }
+.br-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 0.25rem 1rem; margin: 0; }
+.br-meta dt { font-size: 0.8rem; font-weight: 600; }
+.br-meta dd { margin: 0; overflow-wrap: anywhere; }
+.br-list { margin: 0.2rem 0; padding-left: 1.2rem; }
+.br-list li { margin: 0.1rem 0; overflow-wrap: anywhere; }
+.br-clip { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.br-remedy { font-size: 0.85rem; }
+.br-small { font-size: 0.8rem; }
+.br-showing { font-size: 0.8rem; margin: 0.1rem 0 0; }
+.br-foot { margin-top: 0.8rem; border-top: 1px solid currentColor; padding-top: 0.3rem; }
+.br-foot p { margin: 0.2rem 0; overflow-wrap: anywhere; }
+.br-actions { margin: 0 0 1rem; }
+
+@media print {
+  @page { size: Letter; margin: 0.5in; }
+  body * { visibility: hidden !important; }
+  .br, .br * { visibility: visible !important; }
+  .br { position: absolute; left: 0; top: 0; width: 100%; max-width: none; font-size: 10pt; color: #000; }
+  .br a { color: #000; }
+  .br h1 { font-size: 15pt; }
+  .br h2 { font-size: 11pt; margin-top: 8pt; }
+  .br-actions, .br-noprint { display: none !important; }
+  .br section, .br li { break-inside: avoid; }
+}

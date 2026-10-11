@@ -10,6 +10,8 @@ Environment (all optional):
     RR_CONFIG       config.yaml path (default: repo config.yaml)
     RR_WEB_DIST     built web app (default: web/dist); served at / with SPA fallback
     RR_GIT_SHA      deployed commit; else the REVISION file at the repo root; else git; else null
+    RR_DB_FILE      DuckDB file name in RR_DATA_DIR (default: recall_radar_v2.duckdb if present, else
+                    recall_radar.duckdb); the v2 file is the baseline copy + new tables (PRD v2 §1)
     RR_DUCKDB_MEMORY_LIMIT  DuckDB memory cap per API process (default 1GB). DuckDB's own default
                     is 80% of RAM per process; with `--workers 2` on the 4 GB VM that oversubscribes.
 
@@ -35,6 +37,7 @@ from datetime import UTC, date, datetime
 from functools import cached_property
 from pathlib import Path
 from typing import Annotated, Any, Literal
+from urllib.parse import urlencode
 
 import duckdb
 import yaml
@@ -45,13 +48,20 @@ from fastapi.responses import FileResponse, JSONResponse, Response
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from recall_radar import contracts as C
+from recall_radar.b_v2 import recall_markers
 from recall_radar.method.config import config_hash as _config_hash
+from recall_radar.method.config import load_config
+from recall_radar.method.replay import replay_json
+from recall_radar.method.util import data_cutoff
+
+from .replay_fallback import replay_on_demand
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = REPO_ROOT / "contracts" / "fixtures" / "api"
 ALIASES = REPO_ROOT / "recall_radar" / "data" / "aliases.csv"
 CACHE_OK = "public, max-age=3600"
 EXCERPT_CHARS = 400
+SYMPTOM_DOCS = 2000  # PRD v2 F7.4: newest 2,000 distinct complaints per vehicle
 NHTSA_COMPLAINT_URL = "https://api.nhtsa.gov/complaints/odinumber?odinumber={}"
 RECALL_NOTE = (
     "Recall campaigns are listed by make, model and model year. They do not tell you whether a "
@@ -208,10 +218,19 @@ def git_sha() -> str | None:
 # --------------------------------------------------------------------------- settings
 
 
+def db_file(data_dir: Path) -> Path:
+    """RR_DB_FILE if set; else the v2 DB (baseline copy + F1/F2/F7 tables) when it exists; else the baseline."""
+    name = os.environ.get("RR_DB_FILE", "").strip()
+    if name:
+        return data_dir / name
+    v2 = data_dir / "recall_radar_v2.duckdb"
+    return v2 if v2.is_file() else data_dir / "recall_radar.duckdb"
+
+
 class Settings:
     def __init__(self) -> None:
         self.mode: Literal["cached", "fixture"] = "fixture" if os.environ.get("RR_MODE") == "fixture" else "cached"
-        self.db_path = Path(os.environ.get("RR_DATA_DIR", "data")) / "recall_radar.duckdb"
+        self.db_path = db_file(Path(os.environ.get("RR_DATA_DIR", "data")))
         self.exports = Path(os.environ.get("RR_EXPORTS_DIR", REPO_ROOT / "exports"))
         self.config_path = Path(os.environ.get("RR_CONFIG", REPO_ROOT / "config.yaml"))
         self.web_dist = Path(os.environ.get("RR_WEB_DIST", REPO_ROOT / "web" / "dist"))
@@ -225,6 +244,46 @@ class Settings:
             if p.is_file():
                 return p
         return None
+
+
+# --------------------------------------------------------------------------- F1 recall cards
+
+
+def explanation_for(row: dict | None) -> C.RecallExplanation:
+    """B's recall_explanation row -> contract model; anything missing or invalid is shown as fallback
+    (official text only, never labeled AI)."""
+    fallback = C.RecallExplanation(status="fallback", sentences=[])
+    if not row or row.get("status") != "accepted":
+        return fallback
+    try:
+        return C.RecallExplanation(status="accepted", sentences=json.loads(row.get("sentences") or "[]"),
+                                   model=row.get("model"), prompt_version=row.get("prompt_version"))
+    except (ValueError, TypeError):
+        return fallback
+
+
+def recall_cards(store: Store, make: str, model: str, year: int) -> list[C.RecallCampaign]:
+    """One card per campno for exactly this make/model/year (PRD F1.1). v2 DB: official text + flags;
+    baseline DB: campno, component and report date only."""
+    if store.has_table("recall_campaign_v2"):
+        rows = store.rows(
+            """SELECT campno, component, report_date, report_date_basis, summary, consequence, remedy,
+                      park_it, park_outside, source_url, snapshot_id
+               FROM recall_campaign_v2 WHERE make = ? AND model = ? AND model_year = ? ORDER BY campno""",
+            [make, model, year])
+        expl = {}
+        if rows and store.has_table("recall_explanation"):
+            expl = {r["campno"]: r for r in store.rows(
+                "SELECT campno, status, sentences, model, prompt_version FROM recall_explanation "
+                "WHERE list_contains(?, campno)", [[r["campno"] for r in rows]])}
+        return [C.RecallCampaign(**r, explanation=explanation_for(expl.get(r["campno"]))) for r in rows]
+    if not store.has_table("recall_campaign"):
+        return []
+    return [C.RecallCampaign(campno=r["campno"], component=r["component"], report_date=r["report_date"])
+            for r in store.rows(
+                """SELECT campno, min(component) AS component, min(report_date) AS report_date
+                   FROM recall_campaign WHERE make = ? AND model = ? AND model_year = ?
+                   GROUP BY campno ORDER BY campno""", [make, model, year])]
 
 
 # --------------------------------------------------------------------------- data store
@@ -283,6 +342,11 @@ class Store:
     @cached_property
     def config(self) -> dict:
         return yaml.safe_load(self.s.config_path.read_text(encoding="utf-8"))
+
+    @cached_property
+    def method_config(self) -> dict:
+        """config.yaml as the method code reads it (paths expanded, config_hash added)."""
+        return load_config(self.s.config_path)
 
     @cached_property
     def config_hash(self) -> str:
@@ -558,16 +622,89 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             )
             for c in sorted(comps, key=lambda c: (-c["n"], c["comp_system"]))
         ]
-        recalls = []
-        if store.has_table("recall_campaign"):
-            recalls = [C.RecallCampaign(campno=r["campno"], component=r["component"], report_date=r["report_date"])
-                       for r in store.rows(
-                           """SELECT campno, min(component) AS component, min(report_date) AS report_date
-                              FROM recall_campaign WHERE make = ? AND model = ? AND model_year = ?
-                              GROUP BY campno ORDER BY campno""", [mk, md, year])]
+        recalls = recall_cards(store, mk, md, year)
         return ok(C.VehicleResponse(provenance=store.provenance, vehicle=key, distinct_complaints=sum(counts.values()),
                                     components=components, monthly=monthly, recall_campaigns=recalls,
                                     note=RECALL_NOTE))
+
+    # ---- PRD v2 F7: symptom search index (the query itself never reaches this server)
+    @app.get("/api/symptom-index")
+    def symptom_index(make: Annotated[str, Query(min_length=1)], model: Annotated[str, Query(min_length=1)],
+                      year: Annotated[int, Query(ge=1949, le=2030)]) -> JSONResponse:
+        if s.mode == "fixture":
+            return fixture("symptom_index.json")
+        if not {"symptom_alias", "symptom_concept"} <= store.tables:
+            raise unavailable("Symptom search is not built into this database.")
+        mk = normalize(make)
+        md = store.resolve_model(mk, normalize(model))
+        docs = store.rows(
+            """SELECT d.odino, d.avail_date, d.descr_redacted,
+                      list(DISTINCT r.comp_system ORDER BY r.comp_system) AS systems
+               FROM complaint_doc d JOIN complaint_row r USING (odino)
+               WHERE d.make = ? AND d.model = ? AND d.model_year = ?
+               GROUP BY d.odino, d.avail_date, d.descr_redacted
+               ORDER BY d.avail_date DESC, CAST(d.odino AS BIGINT) DESC LIMIT ?""", [mk, md, year, SYMPTOM_DOCS])
+        if not docs:
+            raise not_found("No complaints for this vehicle in the data range.", make=mk, model=md, year=year)
+
+        def group_of(systems: list[str]) -> str | None:
+            named = [x for x in systems if x and x != "UNKNOWN OR OTHER"]
+            return make_group_id(mk, md, year, named[0]) if named else None
+
+        idx = C.SymptomIndex(
+            provenance=store.provenance, vehicle=C.VehicleKey(make=mk, model=md, model_year=year),
+            docs=[C.SymptomDoc(odino=str(r["odino"]), comp_systems=list(r["systems"]), avail_date=r["avail_date"],
+                               excerpt=excerpt(r["descr_redacted"]), group_id=group_of(list(r["systems"])),
+                               nhtsa_url=NHTSA_COMPLAINT_URL.format(r["odino"])) for r in docs],
+            aliases=[C.SymptomAlias(phrase=r["phrase"], concepts=list(r["concepts"]))
+                     for r in store.rows("SELECT phrase, concepts FROM symptom_alias ORDER BY phrase")],
+            concepts=[C.SymptomConcept(id=r["id"], label=r["label"], comp_systems=list(r["comp_systems"] or []),
+                                       terms=list(r["terms"] or []),
+                                       require_all=[list(g) for g in (r["require_all"] or [])],
+                                       exclude=list(r["exclude"] or []))
+                      for r in store.rows("SELECT * FROM symptom_concept ORDER BY id")],
+        )
+        return ok(idx)
+
+    # ---- PRD v2 F8: one-page buyer report data (B's selection, same counts as /api/vehicle)
+    @app.get("/api/report")
+    def report(make: Annotated[str, Query(min_length=1)], model: Annotated[str, Query(min_length=1)],
+               year: Annotated[int, Query(ge=1949, le=2030)]) -> JSONResponse:
+        if s.mode == "fixture":
+            return fixture("report.json")
+        try:
+            from recall_radar.b_v2.report_select import select_report_data
+        except ImportError as e:
+            raise unavailable("Report selection is not installed.") from e
+        mk = normalize(make)
+        md = store.resolve_model(mk, normalize(model))
+        sel = select_report_data(store.cursor(), mk, md, year)
+        if sel is None or sel.distinct_complaints == 0:
+            raise not_found("No complaints for this vehicle in the data range.", make=mk, model=md, year=year)
+        key = C.VehicleKey(make=mk, model=md, model_year=year)
+        vehicle_link = f"/vehicle?{urlencode({'make': mk, 'model': md, 'year': year})}"
+        cards = {c.campno: c for c in recall_cards(store, mk, md, year)}
+        groups = []
+        for g in sel.issue_groups:
+            gid = make_group_id(mk, md, year, g.comp_system)
+            groups.append(C.ReportGroup(
+                group=C.IssueGroup(group_id=gid, vehicle=key, comp_system=g.comp_system, sub_issue=None,
+                                   distinct_complaints=g.distinct_complaints, first_month=g.first_month,
+                                   last_month=g.last_month),
+                distinct_complaints=g.distinct_complaints, link=f"/issue/{gid}"))
+        data = C.ReportData(
+            provenance=store.provenance, vehicle=key,
+            complaint_date_range=C.DateRange(start=sel.complaint_date_first, end=sel.complaint_date_last),
+            snapshot_date=store.provenance.data_as_of, distinct_complaints=sel.distinct_complaints,
+            top_groups=groups, shown_n=len(groups), total_groups=sel.issue_groups_total,
+            investigations=[C.ReportInvestigation(action_no=i.action_no, inv_type=i.inv_type, open_date=i.open_date,
+                                                  subject=i.subject, link=vehicle_link) for i in sel.investigations],
+            total_investigations=sel.investigations_total,
+            campaigns=[cards.get(c.campno) or C.RecallCampaign(campno=c.campno, component=c.component,
+                                                               report_date=c.report_date) for c in sel.campaigns],
+            total_campaigns=sel.campaigns_total, selection_rule=sel.selection_rule,
+        )
+        return ok(data)
 
     # ---- issue
     @app.get("/api/issue/{group_id}")
@@ -656,8 +793,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if (FIXTURES / f"replay_{episode_id}.json").is_file():
                 return fixture(f"replay_{episode_id}.json")
             raise not_found("No replay for this alert episode.", episode_id=episode_id)
-        return export_json(f"replays/{episode_id}.json", C.Replay,
-                           not_found("No replay exported for this alert episode.", episode_id=episode_id))
+        missing = not_found("No replay for this alert episode.", episode_id=episode_id)
+        if s.export_file(f"replays/{episode_id}.json") is not None or not s.db_path.is_file():
+            return export_json(f"replays/{episode_id}.json", C.Replay, missing)
+        # not exported: build it from the database the same way the export does (B's request 2306)
+        if not {"alert_episode", "alert_match"} <= store.tables:
+            raise missing
+        built = replay_on_demand(store.cursor(), store.method_config, store.provenance, episode_id,
+                                 data_cutoff(store.method_config, "full"))
+        if built is None:
+            raise missing
+        text = replay_json(built)
+        if {"recall_campaign", "inv_family"} <= store.tables:
+            # F3: the same recall markers (campno + issue/vehicle link) as the exported replays (B's #38 note)
+            text = recall_markers.rewrite(store.cursor(), text)[0]
+        return ok(json.loads(text))
 
     @app.get("/api/results")
     def results(period: Period) -> JSONResponse:

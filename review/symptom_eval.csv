@@ -1,0 +1,31 @@
+query,expected_concept,hard_negative_concepts
+brakes make noise,brake_noise,brake_failure
+grinding sound when i brake,brake_noise,brake_failure
+squealing brakes,brake_noise,brake_failure
+brakes squeak when stopping,brake_noise,brake_failure
+brakes stopped working,brake_failure,brake_noise
+brake pedal goes to the floor,brake_failure,brake_noise
+car wont stop when i press the brake,brake_failure,brake_noise
+no brakes,brake_failure,brake_noise
+steering wheel shakes,steering_vibration,power_steering_loss
+steering wheel vibrates at highway speed,steering_vibration,power_steering_loss
+front end wobble,steering_vibration,power_steering_loss
+shimmy in the steering wheel,steering_vibration,power_steering_loss
+power steering stopped working,power_steering_loss,steering_vibration
+steering wheel is hard to turn,power_steering_loss,steering_vibration
+lost power steering while driving,power_steering_loss,steering_vibration
+steering got very stiff,power_steering_loss,steering_vibration
+door doesn't lock properly,door_wont_lock,door_opens_while_driving
+door won't lock,door_wont_lock,door_opens_while_driving
+power locks not working,door_wont_lock,door_opens_while_driving
+door lock is broken,door_wont_lock,door_opens_while_driving
+door opens while driving,door_opens_while_driving,door_wont_lock
+door flew open on the highway,door_opens_while_driving,door_wont_lock
+door will not stay closed,door_opens_while_driving,door_wont_lock
+engine stalls while driving,stall_while_driving,wont_start
+car shuts off while driving,stall_while_driving,wont_start
+engine dies at a stop light,stall_while_driving,wont_start
+lost power on the highway and the engine cut out,stall_while_driving,wont_start
+car won't start,wont_start,stall_while_driving
+engine will not crank,wont_start,stall_while_driving
+no start in the morning,wont_start,stall_while_driving

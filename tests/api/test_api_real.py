@@ -19,7 +19,7 @@ from recall_radar import contracts as C
 from recall_radar.api import main as api
 
 pytestmark = pytest.mark.real_data
-DB = Path(os.environ.get("RR_DATA_DIR", "data")) / "recall_radar.duckdb"
+DB = api.db_file(Path(os.environ.get("RR_DATA_DIR", "data")))  # same choice as the API (v2 file if present)
 
 
 @pytest.fixture(scope="module")
@@ -104,3 +104,42 @@ def test_vehicle_page_shows_redacted_excerpts(client):
             assert len(c["excerpt"]) <= 400
             for rx in (email, phone, vin):
                 assert not rx.search(c["excerpt"]), c["odino"]
+
+
+def test_v2_report_counts_equal_vehicle_and_symptom_index_size(client):
+    """PRD v2 F8.1 / F7.4 on real data: report counts equal /api/vehicle; index ≤ 2,000 docs and ≤ 1.5 MB gzip."""
+    import gzip
+
+    store = client.app.state.store
+    if not {"symptom_alias", "symptom_concept"} <= store.tables:
+        pytest.skip("not a v2 database (no symptom tables)")
+    pytest.importorskip("recall_radar.b_v2.report_select")
+    cur = store.cursor()
+    vs = cur.execute("SELECT make, model, model_year, count(*) FROM complaint_doc GROUP BY ALL ORDER BY 4 DESC").fetchall()
+    cur.close()
+    for mk, md, yr, n in vs[:3] + random.Random(20261011).sample(vs[3:], min(12, len(vs) - 3)):
+        v = C.VehicleResponse.model_validate(_json(client, "/api/vehicle", make=mk, model=md, year=yr))
+        rep = C.ReportData.model_validate(_json(client, "/api/report", make=mk, model=md, year=yr))
+        assert (rep.distinct_complaints, rep.total_groups, rep.total_campaigns) == (
+            v.distinct_complaints, len(v.components), len(v.recall_campaigns)), (mk, md, yr)
+        r = client.get("/api/symptom-index", params={"make": mk, "model": md, "year": yr})
+        idx = C.SymptomIndex.model_validate(r.json())
+        assert len(idx.docs) == min(n, 2000) and len(gzip.compress(r.content)) <= 1_500_000
+
+
+def test_every_alert_episode_has_a_replay(client):
+    """B's request 2306: replay links on vehicle/issue/results pages work for non-exported episodes;
+    exported ones are served from the bundle byte-for-byte."""
+    store = client.app.state.store  # the app's own connection (a second one with other settings is refused)
+    if "alert_episode" not in store.tables:
+        pytest.skip("no detector output in this DB")
+    cur = store.cursor()
+    ids = sorted(r[0] for r in cur.execute("SELECT DISTINCT episode_id FROM alert_episode").fetchall())
+    cur.close()
+    exported = {p.stem for p in (Path(__file__).resolve().parents[2] / "exports" / "demo" / "replays").glob("*.json")}
+    others = [i for i in ids if i not in exported]
+    for episode_id in random.Random(20261011).sample(others, min(25, len(others))):
+        r = C.Replay.model_validate(_json(client, f"/api/replay/{episode_id}"))
+        assert r.episode_id == episode_id and r.provenance.data_label == C.DataLabel.cached_real
+        # F3: recall markers carry the campaign and its link kind, as in the exported replays
+        assert all(m.campno and m.link for m in r.markers if m.type == "recall_reported")

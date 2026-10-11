@@ -5,6 +5,10 @@ import { useApi } from "./api/useApi";
 import { ReceivedDateNote } from "./components/Provenance";
 import { DATA_LABEL_TEXT, dateText } from "./format";
 import ObservatoryRedirect from "./ObservatoryRedirect";
+import { BuyerReportRoute } from "./features/buyer-report/BuyerReportRoute";
+import { reportHref, ReportProblemRoute } from "./features/report/ReportRoute";
+import { VinCheck } from "./features/vin/VinCheck";
+import { features } from "./features";
 import IssuePage from "./pages/IssuePage";
 import IssueForPage from "./pages/IssueForPage";
 import ReplayPage from "./pages/ReplayPage";
@@ -25,6 +29,8 @@ function Header() {
             Find a vehicle
           </NavLink>
           <NavLink to="/results">Results</NavLink>
+          {features.vinCheck && <NavLink to="/vin">Check by VIN</NavLink>}
+          {features.reportProblem && <NavLink to={reportHref()}>Report a problem</NavLink>}
         </nav>
         <p className="header-meta" data-testid="header-meta">
           {meta.state === "loading" && "Loading data status…"}
@@ -68,6 +74,9 @@ export default function App() {
         <Routes>
           <Route path="/" element={<SelectorPage />} />
           <Route path="/vehicle" element={<VehiclePage />} />
+          {features.buyerReport && <Route path="/vehicle/report" element={<BuyerReportRoute />} />}
+          {features.reportProblem && <Route path="/report" element={<ReportProblemRoute />} />}
+          {features.vinCheck && <Route path="/vin" element={<VinCheck />} />}
           <Route path="/issue/:groupId" element={<IssuePage />} />
           <Route path="/issue-for" element={<IssueForPage />} />
           <Route path="/replay/:episodeId" element={<ReplayPage />} />
