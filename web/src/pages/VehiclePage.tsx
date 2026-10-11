@@ -7,6 +7,7 @@ import { ProvenanceBar } from "../components/Provenance";
 import { Empty, ErrorState, Loading } from "../components/States";
 import { MyCarControls } from "../components/MyCar";
 import { RecallCards } from "../components/RecallCard";
+import { SymptomSearch } from "../components/SymptomSearch";
 import { VinBox } from "../components/VinBox";
 import { features } from "../features";
 import type { MonthlyPoint, VehicleResponse } from "../contracts.gen";
@@ -103,6 +104,13 @@ function Vehicle({ data }: { data: VehicleResponse }) {
             </tbody>
           </table>
         </div>
+      )}
+
+      {features.symptomSearch && (
+        <SymptomSearch
+          vehicle={data.vehicle}
+          reportHref={`/report-problem?${new URLSearchParams({ make: data.vehicle.make, model: data.vehicle.model, year: String(data.vehicle.model_year) })}`}
+        />
       )}
 
       <h2>Recall campaigns for this model and model year</h2>
