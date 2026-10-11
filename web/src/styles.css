@@ -174,3 +174,22 @@ blockquote { margin: 0.4rem 0; padding-left: 0.75rem; border-left: 3px solid var
 
 /* the card's padding already spaces its heading (the global h2 margin left a gap) */
 .hero-card h2 { margin-top: 0; }
+
+/* PRD v2 F1 recall cards */
+.recall-cards { display: grid; gap: 1rem; }
+.recall-card { border: 1px solid var(--border, #c9ccd1); border-radius: 6px; padding: 0.75rem 1rem; }
+.recall-card h3 { margin-top: 0; }
+.recall-banner { font-weight: 700; padding: 0.4rem 0.6rem; border-radius: 4px; border: 2px solid; }
+.banner-do-not-drive { border-color: #b00020; background: #fdecee; color: #6d0014; }
+.banner-park-outside { border-color: #8a5a00; background: #fff4de; color: #4d3300; }
+.recall-explain { border-left: 3px solid #5a6ec2; padding-left: 0.75rem; }
+.recall-explain h4, .official h4 { margin: 0.5rem 0 0.25rem; font-size: 0.95rem; }
+.official-text { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 0.5rem; }
+.official dt { font-weight: 600; }
+.official dd { margin-left: 0; }
+.link-button { background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; font: inherit; }
+.mycar { margin: 0.25rem 0 0.75rem; }
+@media (prefers-color-scheme: dark) {
+  .banner-do-not-drive { background: #3a0a12; color: #ffd6dc; }
+  .banner-park-outside { background: #3a2a00; color: #ffe7b3; }
+}

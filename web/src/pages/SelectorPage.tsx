@@ -1,11 +1,22 @@
 // Owner: C. C1: make -> model -> year selector, plus the hero replay entry point.
-import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState, type FormEvent } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getHero, getMakes, getModels, getYears } from "../api/client";
 import { useApi } from "../api/useApi";
 import { ProvenanceBar } from "../components/Provenance";
 import { ErrorState, Loading } from "../components/States";
+import { features } from "../features";
 import { heroPeriodNote, PROMISE } from "../format";
+import { readMyCar } from "../mycar";
+
+// PRD v2 F4.3: the saved car is opened only when the app itself was opened at a bare "/" (no query, no
+// hash), once. Deep links always win; coming back to "/" later never redirects, so there is no loop.
+const OPENED_AT_ROOT = typeof window !== "undefined" && window.location.pathname === "/" && !window.location.search && !window.location.hash;
+let savedCarChecked = false;
+
+export function resetSavedCarCheck(openedAtRoot = true) {
+  savedCarChecked = !openedAtRoot; // tests only
+}
 
 export default function SelectorPage() {
   const navigate = useNavigate();
@@ -16,6 +27,31 @@ export default function SelectorPage() {
   const [models] = useApi(make ? () => getModels(make) : null, [make]);
   const [years] = useApi(make && model ? () => getYears(make, model) : null, [make, model]);
   const [hero] = useApi(getHero, []);
+  const location = useLocation();
+  const [savedNote, setSavedNote] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!features.myCar || savedCarChecked) return;
+    savedCarChecked = true;
+    if (!OPENED_AT_ROOT || location.search || location.hash) return;
+    const { car, problem } = readMyCar();
+    if (problem) setSavedNote(problem);
+    if (!car) return;
+    let live = true;
+    getYears(car.make, car.model).then((r) => {
+      if (!live) return;
+      if (r.ok && (r.data.items as number[]).includes(car.year)) {
+        navigate(`/vehicle?${new URLSearchParams({ make: car.make, model: car.model, year: String(car.year) })}`, {
+          replace: true,
+        });
+      } else {
+        setSavedNote("Your saved car is no longer in this data, so it was ignored.");
+      }
+    });
+    return () => {
+      live = false;
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -28,6 +64,11 @@ export default function SelectorPage() {
   return (
     <section>
       <h1>Find a vehicle</h1>
+      {savedNote && (
+        <p className="small" role="status" data-testid="mycar-note">
+          {savedNote}
+        </p>
+      )}
       <p className="lede promise" data-testid="promise">
         {PROMISE}
       </p>
