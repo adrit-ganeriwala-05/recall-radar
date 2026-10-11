@@ -300,3 +300,118 @@ is frozen.
   the case for a few tier-2 and tier-3 early cases; the hero is never one of them, by the frozen rule). The
   results page counts the family as early under tiers 1–2; the replay page shows the earlier investigation. Both
   are true, and the `early_coverage_all` note already counts how many early families this applies to.
+
+## 12. v2 (PRD_v2) — B's additions; none of them touches the frozen pipeline
+All v2 code of B is in `recall_radar/b_v2/`, outside `recall_radar/method/`: `check_freeze` compares that whole
+directory with `freeze-v1`, and it is a pipeline input (`evaluate.PIPELINE_PATHS`), so a file added there would
+make the held-out evaluation refuse and would change every run id. Nothing in `b_v2` is imported by the detector,
+the matcher, the evaluation or the replay builder (tests: `test_v2_*`, "…does not import the frozen pipeline").
+
+Consequences of v2 for reproducibility, agreed with D (PR #24): `recall_radar/contracts.py`, `uv.lock` and
+`recall_radar/data/**` are pipeline inputs too, and the contract version is stamped into every result. After
+contract v1.1 a rerun at HEAD writes a new run id and `contract_version`; the committed result files stay
+byte-identical, and `make repro` is certified at the tag `baseline-v1`. The v2 database is the baseline database
+copied, plus new tables.
+
+### 12.1 Protected tables (`b_v2/protect.py`)
+`python -m recall_radar.b_v2.protect <baseline.duckdb> [<v2.duckdb>]` prints, for eight tables, the row count and an
+md5 over all rows (columns in catalog order, cast to text, rows sorted), and with two files compares them. Baseline
+(the serving database, sha256 5d708042…a438663), also reproduced by an independent rebuild at 195ad45:
+
+```
+protected checksums: recall_radar.duckdb
+  vehicle_group   rows=102535    md5=a59f97520f80d7b3d2aea8c1331c7ff7
+  group_month     rows=533580    md5=cbbe9487be2462636acfff2a53d58259
+  detector_score  rows=7902090   md5=58e3a06abd98c5293befb2947e1daf1f
+  alert_episode   rows=2532      md5=f88c67307e1576b81637c929f1c1bed4
+  alert_match     rows=2532      md5=c2c6fdc6685f0dba04a81f33633b77a9
+  eval_case       rows=842       md5=1b3f54fb79e1f71fceb2569e3e387ef2
+  eval_metric     rows=28        md5=dca8bb863401f5ab559b4f1d2aa39273
+  inv_family      rows=8648      md5=8b86f884d4e9ce12441fd2b0d962918c
+```
+
+### 12.2 F3 recall markers (`b_v2/recall_markers.py`)
+- `link = "issue"`: campaigns in `inv_family.campnos` of the replay's `outcome.family_id`. These are exactly the
+  recall markers the frozen export already wrote; they gain `campno` and `link`.
+- `link = "vehicle"`: other campaigns in `recall_campaign` with the replay's make, model and model year, labeled
+  "Other recall for this model". Component and component system are not read, so nothing is linked by component.
+- Date: earliest `recall_campaign.report_date` of the campaign. A (PR #25): that column is RCDATE, the date NHTSA
+  received the Part 573 report; the F1 card carries the basis label. No dated row → no marker, and the run prints it.
+- On the committed bundle: 21 replays, 81 issue-linked and 167 other-for-this-model markers. Five family campaigns
+  have no dated row and get no marker: `18E043000` (an equipment campaign, not in the vehicle recall file) and
+  `20V024`, `23V877` (three replays), which the investigation file writes without the three-digit suffix that the
+  recall file uses. They are not guessed.
+- Only `recall_reported` markers of `exports/demo/replays/*.json` and the replay hashes in MANIFEST change. Frames,
+  alert and investigation markers, results, cases and hero keep their bytes (tests on synthetic and real data).
+  The step runs after `make export`: `python -m recall_radar.b_v2.recall_markers --db <baseline db>`.
+
+### 12.3 F8 report selection (`b_v2/report_select.py`)
+`select_report_data(con, make, model, model_year)`: up to 5 component systems by distinct complaint ids (ties
+alphabetical), up to 5 investigations that name the vehicle in `inv_vehicle` (newest opening first, undated last,
+then action number), up to 6 campaigns for the vehicle (newest report date first, then campaign number), each with
+its total for "showing n of m"; complaint date range = earliest and latest received date (LDATE). Counts use the
+same tables and rules as `/api/vehicle` (real-data test over 40 vehicles). No score, no ranking by severity.
+
+### 12.4 F7 symptom search (`b_v2/symptom_index.py`) — text and phrase search; this is the spec for the browser port
+Inputs, reviewed by B: `review/symptom_concepts.csv` (8 concepts) and `review/symptom_aliases.csv` (52 phrases).
+1. Tokens: lower-case; delete apostrophes (straight and typographic); every other non-alphanumeric character
+   becomes a space; split. A token in NEGATIONS becomes `not`; a token in STOPWORDS is dropped (`no`, `not` stay).
+2. Stem each remaining token: if it has more than 3 characters, take the first of `ing, ed, es, s, e` that it ends
+   with and whose removal leaves at least 3 characters (never strip `s` from a word ending in `ss`); after `ing` or
+   `ed`, if the result has at least 4 characters and ends in a doubled letter other than `l, s, f, z`, drop one.
+3. Phrase match: the phrase's tokens occur in the text in order, with at most 2 other tokens between neighbours.
+4. A text matches a concept when every `require_all` group has a matching phrase and no `exclude` phrase matches.
+   A complaint is that concept when, in addition, one of its component systems is in the concept's `comp_systems`.
+5. A query's concepts: concepts of every alias phrase that matches the query, plus every concept whose rule 4
+   holds for the query text itself; in the order of the concepts file.
+6. Search: with at least one concept, the documents that are one of those concepts; with none, the documents that
+   contain every token of the query; an empty token list finds nothing. Document order (newest first) is kept.
+The word lists are in the module and in `review/symptom_parity.json`, which also holds 77 queries and 12 made-up
+documents with their expected tokens, concepts and hits. The browser implementation must reproduce that file;
+`test_parity_file_for_the_browser_port_is_current` keeps it equal to the Python reference.
+
+Evaluation (`python -m recall_radar.b_v2.symptom_eval --db <baseline db>`; quote its output, do not retype it).
+`review/symptom_eval.csv` (30 queries, expected concept, hard negatives) was committed before any rule existed.
+Precision sample, fixed at the same time: the three vehicles with the most distinct complaints; for each, the
+newest 2,000 complaints as served (excerpt of at most 400 characters); top 5 per concept; relevance judged by B
+from the excerpt, ids and y/n only in `review/symptom_eval_judgments.csv`; an unclear excerpt counts as not relevant.
+
+```
+query -> concept: 30 of 30 correct (expected concept returned, no hard negative)
+  exactly one concept returned: 30 of 30
+  queries that are not verbatim alias rows: 19 of 19 correct
+  with the alias file ignored (concept phrases only): 30 of 30 correct
+precision at 5: 73 of 110 judged results relevant (3 vehicles x 8 concepts, top 5 each)
+  brake_noise                5 of 9
+  brake_failure              11 of 15
+  steering_vibration         7 of 15
+  power_steering_loss        15 of 15
+  door_wont_lock             8 of 14
+  door_opens_while_driving   7 of 12
+  stall_while_driving        12 of 15
+  wont_start                 8 of 15
+  weighted by the 30 evaluation queries: 277 of 413
+judged ids equal the current top results: yes
+```
+
+- One rule changed after the first run of the evaluation set: the generic phrases "lost power / lose power / loss
+  power" were removed from `stall_while_driving`, because "lost power steering while driving" also reached it.
+  Nothing else was tuned; in particular nothing was changed after the precision judgments.
+- 11 of the 30 evaluation queries are also alias rows (the PRD asks for its four examples to be aliases); the
+  output reports the other 19 separately and the result with the alias file ignored.
+- What the precision misses show: `brake_failure` also finds complaints about brake lights that failed;
+  `steering_vibration` also finds an engine or a whole car shaking when steering is mentioned; `door_wont_lock`
+  finds ignition and steering locks; `wont_start` finds stalls that mention a restart. These are limits of word
+  matching and are left as measured. The UI line "A match is not a diagnosis" is accurate.
+
+### 12.5 F2 recall explanations (`b_v2/recall_explain.py`)
+- Status: **fallback only**. `recall_explanation` has one `fallback` row for each of the 13,673 campaigns. No model
+  has been called: B's machine has no `GEMINI_API_KEY`, `google-genai` is not installed, and no model name is set
+  (`RR_GEMINI_MODEL` has no default, so none is invented). Accepted explanations read by B: none exist.
+- If generation is ever run, an output is shown only when `validate` accepts it: strict JSON of 1–2 sentences of at
+  most 45 words; cited fields exist and are non-empty; spans of at least 12 characters, verbatim in a cited field;
+  every number, number word, cost or time word and campaign number is in the official text; every other word is in
+  the official text or in a short plain-word list that has no remedies, actors, consequences or conditions; no
+  urgency the text lacks; no dropped may / some / certain / if equipped; no banned word; no claim about the
+  reader's own car. A rejected output is not retried; timeouts and errors get one retry; everything else is fallback.
+- Cache key: campno | sha256(summary, consequence, remedy) | model | prompt version.
