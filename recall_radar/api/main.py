@@ -48,6 +48,7 @@ from fastapi.responses import FileResponse, JSONResponse, Response
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from recall_radar import contracts as C
+from recall_radar.b_v2 import recall_markers
 from recall_radar.method.config import config_hash as _config_hash
 from recall_radar.method.config import load_config
 from recall_radar.method.replay import replay_json
@@ -802,7 +803,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                                  data_cutoff(store.method_config, "full"))
         if built is None:
             raise missing
-        return ok(json.loads(replay_json(built)))
+        text = replay_json(built)
+        if {"recall_campaign", "inv_family"} <= store.tables:
+            # F3: the same recall markers (campno + issue/vehicle link) as the exported replays (B's #38 note)
+            text = recall_markers.rewrite(store.cursor(), text)[0]
+        return ok(json.loads(text))
 
     @app.get("/api/results")
     def results(period: Period) -> JSONResponse:
