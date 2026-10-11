@@ -368,6 +368,41 @@
       "title": "DataLabel",
       "type": "string"
     },
+    "DateRange": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "End"
+        },
+        "start": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Start"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "DateRange",
+      "type": "object"
+    },
     "ErrorBody": {
       "additionalProperties": false,
       "properties": {
@@ -641,6 +676,46 @@
         "n"
       ],
       "title": "ExclusionCount",
+      "type": "object"
+    },
+    "ExplanationSentence": {
+      "additionalProperties": false,
+      "description": "One plain-language sentence (F2). Every claim must be traceable to the official text.",
+      "properties": {
+        "source_fields": {
+          "items": {
+            "enum": [
+              "summary",
+              "consequence",
+              "remedy"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Source Fields",
+          "type": "array"
+        },
+        "source_spans": {
+          "description": "Verbatim substrings of the cited official fields",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Source Spans",
+          "type": "array"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "source_fields",
+        "source_spans"
+      ],
+      "title": "ExplanationSentence",
       "type": "object"
     },
     "HeroPointer": {
@@ -1349,7 +1424,7 @@
           "title": "Config Hash"
         },
         "contract_version": {
-          "default": "1.0.0",
+          "default": "1.1.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -1422,6 +1497,67 @@
           "title": "Component",
           "type": "string"
         },
+        "consequence": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Consequence"
+        },
+        "explanation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RecallExplanation"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "park_it": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Do-not-drive flag; null = unknown (never shown)",
+          "title": "Park It"
+        },
+        "park_outside": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Park-outside flag; null = unknown (never shown)",
+          "title": "Park Outside"
+        },
+        "remedy": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Remedy"
+        },
         "report_date": {
           "anyOf": [
             {
@@ -1433,6 +1569,55 @@
             }
           ],
           "title": "Report Date"
+        },
+        "report_date_basis": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Which source date `report_date` is",
+          "title": "Report Date Basis"
+        },
+        "snapshot_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Snapshot Id"
+        },
+        "source_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Url"
+        },
+        "summary": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Summary"
         }
       },
       "required": [
@@ -1441,6 +1626,57 @@
         "report_date"
       ],
       "title": "RecallCampaign",
+      "type": "object"
+    },
+    "RecallExplanation": {
+      "additionalProperties": false,
+      "description": "F2. `fallback` = show the official text only (never labeled AI); it carries no sentences.",
+      "properties": {
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "prompt_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Prompt Version"
+        },
+        "sentences": {
+          "items": {
+            "$ref": "#/$defs/ExplanationSentence"
+          },
+          "maxItems": 2,
+          "title": "Sentences",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "accepted",
+            "fallback"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "RecallExplanation",
       "type": "object"
     },
     "Replay": {
@@ -1589,6 +1825,19 @@
           ],
           "title": "Action No"
         },
+        "campno": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "NHTSA campaign of a recall_reported marker",
+          "title": "Campno"
+        },
         "date": {
           "format": "date",
           "title": "Date",
@@ -1613,6 +1862,23 @@
             }
           ],
           "title": "Lead Days"
+        },
+        "link": {
+          "anyOf": [
+            {
+              "enum": [
+                "issue",
+                "vehicle"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "issue: campaign of the episode's matched investigation family; vehicle: other campaign for the same make/model/year ('Other recall for this model')",
+          "title": "Link"
         },
         "match_tier": {
           "anyOf": [
@@ -1646,6 +1912,190 @@
       "title": "ReplayMarker",
       "type": "object"
     },
+    "ReportData": {
+      "additionalProperties": false,
+      "description": "GET /api/report: data for the one-page buyer report; counts equal /api/vehicle.",
+      "properties": {
+        "campaigns": {
+          "items": {
+            "$ref": "#/$defs/RecallCampaign"
+          },
+          "maxItems": 6,
+          "title": "Campaigns",
+          "type": "array"
+        },
+        "complaint_date_range": {
+          "$ref": "#/$defs/DateRange"
+        },
+        "counting_basis": {
+          "const": "distinct NHTSA complaint IDs",
+          "default": "distinct NHTSA complaint IDs",
+          "title": "Counting Basis",
+          "type": "string"
+        },
+        "distinct_complaints": {
+          "minimum": 0,
+          "title": "Distinct Complaints",
+          "type": "integer"
+        },
+        "investigations": {
+          "items": {
+            "$ref": "#/$defs/ReportInvestigation"
+          },
+          "maxItems": 5,
+          "title": "Investigations",
+          "type": "array"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "selection_rule": {
+          "title": "Selection Rule",
+          "type": "string"
+        },
+        "shown_n": {
+          "description": "len(top_groups)",
+          "minimum": 0,
+          "title": "Shown N",
+          "type": "integer"
+        },
+        "snapshot_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Snapshot Date"
+        },
+        "top_groups": {
+          "items": {
+            "$ref": "#/$defs/ReportGroup"
+          },
+          "maxItems": 5,
+          "title": "Top Groups",
+          "type": "array"
+        },
+        "total_campaigns": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Total Campaigns",
+          "type": "integer"
+        },
+        "total_groups": {
+          "minimum": 0,
+          "title": "Total Groups",
+          "type": "integer"
+        },
+        "total_investigations": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Total Investigations",
+          "type": "integer"
+        },
+        "vehicle": {
+          "$ref": "#/$defs/VehicleKey"
+        },
+        "vin_lookup_url": {
+          "const": "https://www.nhtsa.gov/recalls",
+          "default": "https://www.nhtsa.gov/recalls",
+          "title": "Vin Lookup Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provenance",
+        "vehicle",
+        "complaint_date_range",
+        "snapshot_date",
+        "distinct_complaints",
+        "top_groups",
+        "shown_n",
+        "total_groups",
+        "investigations",
+        "campaigns",
+        "selection_rule"
+      ],
+      "title": "ReportData",
+      "type": "object"
+    },
+    "ReportGroup": {
+      "additionalProperties": false,
+      "properties": {
+        "distinct_complaints": {
+          "minimum": 0,
+          "title": "Distinct Complaints",
+          "type": "integer"
+        },
+        "group": {
+          "$ref": "#/$defs/IssueGroup"
+        },
+        "link": {
+          "description": "App path of the issue page",
+          "title": "Link",
+          "type": "string"
+        }
+      },
+      "required": [
+        "group",
+        "distinct_complaints",
+        "link"
+      ],
+      "title": "ReportGroup",
+      "type": "object"
+    },
+    "ReportInvestigation": {
+      "additionalProperties": false,
+      "properties": {
+        "action_no": {
+          "title": "Action No",
+          "type": "string"
+        },
+        "inv_type": {
+          "$ref": "#/$defs/InvType"
+        },
+        "link": {
+          "title": "Link",
+          "type": "string"
+        },
+        "open_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "INV ODATE; null for the ~108 actions without one (listed last)",
+          "title": "Open Date"
+        },
+        "subject": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Subject"
+        }
+      },
+      "required": [
+        "action_no",
+        "inv_type",
+        "open_date",
+        "subject",
+        "link"
+      ],
+      "title": "ReportInvestigation",
+      "type": "object"
+    },
     "SummaryStatement": {
       "additionalProperties": false,
       "properties": {
@@ -1669,6 +2119,190 @@
         "odinos"
       ],
       "title": "SummaryStatement",
+      "type": "object"
+    },
+    "SymptomAlias": {
+      "additionalProperties": false,
+      "properties": {
+        "concepts": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Concepts",
+          "type": "array"
+        },
+        "phrase": {
+          "minLength": 1,
+          "title": "Phrase",
+          "type": "string"
+        }
+      },
+      "required": [
+        "phrase",
+        "concepts"
+      ],
+      "title": "SymptomAlias",
+      "type": "object"
+    },
+    "SymptomConcept": {
+      "additionalProperties": false,
+      "description": "A doc matches when one of its comp_systems is listed, every `require_all` group has a phrase\npresent, and no `exclude` phrase is present (keeps PRD F7.2 pairs apart); `terms` highlights.",
+      "properties": {
+        "comp_systems": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Comp Systems",
+          "type": "array"
+        },
+        "exclude": {
+          "description": "A doc containing any of these is not this concept",
+          "items": {
+            "type": "string"
+          },
+          "title": "Exclude",
+          "type": "array"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "require_all": {
+          "description": "Every inner list must match at least one of its phrases",
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Require All",
+          "type": "array"
+        },
+        "terms": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Terms",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "comp_systems",
+        "terms"
+      ],
+      "title": "SymptomConcept",
+      "type": "object"
+    },
+    "SymptomDoc": {
+      "additionalProperties": false,
+      "properties": {
+        "avail_date": {
+          "format": "date",
+          "title": "Avail Date",
+          "type": "string"
+        },
+        "comp_systems": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Comp Systems",
+          "type": "array"
+        },
+        "excerpt": {
+          "description": "Redacted at ingest and again at serving time",
+          "maxLength": 400,
+          "title": "Excerpt",
+          "type": "string"
+        },
+        "group_id": {
+          "anyOf": [
+            {
+              "pattern": "^g_[0-9a-f]{12}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Group Id"
+        },
+        "nhtsa_url": {
+          "title": "Nhtsa Url",
+          "type": "string"
+        },
+        "odino": {
+          "pattern": "^\\d+$",
+          "title": "Odino",
+          "type": "string"
+        }
+      },
+      "required": [
+        "odino",
+        "comp_systems",
+        "avail_date",
+        "excerpt",
+        "nhtsa_url"
+      ],
+      "title": "SymptomDoc",
+      "type": "object"
+    },
+    "SymptomIndex": {
+      "additionalProperties": false,
+      "description": "GET /api/symptom-index: searched in the browser; the query never reaches the server.",
+      "properties": {
+        "aliases": {
+          "items": {
+            "$ref": "#/$defs/SymptomAlias"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "concepts": {
+          "items": {
+            "$ref": "#/$defs/SymptomConcept"
+          },
+          "title": "Concepts",
+          "type": "array"
+        },
+        "docs": {
+          "description": "Newest first (avail_date desc, then odino desc)",
+          "items": {
+            "$ref": "#/$defs/SymptomDoc"
+          },
+          "maxItems": 2000,
+          "title": "Docs",
+          "type": "array"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "snapshot_label": {
+          "const": "current cached snapshot",
+          "default": "current cached snapshot",
+          "title": "Snapshot Label",
+          "type": "string"
+        },
+        "vehicle": {
+          "$ref": "#/$defs/VehicleKey"
+        }
+      },
+      "required": [
+        "provenance",
+        "vehicle",
+        "docs",
+        "aliases",
+        "concepts"
+      ],
+      "title": "SymptomIndex",
       "type": "object"
     },
     "VehicleComponent": {
@@ -1787,7 +2421,7 @@
       "type": "object"
     }
   },
-  "$id": "recall-radar/contracts/1.0.0",
-  "description": "Recall Radar contracts v1.0.0. Generated; do not edit.",
+  "$id": "recall-radar/contracts/1.1.0",
+  "description": "Recall Radar contracts v1.1.0. Generated; do not edit.",
   "title": "RecallRadarContracts"
 }

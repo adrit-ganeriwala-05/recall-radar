@@ -1,0 +1,126 @@
+{
+  "provenance": {
+    "contract_version": "1.1.0",
+    "data_label": "synthetic_fixture",
+    "snapshot_id": null,
+    "data_as_of": null,
+    "config_hash": null,
+    "git_sha": null,
+    "availability_basis": null,
+    "generated_at": "2026-10-10T16:00:00Z"
+  },
+  "vehicle": {
+    "make": "EXAMPLE MOTORS",
+    "model": "ROADSTER",
+    "model_year": 2017
+  },
+  "snapshot_label": "current cached snapshot",
+  "docs": [
+    {
+      "odino": "10000103",
+      "comp_systems": [
+        "STEERING"
+      ],
+      "avail_date": "2019-03-12",
+      "excerpt": "THE STEERING WHEEL SHAKES AT HIGHWAY SPEED.",
+      "group_id": "g_6bc38243bb0a",
+      "nhtsa_url": "https://api.nhtsa.gov/complaints/odinumber?odinumber=10000103"
+    },
+    {
+      "odino": "10000102",
+      "comp_systems": [
+        "SERVICE BRAKES"
+      ],
+      "avail_date": "2019-02-20",
+      "excerpt": "BRAKES MAKE A GRINDING NOISE WHEN STOPPING.",
+      "group_id": "g_bf23f78a9706",
+      "nhtsa_url": "https://api.nhtsa.gov/complaints/odinumber?odinumber=10000102"
+    },
+    {
+      "odino": "10000101",
+      "comp_systems": [
+        "SERVICE BRAKES"
+      ],
+      "avail_date": "2019-01-05",
+      "excerpt": "PEDAL WENT TO THE FLOOR AND THE BRAKES FAILED.",
+      "group_id": "g_bf23f78a9706",
+      "nhtsa_url": "https://api.nhtsa.gov/complaints/odinumber?odinumber=10000101"
+    }
+  ],
+  "aliases": [
+    {
+      "phrase": "brakes make noise",
+      "concepts": [
+        "brake_noise"
+      ]
+    },
+    {
+      "phrase": "steering wheel shakes",
+      "concepts": [
+        "steering_vibration"
+      ]
+    }
+  ],
+  "concepts": [
+    {
+      "id": "brake_noise",
+      "label": "Brake noise",
+      "comp_systems": [
+        "SERVICE BRAKES"
+      ],
+      "terms": [
+        "grinding",
+        "squeal",
+        "noise"
+      ],
+      "require_all": [
+        [
+          "noise",
+          "grinding",
+          "squeal",
+          "squeak"
+        ]
+      ],
+      "exclude": [
+        "failed",
+        "no brakes",
+        "to the floor"
+      ]
+    },
+    {
+      "id": "brake_failure",
+      "label": "Brake failure",
+      "comp_systems": [
+        "SERVICE BRAKES"
+      ],
+      "terms": [
+        "failed",
+        "floor",
+        "no brakes"
+      ],
+      "require_all": [
+        [
+          "failed",
+          "floor",
+          "no brakes",
+          "would not stop"
+        ]
+      ],
+      "exclude": []
+    },
+    {
+      "id": "steering_vibration",
+      "label": "Steering vibration",
+      "comp_systems": [
+        "STEERING"
+      ],
+      "terms": [
+        "shakes",
+        "vibration",
+        "shimmy"
+      ],
+      "require_all": [],
+      "exclude": []
+    }
+  ]
+}
