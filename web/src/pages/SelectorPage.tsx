@@ -6,6 +6,7 @@ import { useApi } from "../api/useApi";
 import { ProvenanceBar } from "../components/Provenance";
 import { ErrorState, Loading } from "../components/States";
 import { features } from "../features";
+import { VinCheck } from "../features/vin/VinCheck";
 import { heroPeriodNote, PROMISE } from "../format";
 import { readMyCar } from "../mycar";
 
@@ -148,6 +149,8 @@ export default function SelectorPage() {
           {model && years.state === "done" && !years.ok && <ErrorState error={years.error} />}
         </>
       )}
+
+      {features.vinCheck && <VinCheck />}
 
       {hero.state === "done" && hero.ok && (
         <aside className="hero-card">

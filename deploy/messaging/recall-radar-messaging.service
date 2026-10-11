@@ -1,0 +1,31 @@
+# F9 messaging service (PRD_v2 §4 F9). Owner: D. Separate from the analysis API; stoppable on its own.
+# Ships DISABLED: /etc/recall-radar/messaging.env has RR_MESSAGING_ENABLED=0 → every webhook 503, nothing stored.
+# Loopback only: the app talks to the analysis API (127.0.0.1:8000) and the Photon sidecar (127.0.0.1:8790).
+# The sidecar and the daily monitor timer (the parts that need outbound network) are NOT installed until Gate P,
+# which is the outbound kill switch. Caddy does not route /spectrum-webhook until Gate P.
+[Unit]
+Description=Recall Radar messaging (F9, disabled by default)
+After=network.target recall-radar.service
+
+[Service]
+Type=simple
+User=rr
+Group=rr
+WorkingDirectory=/opt/recall-radar/current
+Environment=RR_DATA_DIR=/opt/recall-radar/data
+Environment=RR_ANALYSIS_URL=http://127.0.0.1:8000
+Environment=RR_PHOTON_SIDECAR_URL=http://127.0.0.1:8790
+EnvironmentFile=/etc/recall-radar/messaging.env
+ExecStart=/opt/recall-radar/current/.venv/bin/uvicorn recall_radar.messaging.app:app --host 127.0.0.1 --port 8791 --workers 1 --no-server-header
+Restart=on-failure
+RestartSec=3
+IPAddressDeny=any
+IPAddressAllow=localhost
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/recall-radar/data
+
+[Install]
+WantedBy=multi-user.target
