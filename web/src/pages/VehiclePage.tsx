@@ -5,7 +5,10 @@ import { useApi } from "../api/useApi";
 import { BarChart, type BarPoint, type ChartMarker } from "../components/BarChart";
 import { ProvenanceBar } from "../components/Provenance";
 import { Empty, ErrorState, Loading } from "../components/States";
+import { MyCarControls } from "../components/MyCar";
+import { RecallCards } from "../components/RecallCard";
 import { VinBox } from "../components/VinBox";
+import { features } from "../features";
 import type { MonthlyPoint, VehicleResponse } from "../contracts.gen";
 import { dateText, monthText, plural, vehicleText } from "../format";
 
@@ -37,6 +40,7 @@ function Vehicle({ data }: { data: VehicleResponse }) {
   return (
     <>
       <h1>{vehicleText(data.vehicle)}</h1>
+      {features.myCar && <MyCarControls vehicle={data.vehicle} />}
       <p className="big-number">
         <strong>{plural(data.distinct_complaints, "distinct complaint", "distinct complaints")}</strong> across all
         components
@@ -103,7 +107,9 @@ function Vehicle({ data }: { data: VehicleResponse }) {
 
       <h2>Recall campaigns for this model and model year</h2>
       <p>{data.note}</p>
-      {data.recall_campaigns.length === 0 ? (
+      {features.recallCards ? (
+        <RecallCards campaigns={data.recall_campaigns} vehicle={data.vehicle} dataAsOf={data.provenance.data_as_of} />
+      ) : data.recall_campaigns.length === 0 ? (
         <Empty>No recall campaigns for this model and model year in the data.</Empty>
       ) : (
         <ul className="campaigns">
