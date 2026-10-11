@@ -1,6 +1,6 @@
 {
   "provenance": {
-    "contract_version": "1.0.0",
+    "contract_version": "1.1.0",
     "data_label": "synthetic_fixture",
     "snapshot_id": null,
     "data_as_of": null,
@@ -354,7 +354,66 @@
     {
       "campno": "18V000000",
       "component": "STEERING",
-      "report_date": "2019-02-04"
+      "report_date": "2019-02-04",
+      "summary": "Example Motors is recalling certain 2017 Roadster vehicles. The steering column <bolt> may loosen.",
+      "consequence": "A loose steering column bolt can reduce steering control, increasing the risk of a crash.",
+      "remedy": "Dealers will inspect and tighten the bolt, free of charge.\nOwner letters are expected to be mailed.",
+      "park_it": true,
+      "park_outside": false,
+      "report_date_basis": "Report received date (RCDATE)",
+      "source_url": "https://www.nhtsa.gov/recalls?nhtsaId=18V000000",
+      "snapshot_id": null,
+      "explanation": {
+        "status": "accepted",
+        "model": "synthetic-fixture",
+        "prompt_version": "fixture-1",
+        "sentences": [
+          {
+            "text": "A steering column bolt may loosen, which can reduce steering control.",
+            "source_fields": [
+              "summary",
+              "consequence"
+            ],
+            "source_spans": [
+              "The steering column <bolt> may loosen.",
+              "reduce steering control"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "campno": "19V111000",
+      "component": "ELECTRICAL SYSTEM",
+      "report_date": "2019-06-10",
+      "summary": "A wiring harness may chafe and short circuit.",
+      "consequence": "A short circuit increases the risk of a fire.",
+      "remedy": "Dealers will add a protective sleeve.",
+      "park_it": false,
+      "park_outside": true,
+      "report_date_basis": "Report received date (RCDATE)",
+      "source_url": "https://www.nhtsa.gov/recalls?nhtsaId=19V111000",
+      "snapshot_id": null,
+      "explanation": {
+        "status": "fallback",
+        "sentences": [],
+        "model": null,
+        "prompt_version": null
+      }
+    },
+    {
+      "campno": "20V222000",
+      "component": "SERVICE BRAKES",
+      "report_date": null,
+      "summary": "The brake hose may crack.",
+      "consequence": null,
+      "remedy": null,
+      "park_it": null,
+      "park_outside": null,
+      "report_date_basis": null,
+      "source_url": null,
+      "snapshot_id": null,
+      "explanation": null
     }
   ],
   "vin_lookup_url": "https://www.nhtsa.gov/recalls",
