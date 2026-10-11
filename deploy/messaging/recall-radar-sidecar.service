@@ -1,0 +1,28 @@
+# F9 Photon Spectrum sidecar (PRD_v2 §4 F9). Owner: D. Code: recall_radar/messaging/photon_ts/sidecar.ts (A),
+# runtime pinned in deploy/messaging/sidecar/package-lock.json. Listens on 127.0.0.1:8790 only; needs OUTBOUND
+# network to Photon (imessage.spectrum.photon.codes:443), so no IPAddressDeny here.
+# Installed by deploy/messaging/sidecar-install.sh but NOT started: it runs only while Gate P is on
+# (deploy/messaging/gatep.sh on|off). Stopping it is the outbound kill switch.
+[Unit]
+Description=Recall Radar Photon sidecar (F9, Gate P only)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=rr
+Group=rr
+WorkingDirectory=/opt/recall-radar/sidecar
+EnvironmentFile=/etc/recall-radar/photon.env
+Environment=SIDECAR_PORT=8790
+Environment=NODE_ENV=production
+ExecStart=/usr/local/bin/node /opt/recall-radar/sidecar/node_modules/tsx/dist/cli.mjs /opt/recall-radar/sidecar/sidecar.ts
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

@@ -141,3 +141,5 @@ def test_every_alert_episode_has_a_replay(client):
     for episode_id in random.Random(20261011).sample(others, min(25, len(others))):
         r = C.Replay.model_validate(_json(client, f"/api/replay/{episode_id}"))
         assert r.episode_id == episode_id and r.provenance.data_label == C.DataLabel.cached_real
+        # F3: recall markers carry the campaign and its link kind, as in the exported replays
+        assert all(m.campno and m.link for m in r.markers if m.type == "recall_reported")

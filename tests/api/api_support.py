@@ -84,6 +84,9 @@ def build_db(path: Path, cfg_hash: str, docs=DOCS) -> None:
         ('17V100', 'EXAMPLE MOTORS', 'ROADSTER', 2017, 'STEERING: WHEEL', 'STEERING', '2017-09-01'),
         ('17V100', 'EXAMPLE MOTORS', 'ROADSTER', 2017, 'STEERING: COLUMN', 'STEERING', '2017-09-01'),
         ('16V001', 'EXAMPLE MOTORS', 'ROADSTER', 2016, 'ENGINE', 'ENGINE', '2016-02-01')""")
+    # F3 links (b_v2.recall_markers): family F-118 lists one dated and one undated campaign
+    con.execute("CREATE TABLE inv_family (family_id VARCHAR, campnos VARCHAR[])")
+    con.execute("INSERT INTO inv_family VALUES ('F-118', ['17V100', '18V000000'])")
     con.execute("""CREATE TABLE detector_score (group_id VARCHAR, month VARCHAR, config_hash VARCHAR, c INTEGER,
         baseline_lambda DOUBLE, score DOUBLE, ratio DOUBLE, alert BOOLEAN, scored BOOLEAN)""")
     con.execute("INSERT INTO detector_score VALUES (?, '2017-03', ?, 2, 0.5, 1.23456789, 4.0, false, true), "

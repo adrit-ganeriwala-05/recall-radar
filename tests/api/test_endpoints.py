@@ -308,6 +308,26 @@ def test_replay_not_exported_is_built_from_the_database(client, monkeypatch):
     assert calls == ["E-77", "E-78"]
 
 
+def test_replay_built_from_the_database_gets_f3_recall_links(client, monkeypatch):
+    # F3: an on-demand replay carries the same recall markers as the exported ones (b_v2.recall_markers).
+    # Fixture: family F-118 lists 17V100 (dated 2017-09-01) and 18V000000 (no dated row); the ROADSTER 2017
+    # has only 17V100. Expected by hand: the builder's undated "Recall 18V000000" marker is dropped, 17V100
+    # becomes one issue-linked marker (not repeated as "other recall for this model"), the rest is unchanged.
+    want = C.Replay.model_validate(json.loads((api.FIXTURES / "replay_E-0412.json").read_text()))
+    monkeypatch.setattr(api, "replay_on_demand",
+                        lambda cur, cfg, prov, episode_id, cutoff: want.model_copy(update={"episode_id": episode_id}))
+    store = client.app.state.store
+    store.__dict__["tables"] = store.tables | {"alert_episode", "alert_match"}
+    got, _ = ok(client, "/api/replay/E-77", C.Replay)  # not in the test bundle
+    assert got.frames == want.frames and got.outcome == want.outcome
+    assert [(m.type, m.date.isoformat(), m.campno, m.link) for m in got.markers] == [
+        ("recall_reported", "2017-09-01", "17V100", "issue"),
+        ("alert", "2018-05-01", None, None),
+        ("investigation_opened", "2018-10-15", None, None),
+    ]
+    assert got.markers[0].label == "Recall campaign 17V100 reported (shown as a later reveal)"
+
+
 def test_exported_replay_wins_over_the_database(client, monkeypatch):
     monkeypatch.setattr(api, "replay_on_demand", lambda *a: pytest.fail("exported replays are served from the file"))
     hero, _ = ok(client, "/api/hero", C.HeroPointer)
