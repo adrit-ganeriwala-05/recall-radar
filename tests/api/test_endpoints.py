@@ -302,6 +302,13 @@ def test_git_sha_prefers_env(monkeypatch):
         ("CALLED MRS. ROE AND WAITED", "CALLED [NAME] AND WAITED"),
         ("SEEN BY DR. ROE", "SEEN BY [NAME]"),
         ("SPOKE TO MR JOHN ROE CALLED BACK", "SPOKE TO [NAME] CALLED BACK"),
+        # sentence case (newer complaints): title in any case, name words with a capital
+        ("The letter from Ms. Jane Doe of Example Motors", "The letter from [NAME] of Example Motors"),
+        ("I spoke to Mr. Roe and he said", "I spoke to [NAME] and he said"),
+        ("my doctor, Dr. Roe, said", "my doctor, [NAME], said"),
+        ("then mrs. Roe called", "then [NAME] called"),
+        ("parked on Oak Dr. and then", "parked on Oak Dr. and then"),
+        ("Sent to Ms. The Service Manager", "Sent to Ms. The Service Manager"),
         # MS/DR without a period, a part name after MR/MRS, or a common word after it: not a person
         ("TOOK IT TO MR TIRE TWICE", "TOOK IT TO MR TIRE TWICE"),
         ("THE MRS CONTROL UNIT FAILED", "THE MRS CONTROL UNIT FAILED"),
@@ -311,6 +318,26 @@ def test_git_sha_prefers_env(monkeypatch):
     ],
 )
 def test_excerpt_scrubs_honorific_names(text, served):
+    assert api.excerpt(text) == served
+
+
+@pytest.mark.parametrize(
+    ("text", "served"),
+    [
+        # A9: suffixes the ingest address rule lacks (made-up addresses)
+        ("CALLED THE DEALER (1234 AUTO PARK WAY, SOMETOWN, CA)", "CALLED THE DEALER ([ADDRESS], SOMETOWN, CA)"),
+        ("I LIVE AT 56 ELM WAY NEAR", "I LIVE AT [ADDRESS] NEAR"),
+        ("SHOP AT 8814 OLD MILL PIKE.", "SHOP AT [ADDRESS]"),
+        ("AT 12 MARKET PLAZA TODAY", "AT [ADDRESS] TODAY"),
+        # speeds, distances and times are not addresses
+        ("DOING 65 MPH ON THE FREEWAY", "DOING 65 MPH ON THE FREEWAY"),
+        ("20 MILES EACH WAY", "20 MILES EACH WAY"),
+        ("AROUND 2000 RPMS THE ONLY WAY", "AROUND 2000 RPMS THE ONLY WAY"),
+        ("SINCE 2009 ALL THE WAY DOWN", "SINCE 2009 ALL THE WAY DOWN"),
+        ("ON 3/19 WHILE DRIVING ON THE FREEWAY", "ON 3/19 WHILE DRIVING ON THE FREEWAY"),
+    ],
+)
+def test_excerpt_scrubs_addresses_the_ingest_rule_misses(text, served):
     assert api.excerpt(text) == served
 
 

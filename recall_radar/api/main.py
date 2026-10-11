@@ -130,7 +130,11 @@ def index_month(i: int) -> str:
 # under freeze-v1's pipeline inputs, so the extra rule runs here, on what the site serves.
 # MS and DR only with a period (without one: a state, "DR OFFICE"); MR and MRS also without one,
 # unless a part name follows ("MRS CONTROL UNIT", "MR TIRE" the shop).
-_HONORIFIC = re.compile(r"\b(?:(?:MR|MRS|MS|DR)\.|(?:MR|MRS)(?=\s))\s+([A-Z][A-Z'-]*)(?:\s+([A-Z][A-Z'-]*))?")
+# Title in any case; name words start with a capital ("Ms. Jane Doe" in newer, sentence-case
+# complaints as well as "MS. JANE DOE"); B's review of #15/#17.
+_HONORIFIC = re.compile(
+    r"\b(?:(?i:mr|mrs|ms|dr)\.|(?i:mr|mrs)(?=\s))\s+([A-Z][A-Za-z'-]*)(?:\s+([A-Z][A-Za-z'-]*))?"
+)
 _NOT_A_NAME = frozenset("""
     A AN AND ARE AS AT BE BECAUSE BUT BY CALLED CAME CAR DID FOR FROM HAD HAS HAVE HE HER HIM HIS I
     IF IN IS IT ITS ME MY NO NOT OF ON OR OUR OUT SAID SHE SO THAT THE THEIR THEM THEN THERE THEY THIS
@@ -141,9 +145,9 @@ _NOT_A_NAME = frozenset("""
 
 def _scrub_honorific(m: re.Match[str]) -> str:
     first, second = m.group(1), m.group(2)
-    if first in _NOT_A_NAME:  # "...MAIN DR. AND THEN" is a street, not a person
+    if first.upper() in _NOT_A_NAME:  # "...MAIN DR. AND THEN" is a street, not a person
         return m.group(0)
-    if second is None or second in _NOT_A_NAME:
+    if second is None or second.upper() in _NOT_A_NAME:
         return "[NAME]" if second is None else f"[NAME] {second}"
     return "[NAME]"
 
@@ -153,8 +157,32 @@ def scrub_names(text: str) -> str:
     return _HONORIFIC.sub(_scrub_honorific, text)
 
 
+# Same shape as the ingest address rule (a number, 1-4 words, a street suffix; speeds and distances
+# excluded), for the suffixes that rule lacks. A9 found "<number> <name> WAY" and "... PIKE" served.
+_ADDRESS_EXTRA = re.compile(
+    r"\b\d{1,6}(?!\s*(?:MPH|MILES?|MI|KM|KPH|KMH|FEET|FT|YARDS?|MINUTES?|HOURS?|DAYS?|RPMS?|AM|PM)\b)"
+    r"((?:\s+[A-Za-z0-9.'-]+){1,4}?)\s+(?:WAY|PIKE|LOOP|FREEWAY|EXPRESSWAY|TURNPIKE|PLAZA|SQUARE|SQ)\b\.?",
+    re.IGNORECASE,
+)
+# A common word between the number and the suffix means a phrase, not a street name
+# ("2009 ALL THE WAY", "19 WHILE DRIVING ON THE FREEWAY").
+_NOT_A_STREET = _NOT_A_NAME | frozenset(
+    "ALL ANY DRIVING EACH ENTERING EXITING HALF LANE LANES LEFT MERGING ONE ONLY OTHER PART RIGHT SAME WHOLE WRONG".split()
+)
+
+
+def _scrub_address(m: re.Match[str]) -> str:
+    words = {w.strip(".,'-").upper() for w in m.group(1).split()}
+    return m.group(0) if words & _NOT_A_STREET else "[ADDRESS]"
+
+
+def scrub_addresses(text: str) -> str:
+    """Replace street addresses whose suffix the ingest rule does not know with [ADDRESS]."""
+    return _ADDRESS_EXTRA.sub(_scrub_address, text)
+
+
 def excerpt(text: str | None) -> str:
-    text = scrub_names(" ".join((text or "").split()))
+    text = scrub_addresses(scrub_names(" ".join((text or "").split())))
     if len(text) <= EXCERPT_CHARS:
         return text
     cut = text[: EXCERPT_CHARS - 1]
