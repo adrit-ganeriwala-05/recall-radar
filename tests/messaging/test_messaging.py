@@ -310,3 +310,35 @@ def test_analysis_api_never_imports_the_messaging_service():
 
     api_src = "\n".join(p.read_text() for p in pathlib.Path("recall_radar/api").glob("*.py"))
     assert "messaging" not in api_src
+
+
+# ---------------------------------------------------------------- B's review of #34
+
+
+def test_component_names_with_commas_stay_whole():
+    raw = "SERVICE BRAKES, HYDRAULIC:FOUNDATION COMPONENTS,FUEL SYSTEM, GASOLINE:DELIVERY,ENGINE"
+    assert monitor.split_components(raw) == ["SERVICE BRAKES, HYDRAULIC", "FUEL SYSTEM, GASOLINE", "ENGINE"]
+    assert monitor.split_components(None) == [] and monitor.split_components("ENGINE,ENGINE") == ["ENGINE"]
+
+
+def test_grounding_uses_only_values_put_in_the_reply(monkeypatch):
+    # a template that printed a number not read from tool output would be replaced by the source link
+    real = conversation._reply
+    monkeypatch.setattr(conversation, "_reply", lambda *a: real(*a).replace("35 distinct", "12 distinct"))
+    r, _ = conversation.answer("how many complaints for the 2017 example motors roadster", None, FakeAnalysis())
+    assert r.startswith("I couldn't check those numbers")
+
+
+def test_long_official_text_is_cut_visibly():
+    VEHICLE["recall_campaigns"][0]["summary"] = "word " * 200
+    try:
+        r, _ = conversation.answer("explain recall 18V000000 for the 2017 example motors roadster", None, FakeAnalysis())
+    finally:
+        VEHICLE["recall_campaigns"][0]["summary"] = "The bolt may loosen."
+    assert r.endswith("… (full text: https://www.nhtsa.gov/recalls)")
+
+
+def test_vehicle_unknown_to_nhtsa_is_labelled_not_silent(con):
+    enroll(con)
+    monitor.run(con, snap({}), now=at(9))
+    assert "NHTSA returned no complaints or recalls under this name" in say(con, "STATUS", "st-e")

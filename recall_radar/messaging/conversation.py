@@ -51,7 +51,7 @@ class Tools:
                "source_detail", "report_get")
 
     def __init__(self, a: Analysis):
-        self.a, self.calls, self.outputs = a, 0, []
+        self.a, self.calls, self.outputs, self.used = a, 0, [], []
 
     def call(self, name: str, **kw: Any) -> dict | None:
         if name not in self.ALLOWED:
@@ -70,10 +70,13 @@ class Tools:
             self.outputs.append(json.dumps(out))
         return out
 
-    def derived(self, value: int) -> int:
-        """A count computed from tool output (e.g. len of a list it returned) is grounded too."""
-        self.outputs.append(str(value))
+    def use(self, value):
+        """Record a value read from tool output (or counted from it) that goes into the reply; only these
+        ground the reply's numbers (B's review of #34: not every digit in the JSON)."""
+        self.used.append(str(value))
         return value
+
+    derived = use
 
 
 def answer(text: str, ctx: dict | None, a: Analysis, router: Callable[[str], str | None] = route_intent,
@@ -103,7 +106,7 @@ def answer(text: str, ctx: dict | None, a: Analysis, router: Callable[[str], str
     new_ctx = {"make": mk, "model": md, "model_year": yr, "campno": (ctx or {}).get("campno"), "expires_at": now + CONTEXT_S}
     tools = Tools(a)
     reply = _reply(intent or "problems", text, vehicle, tools, new_ctx)
-    if not numbers_grounded(reply, " ".join(tools.outputs) + f" {yr}"):
+    if not numbers_grounded(reply, " ".join(tools.used) + f" {yr}"):
         reply = f"I couldn't check those numbers, so here is the source instead: {T.link(yr, mk, md)}"
     return reply, new_ctx
 
@@ -120,17 +123,17 @@ def _reply(intent: str, text: str, v: tuple[str, str, int], tools: Tools, ctx: d
         asof = veh["provenance"].get("data_as_of") or "the current snapshot"
         groups = veh["components"]
         if intent == "count":
-            return (f"{name}: {veh['distinct_complaints']} distinct NHTSA complaint IDs in {tools.derived(len(groups))} component "
-                    f"groups (one complaint can name several components), data as of {asof}. Source: {url}")
+            return (f"{name}: {tools.use(veh['distinct_complaints'])} distinct NHTSA complaint IDs in {tools.derived(len(groups))} component "
+                    f"groups (one complaint can name several components), data as of {tools.use(asof)}. Source: {url}")
         if intent == "trend":
             months = veh["monthly"][-12:]
             peak = max(months, key=lambda m: m["n_distinct"]) if months else None
             if not peak:
                 return f"No monthly complaint counts for the {name}. Source: {url}"
-            return (f"{name}: in the last {tools.derived(len(months))} months of data, the busiest month was {peak['month']} with "
-                    f"{peak['n_distinct']} distinct complaints (data as of {asof}). Chart: {url}")
-        top = ", ".join(f"{g['group']['comp_system']} ({g['group']['distinct_complaints']})" for g in groups[:3])
-        return f"Most reported components for the {name}: {top}. Counts are distinct complaints, data as of {asof}. Source: {url}"
+            return (f"{name}: in the last {tools.derived(len(months))} months of data, the busiest month was {tools.use(peak['month'])} with "
+                    f"{tools.use(peak['n_distinct'])} distinct complaints (data as of {tools.use(asof)}). Chart: {url}")
+        top = ", ".join(f"{g['group']['comp_system']} ({tools.use(g['group']['distinct_complaints'])})" for g in groups[:3])
+        return f"Most reported components for the {name}: {top}. Counts are distinct complaints, data as of {tools.use(asof)}. Source: {url}"
     if intent in ("recall_count", "explain_recall", "remedy"):
         veh = tools.call("recall_lookup", vehicle=v)
         if not veh:
@@ -142,11 +145,14 @@ def _reply(intent: str, text: str, v: tuple[str, str, int], tools: Tools, ctx: d
         want = re.search(r"\b(\d{2}V\d{3,6})\b", text.upper())
         camp = next((c for c in camps if want and c["campno"].startswith(want.group(1))), None) or (camps[0] if len(camps) == 1 else None)
         if camp is None:
-            return f"Which campaign? The {name} has: {', '.join(c['campno'] for c in camps[:6]) or 'none in the data'}."
+            return f"Which campaign? The {name} has: {', '.join(tools.use(c['campno']) for c in camps[:6]) or 'none in the data'}."
         ctx["campno"] = camp["campno"]
         field = "remedy" if intent == "remedy" else "summary"
         official = camp.get(field)
         if not official:
-            return f"Campaign {camp['campno']} has no official {field} text in the data. Source: https://www.nhtsa.gov/recalls"
-        return f"Official NHTSA text for campaign {camp['campno']} ({field}): {official[:500]}"
+            return f"Campaign {tools.use(camp['campno'])} has no official {field} text in the data. Source: https://www.nhtsa.gov/recalls"
+        tools.use(camp["campno"])
+        tools.use(official)
+        short = official if len(official) <= 500 else official[:500].rsplit(" ", 1)[0] + "… (full text: https://www.nhtsa.gov/recalls)"
+        return f"Official NHTSA text for campaign {camp['campno']} ({field}): {short}"
     return T.HELP

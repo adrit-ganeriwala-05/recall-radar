@@ -5,6 +5,7 @@ more than one day is labeled catch-up. No new detector score is computed here.""
 from __future__ import annotations
 
 import json
+import re
 import sqlite3
 import time
 import urllib.parse
@@ -19,6 +20,13 @@ from .outbox import enqueue
 Fetched = dict  # {"complaints": {odino: [components]}, "campnos": set, "source_updated": str}
 
 
+def split_components(value: object) -> list[str]:
+    """'SERVICE BRAKES, HYDRAULIC:FOUNDATION,ENGINE' → ['SERVICE BRAKES, HYDRAULIC', 'ENGINE']: names may contain
+    ', ' themselves, so only a comma NOT followed by a space separates two components (B's review of #34)."""
+    parts = [x.split(":")[0].strip() for x in re.split(r",(?! )", str(value or ""))]
+    return list(dict.fromkeys(x for x in parts if x))
+
+
 def nhtsa_fetch(make: str, model: str, year: int, timeout_s: float = 10) -> Fetched:
     """Documented public endpoints (api.nhtsa.gov). Called only by the scheduled monitor, never per request."""
     q = urllib.parse.urlencode({"make": make, "model": model, "modelYear": year})
@@ -27,8 +35,7 @@ def nhtsa_fetch(make: str, model: str, year: int, timeout_s: float = 10) -> Fetc
             return json.loads(r.read())
     comp = get("/complaints/complaintsByVehicle").get("results", [])
     rec = get("/recalls/recallsByVehicle").get("results", [])
-    return {"complaints": {str(c["odiNumber"]): [x.split(":")[0].strip() for x in str(c.get("components", "")).split(",") if x]
-                           for c in comp},
+    return {"complaints": {str(c["odiNumber"]): split_components(c.get("components")) for c in comp},
             "campnos": {str(r["NHTSACampaignNumber"]) for r in rec},
             "source_updated": datetime.now(UTC).date().isoformat()}
 
@@ -47,8 +54,8 @@ def run(con: sqlite3.Connection, fetch: Callable[[str, str, int], Fetched], now:
         prev = con.execute("""SELECT * FROM monitor_snapshot WHERE make = ? AND model = ? AND model_year = ?
                               ORDER BY id DESC LIMIT 1""", [mk, md, yr]).fetchone()
         con.execute("INSERT INTO monitor_snapshot (make, model, model_year, fetched_at, coverage, source_updated, odinos, campnos) "
-                    "VALUES (?, ?, ?, ?, 'complaints+recalls', ?, ?, ?)",
-                    [mk, md, yr, now, got["source_updated"], json.dumps(got["complaints"]), json.dumps(sorted(got["campnos"]))])
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    [mk, md, yr, now, "complaints+recalls" if got["complaints"] or got["campnos"] else "empty", got["source_updated"], json.dumps(got["complaints"]), json.dumps(sorted(got["campnos"]))])
         if prev is None:
             continue  # first run seeds silently
         old_c, old_r = json.loads(prev["odinos"]), set(json.loads(prev["campnos"]))

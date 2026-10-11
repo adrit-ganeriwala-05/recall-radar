@@ -68,12 +68,14 @@ def run(con: sqlite3.Connection, route: str, text: str, a: Analysis) -> str | No
         return ("Deleted the records Recall Radar kept about this chat. Copies held by Apple, Photon or your device "
                 "are outside our control.")
     if cmd == "STATUS":
-        snap = con.execute("""SELECT max(fetched_at) t, max(source_updated) u FROM monitor_snapshot
-                              WHERE make = ? AND model = ? AND model_year = ?""",
+        snap = con.execute("""SELECT fetched_at t, source_updated u, coverage c FROM monitor_snapshot
+                              WHERE make = ? AND model = ? AND model_year = ? ORDER BY id DESC LIMIT 1""",
                            [sub["make"], sub["model"], sub["model_year"]]).fetchone()
         last = time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime(snap["t"])) if snap and snap["t"] else "not yet"
         return (f"Watching: {sub['model_year']} {sub['make']} {sub['model']} ({sub['status']}). Last check of NHTSA's "
-                f"published data: {last}; NHTSA source updated: {snap['u'] if snap and snap['u'] else 'unknown'}.")
+                f"published data: {last}; NHTSA source updated: {snap['u'] if snap and snap['u'] else 'unknown'}."
+                + (" NHTSA returned no complaints or recalls under this name, so no updates can be sent for it."
+                   if snap and snap["c"] == "empty" else ""))
     if cmd in ("DETAILS", "WHY"):
         ev = con.execute("""SELECT * FROM monitor_event WHERE make = ? AND model = ? AND model_year = ?
                             ORDER BY id DESC LIMIT 1""", [sub["make"], sub["model"], sub["model_year"]]).fetchone()
