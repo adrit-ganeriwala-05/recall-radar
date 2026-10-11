@@ -100,6 +100,8 @@ produce byte-identical `exports/results*.json|csv` (B's reproducibility test).
 | `/api/results?period=development\|held_out` | EvaluationSummary | 503 `unavailable` until the export exists |
 | `/api/hero` | HeroPointer | 503 until frozen rule has run |
 | `/api/export/results.csv?period=` | text/csv | same rows as the results page |
+| `/api/symptom-index?make=&model=&year=` | SymptomIndex | 1.1.0 (F7): ≤ 2,000 redacted docs newest first, ≤ 1.5 MB gzip; vehicle keys only, the query text never reaches the server; current cached snapshot, never used by replay |
+| `/api/report?make=&model=&year=` | ReportData | 1.1.0 (F8): from `select_report_data()`; counts equal `/api/vehicle` |
 Query values are case-insensitive and normalized. `page ≥ 1`, `1 ≤ page_size ≤ 100`.
 Errors: `ErrorResponse {"error":{"code","message","detail"}}` with HTTP 400 invalid_parameter,
 404 not_found, 503 unavailable, 500 internal. Responses set `Cache-Control: max-age=3600`.
@@ -135,3 +137,11 @@ defect in the producer or a change request, never a reason to edit the contract 
   collision suffix, §5 storage notes). No shape change; C sent no comments.
 - 1.0.0 (2026-10-10, A3): family_id suffix is a 6-hex hash of make|model|system (a system
   name alone still collides when one action covers two models). Doc only.
+- 1.1.0 (2026-10-11, PRD v2 §5): additive only. Optional fields on `RecallCampaign` (summary, consequence,
+  remedy, park_it, park_outside — strict booleans, report_date_basis, source_url, snapshot_id, explanation) and
+  `ReplayMarker` (campno, link); new models `ExplanationSentence`, `RecallExplanation`, `SymptomDoc`,
+  `SymptomAlias`, `SymptomConcept`, `SymptomIndex`, `DateRange`, `ReportGroup`, `ReportInvestigation`,
+  `ReportData` (`ReportInvestigation.open_date` nullable; `SymptomConcept.require_all`/`exclude`, after B's
+  review); endpoints `/api/symptom-index`, `/api/report`. No existing field, route or shape changes.
+  Frozen `exports/demo` files keep `contract_version` 1.0.0 and validate unchanged under 1.1.0: a payload
+  is compatible when its major version matches.

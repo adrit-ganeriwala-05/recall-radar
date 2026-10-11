@@ -168,6 +168,8 @@ export type Odino = string;
  * via the `definition` "DataLabel".
  */
 export type DataLabel = "synthetic_fixture" | "cached_real" | "measured_evaluation";
+export type End = string | null;
+export type Start = string | null;
 /**
  * This interface was referenced by `RecallRadarContracts`'s JSON-Schema
  * via the `definition` "ErrorCode".
@@ -256,6 +258,17 @@ export type GitSha = string | null;
 export type SnapshotId = string | null;
 export type RunId = string;
 export type Seed = number;
+/**
+ * @minItems 1
+ */
+export type SourceFields = ["summary" | "consequence" | "remedy", ...("summary" | "consequence" | "remedy")[]];
+/**
+ * Verbatim substrings of the cited official fields
+ *
+ * @minItems 1
+ */
+export type SourceSpans = [string, ...string[]];
+export type Text = string;
 export type EpisodeId3 = string;
 export type Rule = string;
 /**
@@ -313,7 +326,7 @@ export type Odinos = [string, ...string[]];
 /**
  * No digits; no banned words; validated before storage
  */
-export type Text = string;
+export type Text1 = string;
 /**
  * Sorted ascending; years as integers
  */
@@ -322,7 +335,31 @@ export type ComplaintReceivedRange = [unknown, unknown] | null;
 export type Mode = "cached" | "fixture";
 export type Campno = string;
 export type Component = string;
+export type Consequence = string | null;
+export type Model2 = string | null;
+export type PromptVersion1 = string | null;
+/**
+ * @maxItems 2
+ */
+export type Sentences = [] | [ExplanationSentence] | [ExplanationSentence, ExplanationSentence];
+export type Status1 = "accepted" | "fallback";
+/**
+ * Do-not-drive flag; null = unknown (never shown)
+ */
+export type ParkIt = boolean | null;
+/**
+ * Park-outside flag; null = unknown (never shown)
+ */
+export type ParkOutside = boolean | null;
+export type Remedy = string | null;
 export type ReportDate = string | null;
+/**
+ * Which source date `report_date` is
+ */
+export type ReportDateBasis = string | null;
+export type SnapshotId1 = string | null;
+export type SourceUrl = string | null;
+export type Summary = string | null;
 export type Banner = string;
 export type CompSystem4 = string;
 export type EpisodeId4 = string;
@@ -345,6 +382,10 @@ export type Score1 = number | null;
 export type Frames = ReplayFrame[];
 export type GroupId2 = string;
 export type ActionNo = string | null;
+/**
+ * NHTSA campaign of a recall_reported marker
+ */
+export type Campno1 = string | null;
 export type Date = string;
 /**
  * True for investigation/recall markers: a later reveal, never detector input
@@ -352,11 +393,105 @@ export type Date = string;
 export type IsOutcome = boolean;
 export type Label1 = string;
 export type LeadDays2 = number | null;
+/**
+ * issue: campaign of the episode's matched investigation family; vehicle: other campaign for the same make/model/year ('Other recall for this model')
+ */
+export type Link = ("issue" | "vehicle") | null;
 export type Type = "alert" | "investigation_opened" | "recall_reported";
 /**
  * Ascending by date
  */
 export type Markers = ReplayMarker[];
+/**
+ * @maxItems 6
+ */
+export type Campaigns =
+  | []
+  | [RecallCampaign]
+  | [RecallCampaign, RecallCampaign]
+  | [RecallCampaign, RecallCampaign, RecallCampaign]
+  | [RecallCampaign, RecallCampaign, RecallCampaign, RecallCampaign]
+  | [RecallCampaign, RecallCampaign, RecallCampaign, RecallCampaign, RecallCampaign]
+  | [RecallCampaign, RecallCampaign, RecallCampaign, RecallCampaign, RecallCampaign, RecallCampaign];
+export type CountingBasis = "distinct NHTSA complaint IDs";
+export type DistinctComplaints1 = number;
+/**
+ * @maxItems 5
+ */
+export type Investigations =
+  | []
+  | [ReportInvestigation]
+  | [ReportInvestigation, ReportInvestigation]
+  | [ReportInvestigation, ReportInvestigation, ReportInvestigation]
+  | [ReportInvestigation, ReportInvestigation, ReportInvestigation, ReportInvestigation]
+  | [ReportInvestigation, ReportInvestigation, ReportInvestigation, ReportInvestigation, ReportInvestigation];
+export type ActionNo1 = string;
+export type Link1 = string;
+/**
+ * INV ODATE; null for the ~108 actions without one (listed last)
+ */
+export type OpenDate = string | null;
+export type Subject = string | null;
+export type SelectionRule = string;
+/**
+ * len(top_groups)
+ */
+export type ShownN = number;
+export type SnapshotDate = string | null;
+/**
+ * @maxItems 5
+ */
+export type TopGroups =
+  | []
+  | [ReportGroup]
+  | [ReportGroup, ReportGroup]
+  | [ReportGroup, ReportGroup, ReportGroup]
+  | [ReportGroup, ReportGroup, ReportGroup, ReportGroup]
+  | [ReportGroup, ReportGroup, ReportGroup, ReportGroup, ReportGroup];
+export type DistinctComplaints2 = number;
+/**
+ * App path of the issue page
+ */
+export type Link2 = string;
+export type TotalCampaigns = number;
+export type TotalGroups = number;
+export type TotalInvestigations = number;
+export type VinLookupUrl = "https://www.nhtsa.gov/recalls";
+/**
+ * @minItems 1
+ */
+export type Concepts = [string, ...string[]];
+export type Phrase = string;
+export type CompSystems1 = string[];
+/**
+ * A doc containing any of these is not this concept
+ */
+export type Exclude = string[];
+export type Id = string;
+export type Label2 = string;
+/**
+ * Every inner list must match at least one of its phrases
+ */
+export type RequireAll = string[][];
+export type Terms = string[];
+export type AvailDate1 = string;
+export type CompSystems2 = string[];
+/**
+ * Redacted at ingest and again at serving time
+ */
+export type Excerpt1 = string;
+export type GroupId3 = string | null;
+export type NhtsaUrl1 = string;
+export type Odino1 = string;
+export type Aliases = SymptomAlias[];
+export type Concepts1 = SymptomConcept[];
+/**
+ * Newest first (avail_date desc, then odino desc)
+ *
+ * @maxItems 2000
+ */
+export type Docs = SymptomDoc[];
+export type SnapshotLabel = "current cached snapshot";
 /**
  * Ascending by alert_date
  */
@@ -368,7 +503,7 @@ export type Components = VehicleComponent[];
 /**
  * Distinct ODINO for the vehicle, all systems
  */
-export type DistinctComplaints1 = number;
+export type DistinctComplaints3 = number;
 /**
  * Vehicle-level distinct complaints per month, ascending
  */
@@ -378,10 +513,10 @@ export type Note1 = string;
  * Model-level, deduplicated by campno
  */
 export type RecallCampaigns = RecallCampaign[];
-export type VinLookupUrl = "https://www.nhtsa.gov/recalls";
+export type VinLookupUrl1 = "https://www.nhtsa.gov/recalls";
 
 /**
- * Recall Radar contracts v1.0.0. Generated; do not edit.
+ * Recall Radar contracts v1.1.0. Generated; do not edit.
  */
 export interface RecallRadarContracts {
   [k: string]: unknown;
@@ -482,6 +617,14 @@ export interface Complaint {
 }
 /**
  * This interface was referenced by `RecallRadarContracts`'s JSON-Schema
+ * via the `definition` "DateRange".
+ */
+export interface DateRange {
+  end: End;
+  start: Start;
+}
+/**
+ * This interface was referenced by `RecallRadarContracts`'s JSON-Schema
  * via the `definition` "ErrorBody".
  */
 export interface ErrorBody {
@@ -568,6 +711,17 @@ export interface Provenance {
   snapshot_id: SnapshotId;
 }
 /**
+ * One plain-language sentence (F2). Every claim must be traceable to the official text.
+ *
+ * This interface was referenced by `RecallRadarContracts`'s JSON-Schema
+ * via the `definition` "ExplanationSentence".
+ */
+export interface ExplanationSentence {
+  source_fields: SourceFields;
+  source_spans: SourceSpans;
+  text: Text;
+}
+/**
  * exports/demo/hero.json — which replay the pitch uses and why.
  *
  * This interface was referenced by `RecallRadarContracts`'s JSON-Schema
@@ -648,7 +802,7 @@ export interface IssueSummary {
  */
 export interface SummaryStatement {
   odinos: Odinos;
-  text: Text;
+  text: Text1;
 }
 /**
  * This interface was referenced by `RecallRadarContracts`'s JSON-Schema
@@ -693,7 +847,28 @@ export interface PageComplaint1 {
 export interface RecallCampaign {
   campno: Campno;
   component: Component;
+  consequence?: Consequence;
+  explanation?: RecallExplanation | null;
+  park_it?: ParkIt;
+  park_outside?: ParkOutside;
+  remedy?: Remedy;
   report_date: ReportDate;
+  report_date_basis?: ReportDateBasis;
+  snapshot_id?: SnapshotId1;
+  source_url?: SourceUrl;
+  summary?: Summary;
+}
+/**
+ * F2. `fallback` = show the official text only (never labeled AI); it carries no sentences.
+ *
+ * This interface was referenced by `RecallRadarContracts`'s JSON-Schema
+ * via the `definition` "RecallExplanation".
+ */
+export interface RecallExplanation {
+  model?: Model2;
+  prompt_version?: PromptVersion1;
+  sentences?: Sentences;
+  status: Status1;
 }
 /**
  * This interface was referenced by `RecallRadarContracts`'s JSON-Schema
@@ -733,12 +908,106 @@ export interface ReplayFrame {
  */
 export interface ReplayMarker {
   action_no: ActionNo;
+  campno?: Campno1;
   date: Date;
   is_outcome: IsOutcome;
   label: Label1;
   lead_days: LeadDays2;
+  link?: Link;
   match_tier: MatchTier | null;
   type: Type;
+}
+/**
+ * GET /api/report: data for the one-page buyer report; counts equal /api/vehicle.
+ *
+ * This interface was referenced by `RecallRadarContracts`'s JSON-Schema
+ * via the `definition` "ReportData".
+ */
+export interface ReportData {
+  campaigns: Campaigns;
+  complaint_date_range: DateRange;
+  counting_basis?: CountingBasis;
+  distinct_complaints: DistinctComplaints1;
+  investigations: Investigations;
+  provenance: Provenance;
+  selection_rule: SelectionRule;
+  shown_n: ShownN;
+  snapshot_date: SnapshotDate;
+  top_groups: TopGroups;
+  total_campaigns?: TotalCampaigns;
+  total_groups: TotalGroups;
+  total_investigations?: TotalInvestigations;
+  vehicle: VehicleKey;
+  vin_lookup_url?: VinLookupUrl;
+}
+/**
+ * This interface was referenced by `RecallRadarContracts`'s JSON-Schema
+ * via the `definition` "ReportInvestigation".
+ */
+export interface ReportInvestigation {
+  action_no: ActionNo1;
+  inv_type: InvType;
+  link: Link1;
+  open_date: OpenDate;
+  subject: Subject;
+}
+/**
+ * This interface was referenced by `RecallRadarContracts`'s JSON-Schema
+ * via the `definition` "ReportGroup".
+ */
+export interface ReportGroup {
+  distinct_complaints: DistinctComplaints2;
+  group: IssueGroup;
+  link: Link2;
+}
+/**
+ * This interface was referenced by `RecallRadarContracts`'s JSON-Schema
+ * via the `definition` "SymptomAlias".
+ */
+export interface SymptomAlias {
+  concepts: Concepts;
+  phrase: Phrase;
+}
+/**
+ * A doc matches when one of its comp_systems is listed, every `require_all` group has a phrase
+ * present, and no `exclude` phrase is present (keeps PRD F7.2 pairs apart); `terms` highlights.
+ *
+ * This interface was referenced by `RecallRadarContracts`'s JSON-Schema
+ * via the `definition` "SymptomConcept".
+ */
+export interface SymptomConcept {
+  comp_systems: CompSystems1;
+  exclude?: Exclude;
+  id: Id;
+  label: Label2;
+  require_all?: RequireAll;
+  terms: Terms;
+}
+/**
+ * This interface was referenced by `RecallRadarContracts`'s JSON-Schema
+ * via the `definition` "SymptomDoc".
+ */
+export interface SymptomDoc {
+  avail_date: AvailDate1;
+  comp_systems: CompSystems2;
+  excerpt: Excerpt1;
+  group_id?: GroupId3;
+  nhtsa_url: NhtsaUrl1;
+  odino: Odino1;
+}
+/**
+ * GET /api/symptom-index: searched in the browser; the query never reaches the server.
+ *
+ * This interface was referenced by `RecallRadarContracts`'s JSON-Schema
+ * via the `definition` "SymptomIndex".
+ */
+export interface SymptomIndex {
+  aliases: Aliases;
+  concepts: Concepts1;
+  docs: Docs;
+  provenance: Provenance;
+  snapshot_label?: SnapshotLabel;
+  vehicle: VehicleKey;
 }
 /**
  * This interface was referenced by `RecallRadarContracts`'s JSON-Schema
@@ -754,11 +1023,11 @@ export interface VehicleComponent {
  */
 export interface VehicleResponse {
   components: Components;
-  distinct_complaints: DistinctComplaints1;
+  distinct_complaints: DistinctComplaints3;
   monthly: Monthly;
   note: Note1;
   provenance: Provenance;
   recall_campaigns: RecallCampaigns;
   vehicle: VehicleKey;
-  vin_lookup_url?: VinLookupUrl;
+  vin_lookup_url?: VinLookupUrl1;
 }
