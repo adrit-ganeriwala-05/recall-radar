@@ -1,3 +1,4 @@
+import type React from "react";
 // Owner: C. Small SVG bar chart with a table view. Custom SVG (not a chart library) so that
 // tests can assert exactly which bars are drawn, and so alert/partial months carry text and
 // pattern, not color alone.
@@ -20,6 +21,17 @@ export interface ChartMarker {
   text: string; // full label, also inside the marker element (screen readers, tests)
   outcome: boolean;
   testId: "marker-alert" | "marker-investigation" | "marker-recall";
+  campno?: string; // PRD v2 F3: recall markers open their campaign card
+  onActivate?: (el: Element) => void;
+}
+
+const MAX_STACK = 4; // markers drawn per month; the rest are counted ("+n") and listed as buttons below
+
+function activateOnKey(e: React.KeyboardEvent<Element>, m: ChartMarker) {
+  if (m.onActivate && (e.key === "Enter" || e.key === " ")) {
+    e.preventDefault();
+    m.onActivate(e.currentTarget);
+  }
 }
 
 interface Props {
@@ -127,19 +139,27 @@ export function BarChart({ title, valueLabel, points, markers = [], extraHeaders
                       partial
                     </text>
                   )}
-                  {markersAt(p.key).map((m, j) => (
+                  {markersAt(p.key).slice(0, MAX_STACK).map((m, j) => (
                     <text
                       key={m.text}
                       data-testid={m.testId}
                       x={x + (SLOT - 6) / 2}
                       y={TOP - 8 - j * 14}
                       textAnchor="middle"
-                      className={m.outcome ? "marker marker-outcome" : "marker marker-alert"}
+                      className={`${m.outcome ? "marker marker-outcome" : "marker marker-alert"}${m.onActivate ? " marker-button" : ""}`}
+                      {...(m.onActivate
+                        ? { role: "button", tabIndex: 0, "aria-label": m.text, onClick: (e: React.MouseEvent<Element>) => m.onActivate!(e.currentTarget), onKeyDown: (e: React.KeyboardEvent<Element>) => activateOnKey(e, m) }
+                        : {})}
                     >
                       {m.symbol}
                       <title>{m.text}</title>
                     </text>
                   ))}
+                  {markersAt(p.key).length > MAX_STACK && (
+                    <text x={x + (SLOT - 6) / 2} y={TOP - 8 - MAX_STACK * 14} textAnchor="middle" className="marker-more">
+                      +{markersAt(p.key).length - MAX_STACK}
+                    </text>
+                  )}
                   {showTick && (
                     <text x={x + (SLOT - 6) / 2} y={H - BOTTOM + 14} className="tick" textAnchor="middle">
                       {shortMonth(p.key)}
@@ -172,7 +192,13 @@ export function BarChart({ title, valueLabel, points, markers = [], extraHeaders
                 <span className={m.outcome ? "marker-outcome" : "marker-alert"} aria-hidden="true">
                   {m.symbol}
                 </span>{" "}
-                {m.text}
+                {m.onActivate ? (
+                  <button type="button" className="link-button" data-testid="recall-marker-button" onClick={(e) => m.onActivate!(e.currentTarget)}>
+                    {m.text}
+                  </button>
+                ) : (
+                  m.text
+                )}
               </li>
             ))}
           </ul>

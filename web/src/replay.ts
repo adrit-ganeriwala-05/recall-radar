@@ -15,8 +15,17 @@ export function markerAnchor(marker: ReplayMarker, frames: ReplayFrame[]): strin
   return frames.find((f) => f.cutoff >= marker.date)?.month ?? null;
 }
 
+/** PRD v2 F3.3: a recall marker appears only once the frame cutoff is past its date (or "Show later outcomes"). */
+export function recallVisible(marker: ReplayMarker, frame: ReplayFrame, showLater: boolean): boolean {
+  return showLater || frame.cutoff > marker.date;
+}
+
 export function markerText(m: ReplayMarker): string {
   if (m.type === "alert") return `Alert · ${dateText(m.date)}`;
+  if (m.type === "recall_reported" && m.campno && m.link) {
+    const kind = m.link === "issue" ? "Recall linked to this issue" : "Other recall for this model";
+    return `${kind}: campaign ${m.campno} reported (later reveal) · ${dateText(m.date)}`;
+  }
   // The producer's label may already say what it is and that it is a later reveal; add only what is missing.
   let label = m.label;
   if (m.type === "investigation_opened" && !/investigation/i.test(label)) label = `Investigation opened: ${label}`;
@@ -38,16 +47,26 @@ export function framePoints(frames: ReplayFrame[], index: number): BarPoint[] {
   });
 }
 
-export function frameMarkers(frames: ReplayFrame[], markers: ReplayMarker[], index: number): ChartMarker[] {
+export function frameMarkers(
+  frames: ReplayFrame[],
+  markers: ReplayMarker[],
+  index: number,
+  opts: { showLater?: boolean; onRecall?: (campno: string, el: Element) => void } = {},
+): ChartMarker[] {
   const current = frames[index];
   if (!current) return [];
   const out: ChartMarker[] = [];
   for (const m of markers) {
-    if (!markerVisible(m, current)) continue;
-    const key = markerAnchor(m, frames);
+    const isLinkedRecall = m.type === "recall_reported" && !!m.campno && !!m.link;
+    if (isLinkedRecall ? !recallVisible(m, current, !!opts.showLater) : !markerVisible(m, current)) continue;
+    const key = markerAnchor(m, frames) ?? (isLinkedRecall && opts.showLater ? frames[frames.length - 1]?.month ?? null : null);
     if (key === null) continue;
     const testId = m.type === "alert" ? "marker-alert" : m.type === "investigation_opened" ? "marker-investigation" : "marker-recall";
-    out.push({ key, symbol: m.is_outcome ? "◆" : "▲", text: markerText(m), outcome: m.is_outcome, testId });
+    const campno = isLinkedRecall ? m.campno! : undefined;
+    out.push({
+      key, symbol: m.is_outcome ? "◆" : "▲", text: markerText(m), outcome: m.is_outcome, testId, campno,
+      onActivate: campno && opts.onRecall ? (el: Element) => opts.onRecall!(campno, el) : undefined,
+    });
   }
   return out;
 }
