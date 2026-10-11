@@ -420,3 +420,10 @@ judged ids equal the current top results: yes
   urgency the text lacks; no dropped may / some / certain / if equipped; no banned word; no claim about the
   reader's own car. A rejected output is not retried; timeouts and errors get one retry; everything else is fallback.
 - Cache key: campno | sha256(summary, consequence, remedy) | model | prompt version.
+- **Nothing is served as accepted on the strength of the batch run alone** (PRD F2.6). The API checks only the
+  contract shape, so the last step before a tables file goes into a serving database is
+  `python -m recall_radar.b_v2.recall_explain --campaign-db <v2 db> --out <tables> --finalize`: an accepted row
+  stays accepted only if (1) its cache key still matches the official text in that database, (2) the full
+  validator accepts it again, and (3) `review/explanation_verdicts.csv` holds B's `accept` for that exact cache
+  key. Every other accepted row becomes `fallback` with the reason. `--review-sheet <file>` writes what B has to
+  read: each accepted explanation next to its official text. An explanation B did not read stays `fallback`.

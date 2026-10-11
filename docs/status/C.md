@@ -4,12 +4,12 @@ Restart memory for session rr-C. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-11 01:45 ET (stand-in session, PRD v2 build)
-- Branch / HEAD: c/integration @ see `git log -1` (PR: C integration). Earlier: c/web @ see `git log -1` (stand-in commits: ca03073 merge main, 738e88a fixes, status; PR #5 merged at 22e781a; then main f4eac57 fast-forward + verdict margin fix) · PR #10
-- Last origin/main merged: b8960cd (01:45 train #39 + #36)
+- Updated: 2026-10-11 02:55 ET (stand-in session, PRD v2 build)
+- Branch / HEAD: C's v2 PRs all merged (#29 #32 #36 #42; main 4398728). Earlier: c/web @ see `git log -1` (stand-in commits: ca03073 merge main, 738e88a fixes, status; PR #5 merged at 22e781a; then main f4eac57 fast-forward + verdict margin fix) · PR #10
+- Last origin/main merged: 4398728 (train #47)
 - Contract version: 1.1.0
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a (main) / LDATE_PLUS_7
-- Mode: building (cutoff 03:45); integration (mounts for F5/F6/F8) after the 01:45 merges
+- Mode: feature work done; Gate B 03:45–04:20 (Vitest, typecheck, build, agreement tests, 360 px keyboard pass, console, offline)
 
 ## PRD v2 (2026-10-11) — C's parts; PRD §9 words, nothing `verified` before Gate B
 | Feature | PR | Status | Evidence |
@@ -19,8 +19,8 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 | F7 search UI | #32 merged | implemented-unverified (B ok) | parity with review/symptom_parity.json (77 queries) + UI privacy tests |
 | F3 markers | #36 merged | implemented-unverified (D ok a3b4d1b) | recall-markers tests (7); real hero E-0167; B's #36 finding fixed |
 | Reviews owed | — | done | D's F5 #33 ok; D's F8 #35 ok (with A's parity); A's F6 #31 reviewed (not independent: same session) |
-| Integration | c/integration | implemented-unverified | /report (F5), /vehicle/report (F8), /vin + landing VinCheck (F6), header + vehicle links, each behind its flag; vitest 204, tsc 0; D's e2e report/buyer-report/smoke on real data 8 passed 4 skipped (phone PDF); 360 px sweep 46 pages 0 overflow 0 console errors |
-| Fix (F1) | c/integration a917aae | implemented-unverified | recall card overflowed to 434 px at 360 px (long NHTSA URL in official text) → `min-width:0; overflow-wrap:anywhere` |
+| Integration | #42 merged (D ok 762eebc) | implemented-unverified | /report (F5), /vehicle/report (F8), /vin + landing VinCheck (F6), header + vehicle links, each behind its flag; vitest 204, tsc 0; D's e2e report/buyer-report/smoke on real data 8 passed 4 skipped (phone PDF); 360 px sweep 46 pages 0 overflow 0 console errors |
+| Fix (F1) | #42 merged | implemented-unverified | recall card overflowed to 434 px at 360 px (long NHTSA URL in official text) → `min-width:0; overflow-wrap:anywhere` |
 
 ## Done (task id → commit → evidence)
 - Contract review §6–7 → 295e435 → `docs/handoffs/20261010-1610-C-to-A-contract-review-ack.md` (no change requested; B item 12 acked)
