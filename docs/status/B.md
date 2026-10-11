@@ -4,9 +4,9 @@ Restart memory for session rr-B. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-11 01:15 ET
-- **v2 in progress (PRD_v2 FINAL, feature cutoff 03:45).** Branch b/v2 = PR #27 (check `git log` for the tip). b/method still holds PR #22 (docs).
-- Last origin/main merged: ba839ba (contract v1.1.0, PR #25), merged 01:15 ET
+- Updated: 2026-10-11 01:40 ET
+- **v2 in progress (PRD_v2 FINAL, feature cutoff 03:45).** All of B's v2 code is on main (01:45 train, PR #39 → main faa12f9). Work branch: b/v2 (docs follow-ups; check `git log`).
+- Last origin/main merged: faa12f9 (train: #28 #27 #26 #30 #31 #34 #29 #32 #33 #35 #37), fast-forward 01:38 ET
 - Contract: 1.1.0 on main
 - Snapshot id / config hash / availability basis: e808281f001a / 0c26e23e0a3a / LDATE_PLUS_7
 - Freeze: `freeze-v1` → dd6b439. v2 code of B lives in `recall_radar/b_v2/` because the freeze covers all of `recall_radar/method/`.
@@ -95,16 +95,19 @@ has run `git branch --show-current && git rev-parse --short HEAD && make whoami`
 - Protection at A's F1 build (7150583, built on my machine): `python -m recall_radar.b_v2.protect data/for_D_1c8dd4b/recall_radar.duckdb <v2>` → PROTECTED TABLES: IDENTICAL (`logs/protected_v2_a7150583.txt`).
 - **F3 applied to the committed bundle** (01:15, after contract 1.1.0 reached main): `python -m recall_radar.b_v2.recall_markers --db data/for_D_1c8dd4b/recall_radar.duckdb` → 21 replays rewritten, 81 issue-linked + 167 other-for-this-model markers, 5 undated family campaigns without a marker; the five protected files keep the certificate's sha256; `--check` → 0 left. F2 loader now reads `recall_campaign_v2`.
 
+- 01:14–01:38: contract 1.1.0 reached main (ba839ba); F3 applied and pushed into PR #27 (head 0358cd5), A: "Reviewed 0358cd5: ok". Re-reviews at the heads with main merged: #26 be6bc9b, #28 6af9ade, #30 f98f2d4, #31 dc844f9, #32 f5f60e8. New reviews: #34 F9 messaging `Reviewed 3cb488f: ok` then `9be642d` (A fixed comma-containing component names, grounding on used values, visible truncation); data note on C's #36 (66 of 81 issue-linked markers have no card on the replay's own vehicle → C changed the drawer text); note on D's #37.
+- **Merge train check (PR #38 at dfed025) → pass**: my paths == 0358cd5; frozen paths == freeze-v1; five protected sha256 == certificate; `uv run pytest` → 511 passed; protected tables identical on a v2 DB built with the train's code.
+- **After the 01:45 window, main faa12f9** (01:40): `make check` → 540 passed, 1 xfailed; web 193; ownership 0. v2 DB built with main's code at `data/v2/recall_radar_v2.duckdb` (gitignored): `python -m recall_radar.b_v2.protect data/for_D_1c8dd4b/recall_radar.duckdb data/v2/recall_radar_v2.duckdb` → PROTECTED TABLES: IDENTICAL (`logs/protected_main_faa12f9.txt`). real_data `tests/method` + `tests/api` with `RR_DATA_DIR=data/v2` → 14 passed. `python -m recall_radar.b_v2.symptom_eval --db …` → unchanged. Local serve of main on the v2 DB: `RR_RELEASE=1 RR_BASE_URL=http://127.0.0.1:8137 uv run pytest tests/integration -m real_data` → 21 passed; `/api/report`, `/api/symptom-index`, exported and on-demand replays answer.
+- Known: `test_p95_latency_under_300ms` failed once on a freshly built (cold) v2 DB and passed on reruns.
+
 ## In progress
 - none
 
 ## Next (in order)
-1. PR #27 (now also: F3 applied to `exports/demo/replays`, F2 loader, B10 record): A re-reviews the new head, D merges in the 01:45 window.
-2. After #27 is on main: tell A the one-line change for on-demand replays (`recall_markers.rewrite`), review A's/C's follow-ups, C's replay-marker UI (F3.3, F3.4).
-3. Protection duty at every merge window and at Gate B: `python -m recall_radar.b_v2.protect <baseline> <v2>`; post both outputs.
-4. Reviews owed: A's F9 messaging (reviewer B), anything A or C re-push.
-5. Gate B 03:45: protected checksums, the five protected sha256, `uv run pytest tests/method`, `python -m recall_radar.b_v2.symptom_eval --db …`, F2 status line. Stop new work at 03:45.
-6. Still open from v1: PR #22 (docs only).
+1. Protection duty at each remaining window (02:30, 03:15, 03:45) and at Gate B: `python -m recall_radar.b_v2.protect <baseline> <v2>` + the five protected sha256 + `uv run pytest tests/method`.
+2. Reviews owed as they arrive: A's follow-up for on-demand replay markers; anything A or C re-push; C's #36 is reviewed by A and D (my data note is addressed).
+3. Gate B 03:45: post protected checksums (baseline vs v2), `exports/demo` hashes, `uv run pytest tests/method`, `python -m recall_radar.b_v2.symptom_eval --db …` output, F2 status line ("fallback only (13673 campaigns)"). Stop new work at 03:45.
+4. F2 stays fallback unless a Gemini key, the SDK and a model name arrive (asked the human at 00:49; no answer yet).
 
 ## Last passing commands (exact)
 - `uv run pytest` → 127 passed, 1 deselected (the deselected one is the real_data test) at the tip after A's review changes @ 02263ed

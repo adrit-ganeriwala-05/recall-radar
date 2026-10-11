@@ -21,6 +21,11 @@
 	handle /healthz {
 		reverse_proxy 127.0.0.1:8000
 	}
+	# F9 (Gate P): Photon Spectrum webhooks → messaging service. While messaging is disabled it answers 503
+	# (and 502 if the unit is not installed); unsigned or stale requests are rejected by the service (401).
+	handle /spectrum-webhook {
+		reverse_proxy 127.0.0.1:8791
+	}
 	handle {
 		root * /opt/recall-radar/current/web/dist
 		try_files {path} /index.html
