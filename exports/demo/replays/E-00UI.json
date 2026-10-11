@@ -354,6 +354,28 @@
   ],
   "markers": [
     {
+      "type": "recall_reported",
+      "date": "2017-03-31",
+      "label": "Other recall for this model: campaign 17V226000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "17V226000",
+      "link": "vehicle"
+    },
+    {
+      "type": "recall_reported",
+      "date": "2017-06-05",
+      "label": "Other recall for this model: campaign 17V358000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "17V358000",
+      "link": "vehicle"
+    },
+    {
       "type": "alert",
       "date": "2017-08-01",
       "label": "Alert: this complaint pattern deserves a closer look",
@@ -378,7 +400,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "18V907000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -387,7 +411,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "18V934000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -396,7 +422,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "19V120000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -405,7 +433,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "19V204000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -414,7 +444,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "20V061000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -423,7 +455,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "20V121000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -432,7 +466,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "20V393000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -441,7 +477,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "20V520000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -450,7 +488,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "20V543000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -459,7 +499,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "20V746000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -468,7 +510,9 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "21V303000",
+      "link": "issue"
     },
     {
       "type": "recall_reported",
@@ -477,7 +521,20 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "21V727000",
+      "link": "issue"
+    },
+    {
+      "type": "recall_reported",
+      "date": "2023-09-22",
+      "label": "Other recall for this model: campaign 23V651000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "23V651000",
+      "link": "vehicle"
     }
   ],
   "outcome": {

@@ -354,6 +354,28 @@
   ],
   "markers": [
     {
+      "type": "recall_reported",
+      "date": "2016-06-30",
+      "label": "Other recall for this model: campaign 16V490000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "16V490000",
+      "link": "vehicle"
+    },
+    {
+      "type": "recall_reported",
+      "date": "2017-05-25",
+      "label": "Other recall for this model: campaign 17V342000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "17V342000",
+      "link": "vehicle"
+    },
+    {
       "type": "alert",
       "date": "2017-07-01",
       "label": "Alert: this complaint pattern deserves a closer look",
@@ -361,6 +383,28 @@
       "action_no": null,
       "match_tier": null,
       "lead_days": null
+    },
+    {
+      "type": "recall_reported",
+      "date": "2017-07-28",
+      "label": "Other recall for this model: campaign 17V482000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "17V482000",
+      "link": "vehicle"
+    },
+    {
+      "type": "recall_reported",
+      "date": "2017-08-31",
+      "label": "Other recall for this model: campaign 17V542000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "17V542000",
+      "link": "vehicle"
     },
     {
       "type": "investigation_opened",
@@ -378,7 +422,75 @@
       "is_outcome": true,
       "action_no": null,
       "match_tier": null,
-      "lead_days": null
+      "lead_days": null,
+      "campno": "18V049000",
+      "link": "issue"
+    },
+    {
+      "type": "recall_reported",
+      "date": "2018-05-17",
+      "label": "Other recall for this model: campaign 18V332000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "18V332000",
+      "link": "vehicle"
+    },
+    {
+      "type": "recall_reported",
+      "date": "2018-06-14",
+      "label": "Other recall for this model: campaign 18V395000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "18V395000",
+      "link": "vehicle"
+    },
+    {
+      "type": "recall_reported",
+      "date": "2018-08-09",
+      "label": "Other recall for this model: campaign 18V524000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "18V524000",
+      "link": "vehicle"
+    },
+    {
+      "type": "recall_reported",
+      "date": "2019-05-09",
+      "label": "Other recall for this model: campaign 19V348000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "19V348000",
+      "link": "vehicle"
+    },
+    {
+      "type": "recall_reported",
+      "date": "2023-01-17",
+      "label": "Other recall for this model: campaign 23V010000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "23V010000",
+      "link": "vehicle"
+    },
+    {
+      "type": "recall_reported",
+      "date": "2025-12-17",
+      "label": "Other recall for this model: campaign 25V876000 reported (shown as a later reveal)",
+      "is_outcome": true,
+      "action_no": null,
+      "match_tier": null,
+      "lead_days": null,
+      "campno": "25V876000",
+      "link": "vehicle"
     }
   ],
   "outcome": {
