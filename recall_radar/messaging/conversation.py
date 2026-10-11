@@ -41,8 +41,11 @@ def route_intent(text: str) -> str | None:
     return None
 
 
-def numbers_grounded(reply: str, tool_text: str) -> bool:
-    """Every number in the reply (thousands separators removed) occurs in the tool output."""
+def numbers_grounded(reply: str, tool_text: str, names: tuple[str, ...] = ()) -> bool:
+    """Every number in the reply (thousands separators removed) occurs in the tool output. `names` (the vehicle's
+    make/model, e.g. F-150) are cut out of the reply first, so their digits ground only themselves (B on #64)."""
+    for n in names:
+        reply = re.sub(re.escape(n), " ", reply, flags=re.I)
     have = set(re.findall(r"\d+", tool_text.replace(",", "")))
     return all(n in have for n in re.findall(r"\d+", reply.replace(",", "")))
 
@@ -127,12 +130,14 @@ def answer(text: str, ctx: dict | None, a: Analysis, router: Callable[[str], str
     new_ctx = {"make": mk, "model": md, "model_year": yr, "campno": (ctx or {}).get("campno"), "expires_at": now + CONTEXT_S}
     tools = Tools(a)
     reply = _reply("problems" if intent in (None, "other") else intent, text, vehicle, tools, new_ctx)
-    # the vehicle's own name grounds its digits too (F-150, CX-5, 300): it came from the data via find_vehicle
-    if not numbers_grounded(reply, " ".join(tools.used) + f" {yr} {mk} {md}"):
+    grounding, names = " ".join(tools.used) + f" {yr}", (mk, md)  # a name like F-150 is not a count
+    if not numbers_grounded(reply, grounding, names):
         return f"I couldn't check those numbers, so here is the source instead: {T.link(yr, mk, md)}", new_ctx
     if brain is not None and tools.calls and time.time() - started < timeout_s:
         try:
-            reply = brain.phrase(text, reply) or reply  # brain.phrase returns None unless acceptable()
+            new = brain.phrase(text, reply)  # None unless brain.acceptable()
+            if new and numbers_grounded(new, grounding, names):
+                reply = new
         except Exception:  # noqa: BLE001
             pass
     return reply, new_ctx

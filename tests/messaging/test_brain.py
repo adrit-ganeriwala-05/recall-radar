@@ -111,4 +111,16 @@ def test_digits_in_the_model_name_are_grounded():
             return super().get(path, **p)
     r, _ = conversation.answer("how many complaints for the 2017 ford f-150", None, Digits())
     assert "35 distinct NHTSA complaint IDs" in r and "F-150" in r and "couldn't check" not in r
-    assert not conversation.numbers_grounded("2017 FORD F-150: 36 complaints", "35 2017 FORD F-150")  # still strict
+    names = ("FORD", "F-150")
+    assert conversation.numbers_grounded("2017 Ford F-150: 35 complaints. https://x/vehicle?model=F-150", "35 2017", names)
+    assert not conversation.numbers_grounded("2017 FORD F-150: 36 complaints", "35 2017", names)
+    assert not conversation.numbers_grounded("2017 FORD F-150: 150 complaints", "35 2017", names)  # B on #64
+
+
+def test_model_reword_cannot_borrow_digits_from_the_name():
+    class Digits(FakeAnalysis):
+        def get(self, path, **p):
+            return {"items": ["FORD"]} if path == "/api/makes" else {"items": ["F-150"]} if path == "/api/models" else super().get(path, **p)
+    bad = FakeBrain(plan={"intent": "count"}, phrase=lambda facts: facts.replace("35 distinct", "150 distinct"))
+    r, _ = conversation.answer("how many complaints for the 2017 ford f-150", None, Digits(), brain=bad)
+    assert "35 distinct NHTSA complaint IDs" in r and "150 distinct" not in r
