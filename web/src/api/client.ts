@@ -12,6 +12,8 @@ import type {
   ListResponse,
   MetaResponse,
   Replay,
+  ReportData,
+  SymptomIndex,
   VehicleResponse,
 } from "../contracts.gen";
 
@@ -42,6 +44,10 @@ export const ENDPOINTS = {
   results: (period: Period) => `/api/results?${qs({ period })}`,
   resultsCsv: (period: Period) => `/api/export/results.csv?${qs({ period })}`,
   hero: () => "/api/hero",
+  // PRD v2: vehicle keys only; the symptom query text never goes into a request
+  symptomIndex: (make: string, model: string, year: number) =>
+    `/api/symptom-index?${qs({ make, model, year: String(year) })}`,
+  report: (make: string, model: string, year: number) => `/api/report?${qs({ make, model, year: String(year) })}`,
 };
 
 // Files in exports/demo (CONTRACTS.md §7; copied to dist/demo at build) used when the API is
@@ -156,6 +162,16 @@ export async function getModels(make: string): Promise<ApiResult<ListResponse>> 
 export async function getYears(make: string, model: string): Promise<ApiResult<ListResponse>> {
   if (apiMode() === "fixture") return fromFixture("years.json");
   return getJson(ENDPOINTS.years(make, model));
+}
+
+export async function getSymptomIndex(make: string, model: string, year: number): Promise<ApiResult<SymptomIndex>> {
+  if (apiMode() === "fixture") return fromFixture<SymptomIndex>("symptom_index.json");
+  return getJson(ENDPOINTS.symptomIndex(make, model, year));
+}
+
+export async function getReport(make: string, model: string, year: number): Promise<ApiResult<ReportData>> {
+  if (apiMode() === "fixture") return fromFixture<ReportData>("report.json");
+  return getJson(ENDPOINTS.report(make, model, year));
 }
 
 export async function getVehicle(make: string, model: string, year: number): Promise<ApiResult<VehicleResponse>> {
