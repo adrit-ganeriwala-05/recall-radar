@@ -5,11 +5,11 @@
     "snapshot_id": "e808281f001a",
     "data_as_of": "2026-10-10",
     "config_hash": "0c26e23e0a3a",
-    "git_sha": "dd6b4394f858051212d88c92599af6d2094c1e72",
+    "git_sha": "1c8dd4b44e2712163c5a205db84d9304430704ba",
     "availability_basis": "LDATE_PLUS_7",
-    "generated_at": "2026-10-11T00:20:50Z"
+    "generated_at": "2026-10-11T00:40:35Z"
   },
-  "run_id": "held_out-0c26e23e0a3a-dd6b439",
+  "run_id": "held_out-0c26e23e0a3a-1c8dd4b",
   "period": "held_out",
   "seed": 20261010,
   "freeze_tag": "freeze-v1",
@@ -46,13 +46,13 @@
     },
     {
       "name": "early_coverage_sample",
-      "status": "pending",
-      "value": null,
-      "ci_low": null,
-      "ci_high": null,
-      "numerator": null,
-      "denominator": null,
-      "note": "0 of 15 candidate pairs of the seeded sample are labeled (match_labels_heldout.csv)"
+      "status": "measured",
+      "value": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.161125,
+      "numerator": 0,
+      "denominator": 20,
+      "note": "tiers 1-3 on the seeded sample; 15 candidate pairs reviewed by hand; manual matches have no chance comparison"
     },
     {
       "name": "chance_coverage",
@@ -15057,7 +15057,7 @@
       "status": "missed",
       "lead_days": null,
       "match_tier": "none",
-      "review_label": null
+      "review_label": "not_related"
     },
     {
       "family_id": "F-PE21010~927f7e",
@@ -17129,7 +17129,7 @@
       "status": "after_official_action",
       "lead_days": -48,
       "match_tier": "2",
-      "review_label": null
+      "review_label": "not_related"
     },
     {
       "family_id": "F-PE21022~46477d",
@@ -17356,7 +17356,7 @@
       "status": "missed",
       "lead_days": null,
       "match_tier": "none",
-      "review_label": null
+      "review_label": "not_related"
     }
   ],
   "audit": [
