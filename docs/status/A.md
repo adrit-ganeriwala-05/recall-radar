@@ -4,7 +4,7 @@ Restart memory for session rr-A. Update at every milestone, contract change, blo
 `/compact`, and before the human sleeps. A replacement session trusts nothing here until it
 has run `git branch --show-current && git rev-parse --short HEAD && make whoami`.
 
-- Updated: 2026-10-11 03:25 ET (PRD v2 build)
+- Updated: 2026-10-11 02:55 ET (PRD v2 build)
 - Branch / HEAD: all A v2 PRs merged: #25 #26 #28 #30 #31 #34 (train #39), #44 #45 (train #47 → main 4398728)
 - Last origin/main merged: 4398728 (train #47)
 - Contract version: 1.1.0 (PR #25, main ba839ba)
